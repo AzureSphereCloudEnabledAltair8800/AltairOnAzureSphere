@@ -1,6 +1,6 @@
 {
   "SchemaVersion": 1,
-  "Name": "AltairRT_disk_cache_server",
+  "Name": "AltairRT_filesystem_ext_service",
   "ComponentId": "9b684af8-21b9-42aa-91e4-621d5428e497",
   "EntryPoint": "/bin/app",
   "CmdArgs": [],

@@ -9,7 +9,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Configurations
-project(AltairRT_disk_cache_server C)
+project(AltairRT_filesystem_ext_service C)
 
 azsphere_configure_tools(TOOLS_REVISION "21.04")
 add_compile_definitions(OSAI_BARE_METAL)

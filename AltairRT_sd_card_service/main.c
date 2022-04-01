@@ -278,7 +278,7 @@ _Noreturn void RTCoreMain(void)
 
     /***********************************************************************
     * The app_manifest must also be updated
-    * SOCKET 1: Avnet Rev 1 - ISU1, CS 1 = SPIMaster_Open(MT3620_UNIT_ISU1) and SPIMaster_Select(driver, 0);
+    * SOCKET 1: Avnet Rev 1 - ISU1, CS 0 = SPIMaster_Open(MT3620_UNIT_ISU1) and SPIMaster_Select(driver, 0);
     * SOCKET 1: Avnet Rev 2 = ISU0, CS 0 = SPIMaster_Open(MT3620_UNIT_ISU0) and SPIMaster_Select(driver, 0);
     ***********************************************************************/
 
