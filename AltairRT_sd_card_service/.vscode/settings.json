@@ -1,0 +1,17 @@
+{
+    "cmake.generator": "Ninja",
+    "cmake.buildDirectory": "${workspaceRoot}/out/ARM-${buildType}",
+    "cmake.buildToolArgs": [ "-v" ],
+    "cmake.configureSettings": {
+        "CMAKE_TOOLCHAIN_FILE": "${command:azuresphere.AzureSphereSdkDir}/CMakeFiles/AzureSphereRTCoreToolchain.cmake",
+        "ARM_GNU_PATH": "${command:azuresphere.ArmGnuPath}"
+    },
+    "cmake.configureOnOpen": true,
+    "C_Cpp.default.configurationProvider": "vector-of-bool.cmake-tools",
+    "AzureSphere.partnerApplications": {
+        "005180bc-402f-4cb3-a662-72937dbcde47": "c:\\Data\\Altair_8800\\AzureSphereAltair8800\\AltairRT_sd_card_server\\app_manifest.json",
+        "25025d2c-66da-4448-bae1-ac26fcdd3627": "",
+        "ac8d863a-4424-11eb-b378-0242ac130002": "",
+        "8E24FC73-A329-4D99-9B37-2EE54DC795E7": ""
+    }
+}

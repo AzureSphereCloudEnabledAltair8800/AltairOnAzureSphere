@@ -1,0 +1,11 @@
+{
+  "SchemaVersion": 1,
+  "Name": "AltairRT_disk_cache_server",
+  "ComponentId": "9b684af8-21b9-42aa-91e4-621d5428e497",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "Capabilities": {
+    "AllowedApplicationConnections": [ "ac8d863a-4424-11eb-b378-0242ac130002" ]
+  },
+  "ApplicationType": "RealTimeCapable"
+}

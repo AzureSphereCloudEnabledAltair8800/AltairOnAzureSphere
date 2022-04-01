@@ -1,0 +1,42 @@
+[submodule "AltairRT_disk_cache_server/mt3620_m4_software"]
+	path = AltairRT_disk_cache_server/mt3620_m4_software
+	url = https://github.com/MediaTek-Labs/mt3620_m4_software.git
+[submodule "AltairHL_emulator/AzureSphereDevX"]
+	path = AltairHL_emulator/AzureSphereDevX
+	url = https://github.com/gloveboxes/AzureSphereDevX.git
+[submodule "AltairHL_emulator/Disks"]
+	path = AltairHL_emulator/Disks
+	url = https://github.com/AzureSphereCloudEnabledAltair8800/AzureSphereAltair8800.disks.git
+[submodule "azure-sphere-samples"]
+	path = azure-sphere-samples
+	url = https://github.com/Azure/azure-sphere-samples.git
+[submodule "AltairHL_sd_card_format_drive_a/AzureSphereDevX"]
+	path = AltairHL_sd_card_format_drive_a/AzureSphereDevX
+	url = https://github.com/gloveboxes/AzureSphereDevX.git
+[submodule "AltairHL_sd_card_format_drive_b/AzureSphereDevX"]
+	path = AltairHL_sd_card_format_drive_b/AzureSphereDevX
+	url = https://github.com/gloveboxes/AzureSphereDevX.git
+[submodule "AltairHL_sd_card_format_drive_a/Disks"]
+	path = AltairHL_sd_card_format_drive_a/Disks
+	url = https://github.com/AzureSphereCloudEnabledAltair8800/AzureSphereAltair8800.disks.git
+[submodule "AltairHL_sd_card_format_drive_b/Disks"]
+	path = AltairHL_sd_card_format_drive_b/Disks
+	url = https://github.com/AzureSphereCloudEnabledAltair8800/AzureSphereAltair8800.disks.git
+[submodule "AltairHL_emulator/Drivers"]
+	path = AltairHL_emulator/Drivers
+	url = https://github.com/gloveboxes/AzureSphereDrivers.git
+[submodule "AltairRT_sd_card_service/lib"]
+	path = AltairRT_sd_card_service/lib
+	url = https://github.com/CodethinkLabs/mt3620-m4-drivers
+[submodule "Tools"]
+	path = Tools
+	url = https://github.com/Azure-Sphere-DevX/AzureSphereDevX.Tools.git
+[submodule "AltairHL_emulator/wsServer"]
+	path = AltairHL_emulator/wsServer
+	url = https://github.com/Theldus/wsServer.git
+[submodule "AltairRT_tiny_ml_classify/mt3620_m4_software"]
+	path = AltairRT_tiny_ml_classify/mt3620_m4_software
+	url = https://github.com/MediaTek-Labs/mt3620_m4_software.git
+[submodule "AltairRT_filesystem_ext/mt3620_m4_software"]
+	path = AltairRT_filesystem_ext/mt3620_m4_software
+	url = https://github.com/MediaTek-Labs/mt3620_m4_software.git
