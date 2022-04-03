@@ -13,6 +13,7 @@ static int fd_ledger[MAX_CLIENTS];
 
 static void cleanup_session(void)
 {
+#ifdef ALTAIR_SERVICE
 	cpu_operating_mode = CPU_STOPPED;
 
 	// Sleep this thread so the Altair CPU thread can complete current instruction
@@ -21,6 +22,7 @@ static void cleanup_session(void)
 	load_boot_disk();
 
 	clear_difference_disk();
+#endif
 
 	cleanup_required = false;
 }
@@ -114,9 +116,8 @@ void onopen(int fd)
 
 #ifdef ALTAIR_SERVICE
 	cleanup_required = true;
-#endif
-
 	(*(int *)dt_new_sessions.propertyValue)++;
+#endif
 
 	_client_connected_cb();
 }
