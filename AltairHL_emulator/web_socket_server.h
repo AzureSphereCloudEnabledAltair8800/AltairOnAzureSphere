@@ -5,6 +5,7 @@
 
 #include "88dcdd.h"
 #include "cpu_monitor.h"
+#include "dx_device_twins.h"
 #include "dx_timer.h"
 #include "dx_utilities.h"
 #include <stdbool.h>
@@ -14,6 +15,7 @@
 extern volatile CPU_OPERATING_MODE cpu_operating_mode;
 extern volatile bool send_partial_msg;
 extern DX_TIMER_BINDING tmr_deferred_input;
+extern DX_DEVICE_TWIN_BINDING dt_new_sessions;
 
 void print_console_banner(void);
 

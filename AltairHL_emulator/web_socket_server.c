@@ -116,6 +116,8 @@ void onopen(int fd)
 	cleanup_required = true;
 #endif
 
+	(*(int *)dt_new_sessions.propertyValue)++;
+
 	_client_connected_cb();
 }
 
