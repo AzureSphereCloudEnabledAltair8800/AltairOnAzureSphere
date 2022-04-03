@@ -38,7 +38,7 @@
 #include "io_ports.h"
 #include "memory.h"
 
-#define ALTAIR_EMULATOR_VERSION "4.3.2"
+#define ALTAIR_EMULATOR_VERSION "4.3.3"
 #define Log_Debug(f_, ...) dx_Log_Debug((f_), ##__VA_ARGS__)
 #define DX_LOGGING_ENABLED FALSE
 #define BASIC_SAMPLES_DIRECTORY "BasicSamples"
@@ -46,7 +46,6 @@
 
 // https://docs.microsoft.com/en-us/azure/iot-pnp/overview-iot-plug-and-play
 #define IOT_PLUG_AND_PLAY_MODEL_ID "dtmi:com:example:climatemonitor;1"
-#define NETWORK_INTERFACE          "wlan0"
 
 #define CORE_ENVIRONMENT_COMPONENT_ID "2e319eae-7be5-4a0c-ba47-9353aa6ca96a"
 #define CORE_FILESYSTEM_COMPONENT_ID  "9b684af8-21b9-42aa-91e4-621d5428e497"

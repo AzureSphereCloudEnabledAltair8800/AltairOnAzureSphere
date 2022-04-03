@@ -19,8 +19,13 @@ DX_TIMER_HANDLER_END
 static DX_TIMER_HANDLER(update_environment_handler)
 {
 	static bool location_set = false;
+	static char *network_interface = NULL;
+
+	network_interface = dx_isStringNullOrEmpty(altair_config.network_interface)
+		? "wlan0"
+		: altair_config.network_interface;
 	
-	if (!location_set && dx_isNetworkConnected(NETWORK_INTERFACE))
+	if (!location_set && dx_isNetworkConnected(network_interface))
 	{
 		init_environment(&altair_config);
 		location_set = true;
@@ -322,21 +327,8 @@ static void spin_wait(volatile bool *flag)
 /// </summary>
 static void client_connected_cb(void)
 {
-	static bool connection_initialised = false;
-
-	if (!connection_initialised)
-	{
-		connection_initialised = true;
-		// int len = snprintf(msgBuffer, sizeof(msgBuffer), connected_message,
-		// ALTAIR_EMULATOR_VERSION, AZURE_SPHERE_DEVX_VERSION); publish_message(msgBuffer,
-		// (size_t)len);
-		print_console_banner();
-		cpu_operating_mode = CPU_RUNNING;
-	}
-	else
-	{
-		print_console_banner();
-	}
+	print_console_banner();
+	cpu_operating_mode = CPU_RUNNING;
 }
 
 /// <summary>
@@ -575,7 +567,11 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
 	// No Azure IoT connction info configured so skip setting up connection
 	if (altair_config.user_config.connectionType != DX_CONNECTION_TYPE_NOT_DEFINED)
 	{
-		dx_azureConnect(&altair_config.user_config, NETWORK_INTERFACE, IOT_PLUG_AND_PLAY_MODEL_ID);
+		dx_azureConnect(&altair_config.user_config,
+			dx_isStringNullOrEmpty(altair_config.network_interface) ? "wlan0"
+																	: altair_config.network_interface,
+			IOT_PLUG_AND_PLAY_MODEL_ID);
+
 		dx_azureRegisterConnectionChangedNotification(report_startup_stats);
 		dx_azureRegisterConnectionChangedNotification(azure_connection_state);
 	}

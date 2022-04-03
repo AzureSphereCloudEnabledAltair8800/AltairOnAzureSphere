@@ -279,3 +279,9 @@ void writeSector(disk_t *pDisk, uint8_t drive_number)
 	pDisk->sectorPointer = 0;
 	pDisk->sectorDirty   = false;
 }
+
+void clear_difference_disk(void)
+{
+	intercore_disk_block.disk_ic_msg_type = DISK_IC_CLEAR;
+	dx_intercorePublish(&intercore_filesystem_ctx, &intercore_disk_block, sizeof(INTERCORE_DISK_MSG_TYPE));
+}

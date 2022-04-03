@@ -9,13 +9,14 @@ void parse_altair_cmd_line_arguments(int argc, char *argv[], ALTAIR_CONFIG_T *al
 	static const struct option cmdLineOptions[] = {
 		{.name = "ScopeID", .has_arg = required_argument, .flag = NULL, .val = 's'},
 		{.name = "OwmKey", .has_arg = required_argument, .flag = NULL, .val = 'o'},
-		{.name = "CopyUrl", .has_arg = required_argument, .flag = NULL, .val = 'u'}
+		{.name = "CopyUrl", .has_arg = required_argument, .flag = NULL, .val = 'u'},
+		{.name = "NetworkInterface", .has_arg = required_argument, .flag = NULL, .val = 'n'},
 	};
 
 	altair_config->user_config.connectionType = DX_CONNECTION_TYPE_NOT_DEFINED;
 
 	// Loop over all of the options.
-	while ((option = getopt_long(argc, argv, "s:o:u:", cmdLineOptions, NULL)) != -1)
+	while ((option = getopt_long(argc, argv, "s:o:u:n:", cmdLineOptions, NULL)) != -1)
 	{
 		// Check if arguments are missing. Every option requires an argument.
 		if (optarg != NULL && optarg[0] == '-')
@@ -34,6 +35,9 @@ void parse_altair_cmd_line_arguments(int argc, char *argv[], ALTAIR_CONFIG_T *al
 				break;
 			case 'u':
 				altair_config->copy_x_url = optarg;
+				break;
+			case 'n':
+				altair_config->network_interface = optarg;
 				break;
 			default:
 				// Unknown options are ignored.

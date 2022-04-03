@@ -28,7 +28,8 @@ typedef struct  __attribute__((packed)) {
 typedef enum  __attribute__((packed)) {
 	DISK_IC_UNKNOWN,
 	DISK_IC_READ,
-	DISK_IC_WRITE
+	DISK_IC_WRITE,
+	DISK_IC_CLEAR
 } INTERCORE_DISK_MSG_TYPE;
 
 typedef struct  __attribute__((packed, aligned(4))) {

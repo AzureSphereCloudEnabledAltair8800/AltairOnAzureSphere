@@ -227,13 +227,19 @@
       }
     }
 
+    function doDisconnect(){
+      // if (connected){
+      //   ws.close();
+      // }
+    }
+
 
     /* Establish web socket connection. */
     function doConnect() {
       var altair_address = document.getElementById("altairAddress").value.trim();
 
       if (altair_address == '') {
-        alert('ERROR: Missing the IoT Central device name');
+        alert('Altair device hostname or IP Address required!');
         return;
       }
 
@@ -242,7 +248,10 @@
       var addr = "ws://" + altair_address + ":8082";
 
       if (connected){
-        ws.close();
+         ws.close();
+        document.getElementById("connect_button").value = "Connect";
+        connected = false;
+        return;
       }
 
       /* Do connection. */
@@ -251,7 +260,7 @@
       /* Register events. */
       ws.onopen = function () {
         connected = true;
-        document.getElementById("connect_button").value = "Connected";
+        document.getElementById("connect_button").value = "Disconnect";
       };
 
       /* Deals with messages. */

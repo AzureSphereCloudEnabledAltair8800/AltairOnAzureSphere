@@ -12,9 +12,6 @@
 #pragma once
 #include "mt3620_rdb.h"
 
-// MT3620 RDB: Button A
-#define BUTTON_A MT3620_RDB_BUTTON_A
-
 // MT3620 RDB: Button B
 #define BUTTON_B MT3620_RDB_BUTTON_B
 
@@ -31,7 +28,7 @@
 #define LED_BLUE MT3620_RDB_LED4_BLUE
 
 // Mapped to ISU 0 as not used on Seeed RDB
-#define ISU2 MT3620_RDB_HEADER2_ISU0_I2C
+#define ISU2 MT3620_RDB_HEADER4_ISU1_I2C
 
 // Altair panel - switch load
 #define SWITCHES_LOAD MT3620_RDB_HEADER4_PIN14_GPIO

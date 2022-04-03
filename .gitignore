@@ -216,3 +216,4 @@ app/release
 **/out/
 Altair_Web/local.settings.json
 Altair_Web/api/local.settings.properties.json
+AltairHL_emulator/app_manifest.json

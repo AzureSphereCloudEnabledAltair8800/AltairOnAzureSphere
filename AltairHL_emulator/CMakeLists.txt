@@ -8,8 +8,9 @@ project (AltairHL_emulator C)
 #
 # set(AVNET TRUE "AVNET Azure Sphere Starter Kit Revision 1 ")   
 # set(AVNET_REV_2 TRUE "AVNET Azure Sphere Starter Kit Revision 2 ")  
-# set(SEEED_STUDIO_RDB TRUE "Seeed Studio Azure Sphere MT3620 Development Kit (aka Reference Design Board or rdb)")
-set(SEEED_STUDIO_MDB TRUE "Seeed Studio Azure Sphere Mini Developer Board")
+set(SEEED_STUDIO_RDB TRUE "Seeed Studio Azure Sphere MT3620 Development Kit (aka Reference Design Board or rdb)")
+set(SEEED_STUDIO_RDB_ETHERNET TRUE "Seeed Studio Azure Sphere MT3620 Development Kit with ethernet shield")
+# set(SEEED_STUDIO_MDB TRUE "Seeed Studio Azure Sphere Mini Developer Board")
 #
 ###################################################################################################################
 
@@ -22,7 +23,6 @@ set(ALTAIR_FRONT_PANEL_NONE TRUE "Altair on Azure Sphere with no panel.")
 #
 ###################################################################################################################
 
-
 # ENABLE SD CARD ##################################################################################################
 #
 # The MikroE microSD Click works with the Avnet Azure Sphere Starter Kit Rev 1 and Rev 2 when in Socket 1.
@@ -34,9 +34,18 @@ set(ALTAIR_FRONT_PANEL_NONE TRUE "Altair on Azure Sphere with no panel.")
 ###################################################################################################################
 
 ###################################################################################################################
+#
+set(ALTAIR_AS_SERVICE TRUE "Enable Altair as a service on eth0 using real-time in-memory differencing disk")
+###################################################################################################################
+
+###################################################################################################################
 # IoT Hub Polling time overide
 add_compile_definitions(IOT_HUB_POLL_TIME_NANOSECONDS=500000000)
 ###################################################################################################################
+
+if (ALTAIR_AS_SERVICE AND MICRO_SD_CLICK)
+  message(FATAL_ERROR, "YOU CANNOT HAVE ALTAIR AS A SERVICE AND SD CARD SELECTED AT THE SAME TIME")
+endif(ALTAIR_AS_SERVICE AND MICRO_SD_CLICK)
 
 get_filename_component(PARENT_DIR ${PROJECT_SOURCE_DIR} DIRECTORY)
 
@@ -56,6 +65,10 @@ endif()
 add_subdirectory("AzureSphereDevX" out)
 
 add_compile_definitions(AZURE_SPHERE)
+
+if (ALTAIR_AS_SERVICE)
+    add_compile_definitions(ALTAIR_SERVICE)
+endif(ALTAIR_AS_SERVICE)
 
 if(AVNET OR AVNET_REV_2)
     add_subdirectory("Drivers/AVNET/HL" drivers)
@@ -208,6 +221,11 @@ endif(AVNET_REV_2)
 if (SEEED_STUDIO_RDB)   
     add_compile_definitions(OEM_SEEED_STUDIO)
     azsphere_target_hardware_definition(${PROJECT_NAME} TARGET_DIRECTORY "../HardwareDefinitions/mt3620_rdb" TARGET_DEFINITION "altair.json")
+endif()
+
+if (SEEED_STUDIO_RDB_ETHERNET)   
+    add_compile_definitions(OEM_SEEED_STUDIO)
+    azsphere_target_hardware_definition(${PROJECT_NAME} TARGET_DIRECTORY "../HardwareDefinitions/mt3620_rdb_ethernet" TARGET_DEFINITION "altair.json")
 endif()
 
 if (SEEED_STUDIO_MDB)   

@@ -3,12 +3,15 @@
 
 #pragma once
 
-#include "dx_utilities.h"
+#include "88dcdd.h"
+#include "cpu_monitor.h"
 #include "dx_timer.h"
+#include "dx_utilities.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <ws.h>
 
+extern volatile CPU_OPERATING_MODE cpu_operating_mode;
 extern volatile bool send_partial_msg;
 extern DX_TIMER_BINDING tmr_deferred_input;
 

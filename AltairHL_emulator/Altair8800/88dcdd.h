@@ -67,6 +67,7 @@ void disk_function(uint8_t b);
 uint8_t sector(void);
 void disk_write(uint8_t b);
 uint8_t disk_read(void);
+void clear_difference_disk(void);
 
 typedef struct {
 	int sector_number;
