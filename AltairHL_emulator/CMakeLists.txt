@@ -35,7 +35,7 @@ set(ALTAIR_FRONT_PANEL_NONE TRUE "Altair on Azure Sphere with no panel.")
 
 ###################################################################################################################
 #
-set(ALTAIR_AS_SERVICE TRUE "Enable Altair as a service on eth0 using real-time in-memory differencing disk")
+# set(ALTAIR_AS_SERVICE TRUE "Enable Altair as a service on eth0 using real-time in-memory differencing disk")
 ###################################################################################################################
 
 ###################################################################################################################
