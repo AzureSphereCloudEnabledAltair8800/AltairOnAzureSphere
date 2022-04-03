@@ -46,7 +46,7 @@
         "intercore.h": "c"
     },
     "AzureSphere.partnerApplications": {
-        "9b684af8-21b9-42aa-91e4-621d5428e497": "c:\\Data\\Altair_8800\\AzureSphereAltair8800\\AltairRT_disk_cache_server\\app_manifest.json",
+        "9b684af8-21b9-42aa-91e4-621d5428e497": "c:\\GitHub\\Altair_Emulator\\Altair8800Emulator\\AltairRT_difference_disk\\app_manifest.json",
         "ac8d863a-4424-11eb-b378-0242ac130002": ""
     }
 }
