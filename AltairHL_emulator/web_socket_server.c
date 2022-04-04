@@ -27,7 +27,7 @@ DX_TIMER_HANDLER_END
 
 static void cleanup_session(void)
 {
-#ifdef ALTAIR_SERVICE
+#ifdef ALTAIR_CLOUD
     cpu_operating_mode = CPU_STOPPED;
 
     // Sleep this thread so the Altair CPU thread can complete current instruction
@@ -136,7 +136,7 @@ void onopen(int fd)
         fd_ledger_close_all();
         fd_ledger_add(fd);
 
-#ifdef ALTAIR_SERVICE
+#ifdef ALTAIR_CLOUD
         active_session = true;
         cleanup_required = true;
         dx_timerOneShotSet(&tmr_expire_session, &(struct timespec){session_minutes, 0});
