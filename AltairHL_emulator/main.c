@@ -84,8 +84,8 @@ static DX_TIMER_HANDLER(heart_beat_handler)
 	{
 		dx_deviceTwinReportValue(&dt_heartbeatUtc, dx_getCurrentUtc(msgBuffer, sizeof(msgBuffer))); // DX_TYPE_STRING
 		dx_deviceTwinReportValue(&dt_filesystem_reads, dt_filesystem_reads.propertyValue);
-		dx_deviceTwinReportValue(&dt_filesystem_ext_reads, dt_filesystem_ext_reads.propertyValue);
-		dx_deviceTwinReportValue(&dt_filesystem_ext_writes, dt_filesystem_ext_writes.propertyValue);
+		dx_deviceTwinReportValue(&dt_difference_disk_reads, dt_difference_disk_reads.propertyValue);
+		dx_deviceTwinReportValue(&dt_difference_disk_writes, dt_difference_disk_writes.propertyValue);
 		dx_deviceTwinReportValue(&dt_new_sessions, dt_new_sessions.propertyValue);
 	}
 }

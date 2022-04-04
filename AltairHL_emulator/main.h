@@ -264,8 +264,8 @@ DX_DEVICE_TWIN_BINDING dt_country = {.propertyName = "Country", .twinType = DX_D
 DX_DEVICE_TWIN_BINDING dt_city = {.propertyName = "City", .twinType = DX_DEVICE_TWIN_STRING};
 
 DX_DEVICE_TWIN_BINDING dt_filesystem_reads = {.propertyName = "FilesystemReads", .twinType = DX_DEVICE_TWIN_INT};
-DX_DEVICE_TWIN_BINDING dt_filesystem_ext_reads = {.propertyName = "FilesystemExtReads", .twinType = DX_DEVICE_TWIN_INT};
-DX_DEVICE_TWIN_BINDING dt_filesystem_ext_writes = {.propertyName = "FilesystemExtWrites", .twinType = DX_DEVICE_TWIN_INT};
+DX_DEVICE_TWIN_BINDING dt_difference_disk_reads = {.propertyName = "DifferenceDiskReads", .twinType = DX_DEVICE_TWIN_INT};
+DX_DEVICE_TWIN_BINDING dt_difference_disk_writes = {.propertyName = "DifferenceDiskWrites", .twinType = DX_DEVICE_TWIN_INT};
 DX_DEVICE_TWIN_BINDING dt_new_sessions = {.propertyName = "NewSessions", .twinType = DX_DEVICE_TWIN_INT};
 
 static DX_DEVICE_TWIN_BINDING dt_ledBrightness = {.propertyName = "LedBrightness", .twinType = DX_DEVICE_TWIN_INT, .handler = led_brightness_handler};
@@ -378,8 +378,8 @@ static DX_DEVICE_TWIN_BINDING *deviceTwinBindingSet[] = {
 	&dt_city,
 
 	&dt_filesystem_reads, 
-	&dt_filesystem_ext_reads, 
-	&dt_filesystem_ext_writes, 
+	&dt_difference_disk_reads, 
+	&dt_difference_disk_writes, 
 	&dt_new_sessions,
 };
 
