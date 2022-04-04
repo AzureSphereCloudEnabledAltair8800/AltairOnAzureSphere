@@ -1,6 +1,8 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved.
    Licensed under the MIT License. */
 
+#pragma once
+
 /// <summary>
 /// Exit codes for this application. These are used for the
 /// application exit code.  They must all be between zero and 255,

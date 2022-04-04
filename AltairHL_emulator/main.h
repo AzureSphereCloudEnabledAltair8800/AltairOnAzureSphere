@@ -152,13 +152,13 @@ DX_INTERCORE_BINDING intercore_sd_card_ctx = {.sockFd = -1,
 
 #ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
 
-CLICK_4X4_BUTTON_MODE click_4x4_key_mode = CONTROL_MODE;
-
-as1115_t retro_click = {.interfaceId = ISU2,
-	.handle                          = -1,
-	.bitmap64                        = 0,
-	.keymap                          = 0,
-	.debouncePeriodMilliseconds      = 500};
+//CLICK_4X4_BUTTON_MODE click_4x4_key_mode = CONTROL_MODE;
+//
+//as1115_t retro_click = {.interfaceId = ISU2,
+//	.handle                          = -1,
+//	.bitmap64                        = 0,
+//	.keymap                          = 0,
+//	.debouncePeriodMilliseconds      = 500};
 
 #endif //  ALTAIR_FRONT_PANEL_RETRO_CLICK
 
@@ -225,7 +225,7 @@ static DX_TIMER_BINDING tmr_watchdog_monitor = {.repeat = &(struct timespec){15,
 
 #if defined(ALTAIR_FRONT_PANEL_RETRO_CLICK) || defined(ALTAIR_FRONT_PANEL_KIT)
 static DX_TIMER_BINDING tmr_read_panel = {.delay = &(struct timespec){10, 0}, .name = "tmr_read_panel", .handler = read_panel_handler};
-static DX_TIMER_BINDING tmr_panel_refresh = {.delay = &(struct timespec){10, 0}, .name = "tmr_panel_refresh", .handler = panel_refresh_handler};
+static DX_TIMER_BINDING tmr_panel_refresh = {.delay = &(struct timespec){1, 0}, .name = "tmr_panel_refresh", .handler = panel_refresh_handler};
 #else
 static DX_TIMER_BINDING tmr_read_panel = {.name = "tmr_read_panel", .handler = read_panel_handler};
 static DX_TIMER_BINDING tmr_panel_refresh = {.name = "tmr_panel_refresh", .handler = panel_refresh_handler};
@@ -309,15 +309,19 @@ static DX_GPIO_BINDING *gpioSet[] = {&buttonB, &azure_connected_led, &gpioRed, &
 };
 
 #ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
-DX_I2C_BINDING i2c_as1115_retro = {
-	.interfaceId = ISU2, .speedInHz = I2C_BUS_SPEED_FAST_PLUS, .name = "i2c_as1115_retro"};
-DX_I2C_BINDING i2c_onboard_sensors = {
-	.interfaceId = ISU2, .speedInHz = I2C_BUS_SPEED_FAST_PLUS, .name = "i2c_onboard_sensors"};
-static DX_I2C_BINDING *i2c_bindings[] = {&i2c_as1115_retro, &i2c_onboard_sensors};
+	CLICK_4X4_BUTTON_MODE click_4x4_key_mode = CONTROL_MODE;
+
+	as1115_t retro_click = {
+		.interfaceId = ISU2, .handle = -1, .bitmap64 = 0, .keymap = 0, .debouncePeriodMilliseconds = 500};
+
+	DX_I2C_BINDING i2c_as1115_retro = {
+		.interfaceId = ISU2, .speedInHz = I2C_BUS_SPEED_FAST_PLUS, .name = "i2c_as1115_retro"};
+
+	DX_I2C_BINDING i2c_onboard_sensors = {
+		.interfaceId = ISU2, .speedInHz = I2C_BUS_SPEED_FAST_PLUS, .name = "i2c_onboard_sensors"};
+	// Note, retroclick keypad shares i2c_as1115_retro fd
+	static DX_I2C_BINDING *i2c_bindings[] = {&i2c_as1115_retro, &i2c_onboard_sensors};
 #else
-
-#endif // ALTAIR_FRONT_PANEL_RETRO_CLICK
-
 #ifdef OEM_AVNET
 DX_I2C_BINDING i2c_onboard_sensors = {
 	.interfaceId = ISU2, .speedInHz = I2C_BUS_SPEED_FAST_PLUS, .name = "i2c_onboard_sensors"};
@@ -326,7 +330,8 @@ static DX_I2C_BINDING *i2c_bindings[] = {&i2c_onboard_sensors};
 // just create a placeholder i2c for onboard sensors
 DX_I2C_BINDING i2c_onboard_sensors;
 static DX_I2C_BINDING *i2c_bindings[] = {};
-#endif
+#endif // OEM_AVNET
+#endif // ALTAIR_FRONT_PANEL_RETRO_CLICK
 
 static DX_TIMER_BINDING *timerSet[] = {
 	&tmr_connection_status_led_off,
