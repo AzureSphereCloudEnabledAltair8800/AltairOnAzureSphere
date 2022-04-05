@@ -8,7 +8,7 @@ project (AltairHL_emulator C)
 #
 # set(AVNET TRUE "AVNET Azure Sphere Starter Kit Revision 1 ")   
 # set(AVNET_REV_2 TRUE "AVNET Azure Sphere Starter Kit Revision 2 ")  
-set(SEEED_STUDIO_RDB TRUE "Seeed Studio Azure Sphere MT3620 Development Kit (aka Reference Design Board or rdb)")
+# set(SEEED_STUDIO_RDB TRUE "Seeed Studio Azure Sphere MT3620 Development Kit (aka Reference Design Board or rdb)")
 set(SEEED_STUDIO_RDB_ETHERNET TRUE "Seeed Studio Azure Sphere MT3620 Development Kit with ethernet shield")
 # set(SEEED_STUDIO_MDB TRUE "Seeed Studio Azure Sphere Mini Developer Board")
 #
@@ -18,7 +18,6 @@ set(SEEED_STUDIO_RDB_ETHERNET TRUE "Seeed Studio Azure Sphere MT3620 Development
 #
 set(ALTAIR_FRONT_PANEL_NONE TRUE "Altair on Azure Sphere with no panel.")
 # set(ALTAIR_FRONT_PANEL_RETRO_CLICK TRUE "Avnet with the MikroE 8800 Retro Click")
-# set(ALTAIR_FRONT_PANEL_CLICK TRUE "Avnet with the MikroE 8x8R Click")
 # set(ALTAIR_FRONT_PANEL_KIT TRUE "Altair front panel board")
 #
 ###################################################################################################################
@@ -35,7 +34,7 @@ set(ALTAIR_FRONT_PANEL_NONE TRUE "Altair on Azure Sphere with no panel.")
 
 ###################################################################################################################
 #
-# set(ALTAIR_AS_SERVICE TRUE "Enable Altair as a service real-time in-memory differencing disk")
+# set(ALTAIR_CLOUD TRUE "Enable Altair as a cloud service real-time in-memory differencing disk")
 ###################################################################################################################
 
 ###################################################################################################################
@@ -43,9 +42,9 @@ set(ALTAIR_FRONT_PANEL_NONE TRUE "Altair on Azure Sphere with no panel.")
 add_compile_definitions(IOT_HUB_POLL_TIME_NANOSECONDS=500000000)
 ###################################################################################################################
 
-if (ALTAIR_AS_SERVICE AND MICRO_SD_CLICK)
+if (ALTAIR_CLOUD AND MICRO_SD_CLICK)
   message(FATAL_ERROR, "YOU CANNOT HAVE ALTAIR AS A SERVICE AND SD CARD SELECTED AT THE SAME TIME")
-endif(ALTAIR_AS_SERVICE AND MICRO_SD_CLICK)
+endif(ALTAIR_CLOUD AND MICRO_SD_CLICK)
 
 get_filename_component(PARENT_DIR ${PROJECT_SOURCE_DIR} DIRECTORY)
 
@@ -66,9 +65,9 @@ add_subdirectory("AzureSphereDevX" out)
 
 add_compile_definitions(AZURE_SPHERE)
 
-if (ALTAIR_AS_SERVICE)
-    add_compile_definitions(ALTAIR_SERVICE)
-endif(ALTAIR_AS_SERVICE)
+if (ALTAIR_CLOUD)
+    add_compile_definitions(ALTAIR_CLOUD)
+endif(ALTAIR_CLOUD)
 
 if(AVNET OR AVNET_REV_2)
     add_subdirectory("Drivers/AVNET/HL" drivers)
