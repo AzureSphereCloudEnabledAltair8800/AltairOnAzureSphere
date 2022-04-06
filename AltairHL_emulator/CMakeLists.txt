@@ -34,7 +34,7 @@ set(ALTAIR_FRONT_PANEL_NONE TRUE "Altair on Azure Sphere with no panel.")
 
 ###################################################################################################################
 #
-# set(ALTAIR_CLOUD TRUE "Enable Altair as a cloud service real-time in-memory differencing disk")
+set(ALTAIR_CLOUD TRUE "Enable Altair as a cloud service real-time in-memory differencing disk")
 ###################################################################################################################
 
 ###################################################################################################################
@@ -139,10 +139,10 @@ source_group("Source" FILES ${Source})
 
 set(wsServer
     wsServer/src/ws.c
-    wsServer/src/base64/base64.c
-    wsServer/src/sha1/sha1.c # sha1.c is pulled in from the Azure IoT SDK C
-    wsServer/src/handshake/handshake.c
-    wsServer/src/utf8/utf8.c
+    wsServer/src/base64.c
+    wsServer/src/sha1.c # sha1.c is pulled in from the Azure IoT SDK C
+    wsServer/src/handshake.c
+    wsServer/src/utf8.c
 )
 source_group("wsServer" FILES ${wsServer})
 
@@ -178,10 +178,10 @@ set_source_files_properties(comms_manager.c PROPERTIES COMPILE_FLAGS -Wno-conver
 set_source_files_properties(FrontPanels/front_panel_virtual.c PROPERTIES COMPILE_FLAGS -Wno-conversion)
 set_source_files_properties(wsServer/src/ws.c PROPERTIES COMPILE_FLAGS -Wno-conversion)
 set_source_files_properties(wsServer/src/web_socket_server.c PROPERTIES COMPILE_FLAGS -Wno-conversion)
-set_source_files_properties(wsServer/src/base64/base64.c PROPERTIES COMPILE_FLAGS -Wno-conversion)
-set_source_files_properties(wsServer/src/handshake/handshake.c PROPERTIES COMPILE_FLAGS -Wno-conversion)
-set_source_files_properties(wsServer/src/sha1/sha1.c PROPERTIES COMPILE_FLAGS -Wno-conversion)
-set_source_files_properties(wsServer/src/utf8/utf8.c PROPERTIES COMPILE_FLAGS -Wno-sign-conversion)
+set_source_files_properties(wsServer/src/base64.c PROPERTIES COMPILE_FLAGS -Wno-conversion)
+set_source_files_properties(wsServer/src/handshake.c PROPERTIES COMPILE_FLAGS -Wno-conversion)
+set_source_files_properties(wsServer/src/sha1.c PROPERTIES COMPILE_FLAGS -Wno-conversion)
+set_source_files_properties(wsServer/src/utf8.c PROPERTIES COMPILE_FLAGS -Wno-sign-conversion)
 
 
 if(ALTAIR_FRONT_PANEL_CLICK)

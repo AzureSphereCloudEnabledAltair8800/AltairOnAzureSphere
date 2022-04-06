@@ -7,149 +7,149 @@ void (*_client_connected_cb)(void);
 static DX_DECLARE_TIMER_HANDLER(expire_session_handler);
 
 static char output_buffer[512];
-static int fd_ledger[MAX_CLIENTS];
-static int client_fd               = -1;
+static ws_cli_conn_t *ws_ledger[MAX_CLIENTS];
+static ws_cli_conn_t *current_ws   = NULL;
 static size_t output_buffer_length = 0;
 static bool cleanup_required       = false;
 
-pthread_mutex_t session_mutex       = PTHREAD_MUTEX_INITIALIZER;
-static bool active_session = false;
-static const int session_minutes    = 1 * 60 * 30; // 30 minutes
+pthread_mutex_t session_mutex    = PTHREAD_MUTEX_INITIALIZER;
+static bool active_session       = false;
+static const int session_minutes = 1 * 60 * 30; // 30 minutes
 
 static DX_TIMER_BINDING tmr_expire_session = {
-    .name = "tmr_expire_session", .handler = expire_session_handler};
+	.name = "tmr_expire_session", .handler = expire_session_handler};
 
 static DX_TIMER_HANDLER(expire_session_handler)
 {
-    active_session = false;
+	active_session = false;
 }
 DX_TIMER_HANDLER_END
 
 static void cleanup_session(void)
 {
 #ifdef ALTAIR_CLOUD
-    cpu_operating_mode = CPU_STOPPED;
+	cpu_operating_mode = CPU_STOPPED;
 
-    // Sleep this thread so the Altair CPU thread can complete current instruction
-    nanosleep(&(struct timespec){0, 250 * ONE_MS}, NULL);
+	// Sleep this thread so the Altair CPU thread can complete current instruction
+	nanosleep(&(struct timespec){0, 250 * ONE_MS}, NULL);
 
-    load_boot_disk();
+	load_boot_disk();
 
-    clear_difference_disk();
+	clear_difference_disk();
 #endif
 
-    cleanup_required = false;
+	cleanup_required = false;
 }
 
 void fd_ledger_init(void)
 {
-    for (int i = 0; i < NELEMS(fd_ledger); i++)
-    {
-        fd_ledger[i] = -1;
-    }
+	for (int i = 0; i < NELEMS(ws_ledger); i++)
+	{
+		ws_ledger[i] = NULL;
+	}
 }
 
 void fd_ledger_close_all(void)
 {
-    client_fd = -1;
+	current_ws = NULL;
 
-    for (int i = 0; i < NELEMS(fd_ledger); i++)
-    {
-        if (fd_ledger[i] != -1)
-        {
-            ws_close_client(fd_ledger[i]);
-            fd_ledger[i] = -1;
-        }
-    }
+	for (int i = 0; i < NELEMS(ws_ledger); i++)
+	{
+		if (ws_ledger[i] != NULL)
+		{
+			ws_close_client(ws_ledger[i]);
+			ws_ledger[i] = NULL;
+		}
+	}
 }
 
-void fd_ledger_add(int fd)
+void fd_ledger_add(ws_cli_conn_t *client)
 {
-    for (int i = 0; i < NELEMS(fd_ledger); i++)
-    {
-        if (fd_ledger[i] == -1)
-        {
-            fd_ledger[i] = fd;
-            client_fd    = fd;
-            break;
-        }
-    }
+	for (int i = 0; i < NELEMS(ws_ledger); i++)
+	{
+		if (ws_ledger[i] == NULL)
+		{
+			ws_ledger[i] = client;
+			current_ws   = client;
+			break;
+		}
+	}
 }
 
-void fd_ledger_delete(int fd)
+void fd_ledger_delete(ws_cli_conn_t *client)
 {
-    for (int i = 0; i < NELEMS(fd_ledger); i++)
-    {
-        if (fd == fd_ledger[i])
-        {
-            if (client_fd == fd_ledger[i])
-            {
-                active_session = false;
-            }
-            fd_ledger[i] = -1;
-            break;
-        }
-    }
+	for (int i = 0; i < NELEMS(ws_ledger); i++)
+	{
+		if (client == ws_ledger[i])
+		{
+			if (current_ws == ws_ledger[i])
+			{
+				active_session = false;
+			}
+			ws_ledger[i] = NULL;
+			break;
+		}
+	}
 }
 
 void publish_message(const void *message, size_t message_length)
 {
-    if (client_fd != -1)
-    {
-        if (ws_sendframe(client_fd, message, message_length, false, WS_FR_OP_TXT) == -1)
-        {
-            fd_ledger_close_all();
-        }
-    }
+	if (current_ws != NULL)
+	{
+		if (ws_sendframe(current_ws, message, message_length, WS_FR_OP_TXT) == -1)
+		{
+			fd_ledger_close_all();
+		}
+	}
 }
 
 void send_partial_message(void)
 {
-    publish_message(output_buffer, output_buffer_length);
-    output_buffer_length = 0;
+	publish_message(output_buffer, output_buffer_length);
+	output_buffer_length = 0;
 }
 
 inline void publish_character(char character)
 {
-    output_buffer[output_buffer_length++] = character;
+	output_buffer[output_buffer_length++] = character;
 
-    if (output_buffer_length < sizeof(output_buffer))
-    {
-        return;
-    }
+	if (output_buffer_length < sizeof(output_buffer))
+	{
+		return;
+	}
 
-    publish_message(output_buffer, output_buffer_length);
-    output_buffer_length = 0;
+	publish_message(output_buffer, output_buffer_length);
+	output_buffer_length = 0;
 }
 
-void onopen(int fd)
+void onopen(ws_cli_conn_t *client)
 {
-    pthread_mutex_lock(&session_mutex);
+	pthread_mutex_lock(&session_mutex);
 
-    if (!active_session)
-    {
-        if (cleanup_required)
-        {
-            cleanup_session();
-        }
+	if (!active_session)
+	{
+		if (cleanup_required)
+		{
+			cleanup_session();
+		}
 
-        fd_ledger_close_all();
-        fd_ledger_add(fd);
+		fd_ledger_close_all();
+		fd_ledger_add(client);
 
 #ifdef ALTAIR_CLOUD
-        active_session = true;
-        cleanup_required = true;
-        dx_timerOneShotSet(&tmr_expire_session, &(struct timespec){session_minutes, 0});
+		active_session   = true;
+		cleanup_required = true;
+		dx_timerOneShotSet(&tmr_expire_session, &(struct timespec){session_minutes, 0});
 #endif
-        (*(int *)dt_new_sessions.propertyValue)++;
-        _client_connected_cb();
-    }
-    else
-    {
-        ws_close_client(fd);
-    }
+		(*(int *)dt_new_sessions.propertyValue)++;
+		_client_connected_cb();
+	}
+	else
+	{
+		// ws_close_client(fd);
+	}
 
-    pthread_mutex_unlock(&session_mutex);
+	pthread_mutex_unlock(&session_mutex);
 }
 
 /**
@@ -159,42 +159,43 @@ void onopen(int fd)
  * is used in order to send messages and retrieve informations
  * about the client.
  */
-void onclose(int fd)
+void onclose(ws_cli_conn_t *client)
 {
-    // char *cli;
-    // cli = ws_getaddress(fd);
-    // printf("Connection closed, client: %d | addr: %s\n", fd, cli);
-    // free(cli);
+	// char *cli;
+	// cli = ws_getaddress(fd);
+	// printf("Connection closed, client: %d | addr: %s\n", fd, cli);
+	// free(cli);
 
-    fd_ledger_delete(fd);
+	fd_ledger_delete(client);
 }
 
-void onmessage(int fd, const unsigned char *msg, uint64_t size, int type)
+void onmessage(ws_cli_conn_t *client, const unsigned char *msg, uint64_t size, int type)
 {
-    // marshall the incoming message off the socket thread
-    if (!ws_input_block.active)
-    {
-        ws_input_block.active = true;
-        ws_input_block.length = size > sizeof(ws_input_block.buffer) ? sizeof(ws_input_block.buffer) : (size_t)size;
-        memcpy(ws_input_block.buffer, msg, ws_input_block.length);
+	// marshall the incoming message off the socket thread
+	if (!ws_input_block.active)
+	{
+		ws_input_block.active = true;
+		ws_input_block.length =
+			size > sizeof(ws_input_block.buffer) ? sizeof(ws_input_block.buffer) : (size_t)size;
+		memcpy(ws_input_block.buffer, msg, ws_input_block.length);
 
-        dx_timerOneShotSet(&tmr_deferred_input, &(struct timespec){0, 100 * ONE_MS});
-    }
+		dx_timerOneShotSet(&tmr_deferred_input, &(struct timespec){0, 100 * ONE_MS});
+	}
 }
 
 void init_web_socket_server(void (*client_connected_cb)(void))
 {
-    _client_connected_cb = client_connected_cb;
+	_client_connected_cb = client_connected_cb;
 
-    fd_ledger_init();
+	fd_ledger_init();
 
-    dx_timerStart(&tmr_expire_session);
+	dx_timerStart(&tmr_expire_session);
 
-    struct ws_events evs;
-    evs.onopen    = &onopen;
-    evs.onclose   = &onclose;
-    evs.onmessage = &onmessage;
-    ws_socket(&evs, 8082, 1);
+	struct ws_events evs;
+	evs.onopen    = &onopen;
+	evs.onclose   = &onclose;
+	evs.onmessage = &onmessage;
+	ws_socket(&evs, 8082, 1);
 }
 
 /// <summary>
@@ -203,10 +204,10 @@ void init_web_socket_server(void (*client_connected_cb)(void))
 /// <param name="eventLoopTimer"></param>
 DX_TIMER_HANDLER(partial_message_handler)
 {
-    if (output_buffer_length > 0)
-    {
-        send_partial_msg = true;
-    }
-    dx_timerOneShotSet(&tmr_partial_message, &(struct timespec){0, 250 * ONE_MS});
+	if (output_buffer_length > 0)
+	{
+		send_partial_msg = true;
+	}
+	dx_timerOneShotSet(&tmr_partial_message, &(struct timespec){0, 250 * ONE_MS});
 }
 DX_TIMER_HANDLER_END
