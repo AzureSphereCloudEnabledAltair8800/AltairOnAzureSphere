@@ -38,7 +38,7 @@
 #include "io_ports.h"
 #include "memory.h"
 
-#define ALTAIR_EMULATOR_VERSION "4.3.3"
+#define ALTAIR_EMULATOR_VERSION "4.3.5"
 #define Log_Debug(f_, ...) dx_Log_Debug((f_), ##__VA_ARGS__)
 #define DX_LOGGING_ENABLED FALSE
 #define BASIC_SAMPLES_DIRECTORY "BasicSamples"

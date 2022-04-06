@@ -14,7 +14,10 @@ static bool cleanup_required       = false;
 
 pthread_mutex_t session_mutex    = PTHREAD_MUTEX_INITIALIZER;
 static bool active_session       = false;
+
+#ifdef ALTAIR_CLOUD
 static const int session_minutes = 1 * 60 * 30; // 30 minutes
+#endif // ALTAIR_CLOUD
 
 static DX_TIMER_BINDING tmr_expire_session = {
 	.name = "tmr_expire_session", .handler = expire_session_handler};
@@ -85,6 +88,7 @@ void fd_ledger_delete(ws_cli_conn_t *client)
 			if (current_ws == ws_ledger[i])
 			{
 				active_session = false;
+				current_ws     = NULL;
 			}
 			ws_ledger[i] = NULL;
 			break;
