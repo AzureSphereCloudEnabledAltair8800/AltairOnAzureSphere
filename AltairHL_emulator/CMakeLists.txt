@@ -26,6 +26,7 @@ set(ALTAIR_FRONT_PANEL_NONE TRUE "Altair on Azure Sphere with no panel.")
 #
 # The MikroE microSD Click works with the Avnet Azure Sphere Starter Kit Rev 1 and Rev 2 when in Socket 1.
 # The MikroE microSD Click works with the Mikroe 8800 Retro Click in Socket 2
+# If the SD Card is not enabled, the AltairRT Difference Disk app must also be deployed.
 # Uncomment the "set(MICRO_SD_CLICK" line below to enable the MikroE microSD Click
 #
 # set(MICRO_SD_CLICK TRUE "MikroE microSD Click for CP/M read/write to SD Card")
@@ -33,18 +34,9 @@ set(ALTAIR_FRONT_PANEL_NONE TRUE "Altair on Azure Sphere with no panel.")
 ###################################################################################################################
 
 ###################################################################################################################
-#
-set(ALTAIR_CLOUD TRUE "Enable Altair as a cloud service real-time in-memory differencing disk")
-###################################################################################################################
-
-###################################################################################################################
 # IoT Hub Polling time overide
 add_compile_definitions(IOT_HUB_POLL_TIME_NANOSECONDS=500000000)
 ###################################################################################################################
-
-if (ALTAIR_CLOUD AND MICRO_SD_CLICK)
-  message(FATAL_ERROR, "YOU CANNOT HAVE ALTAIR AS A SERVICE AND SD CARD SELECTED AT THE SAME TIME")
-endif(ALTAIR_CLOUD AND MICRO_SD_CLICK)
 
 get_filename_component(PARENT_DIR ${PROJECT_SOURCE_DIR} DIRECTORY)
 
@@ -65,16 +57,14 @@ add_subdirectory("AzureSphereDevX" out)
 
 add_compile_definitions(AZURE_SPHERE)
 
-if (ALTAIR_CLOUD)
-    add_compile_definitions(ALTAIR_CLOUD)
-endif(ALTAIR_CLOUD)
-
 if(AVNET OR AVNET_REV_2)
     add_subdirectory("Drivers/AVNET/HL" drivers)
 endif(AVNET OR AVNET_REV_2)
 
 if (MICRO_SD_CLICK)
     add_compile_definitions(SD_CARD_ENABLED)
+else(MICRO_SD_CLICK)
+    add_compile_definitions(ALTAIR_CLOUD)
 endif (MICRO_SD_CLICK)
 
 if (ALTAIR_FRONT_PANEL_KIT)
