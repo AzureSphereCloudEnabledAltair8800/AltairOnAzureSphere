@@ -15,4 +15,6 @@
 
 ## Documentation
 
-Complete documentation is maintained on the [Altair emulator Wiki](https://github.com/gloveboxes/Altair8800.Emulator.UN-X/wiki)
+The project documentation is maintained on the repo [Wiki](https://github.com/AzureSphereCloudEnabledAltair8800/AzureSphereAltair8800_V2/wiki).
+
+
