@@ -14,4 +14,10 @@ Optionally, the project integrates free weather and pollution cloud services fro
 
 The project documentation is maintained on the repo [Wiki](https://github.com/AzureSphereCloudEnabledAltair8800/AzureSphereAltair8800_V2/wiki).
 
+## Supported devices
 
+The Altair emulator is supported on Azure Sphere devices from Avnet and Seeed Studio. If an Azure Sphere device is paired with the [Altair front panel kit](https://github.com/AzureSphereCloudEnabledAltair8800/AzureSphereAltair8800.Hardware) or the [Mikroe Altair Retro Click](https://www.mikroe.com/blog/8800-retro-click), the Altair address and data bus activity is displayed.
+
+| Azure Sphere with the Altair front panel kit | MikroE Retro Click |
+|--|--|
+| ![The gif shows the Altair on Azure Sphere with the Altair front panel](https://github.com/AzureSphereCloudEnabledAltair8800/AzureSphereAltair8800_V2/wiki/media/altair_on_sphere.gif) | ![The gif shows the address and data bus LEDs in action](https://github.com/AzureSphereCloudEnabledAltair8800/AzureSphereAltair8800_V2/wiki/media/avnet_retro_click.gif) |
