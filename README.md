@@ -8,7 +8,7 @@ Optionally, the project integrates free weather and pollution cloud services fro
 
 | IoT Central Sydney pollution report | Azure Anomaly Detection report|
 |------|-----|
-| ![The images shows pollution report for Sydney](/wiki/media/iot_central_pollution_report.png) | ![The following images shows temperature based anomalies](https://github.com/AzureSphereCloudEnabledAltair8800/AzureSphereAltair8800_V2/wiki/media/univariate-anomalies.png) |
+| ![The images shows pollution report for Sydney](https://github.com/AzureSphereCloudEnabledAltair8800/AzureSphereAltair8800_V2/wiki/media/iot_central_pollution_report.png) | ![The following images shows temperature based anomalies](https://github.com/AzureSphereCloudEnabledAltair8800/AzureSphereAltair8800_V2/wiki/media/univariate-anomalies.png) |
 
 ## Documentation
 
