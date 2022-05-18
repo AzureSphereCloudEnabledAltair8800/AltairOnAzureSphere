@@ -9,6 +9,8 @@ static const char *invalid_switches    = "\r\nError: Input switches must be eith
 static char panel_info[256]            = {0};
 static ALTAIR_COMMAND deferred_command = NOP;
 
+// static void process_control_panel_commands(void);
+
 static bool validate_input_data(const char *command)
 {
 	size_t len = strlen(command);
@@ -45,7 +47,7 @@ static void publish_virtual_input_data(void)
 	publish_message(panel_info, strlen(panel_info));
 }
 
-static void process_virtual_switches(const char *command, void (*process_control_panel_commands)(void))
+static void process_virtual_switches(const char *command)
 {
 	uint16_t temp_bus_switches = 0;
 	uint16_t mask              = 1;
@@ -69,7 +71,7 @@ static void process_virtual_switches(const char *command, void (*process_control
 	}
 }
 
-void process_virtual_input(const char *command, void (*process_control_panel_commands)(void))
+void process_virtual_input(const char *command)
 {
 	if (strlen(command) == 0)
 	{
@@ -124,7 +126,7 @@ void process_virtual_input(const char *command, void (*process_control_panel_com
 	}
 	else
 	{
-		process_virtual_switches(command, process_control_panel_commands);
+		process_virtual_switches(command);
 		publish_message("\r\nCPU MONITOR> ", 15);
 	}
 }
@@ -180,6 +182,7 @@ void trace(intel8080_t *cpu)
 	char address_bus_low_byte[9];
 	char data_bus_binary[9];
 	uint8_t instruction_length = 0;
+	// uint16_t old_address_bus;
 
 	setvbuf(stdout, NULL, _IONBF, 0); // disable stdout buffering to ensure message written
 	i8080_cycle(cpu);
@@ -198,6 +201,8 @@ void trace(intel8080_t *cpu)
 			instruction_length);
 
 		publish_message(panel_info, msg_length);
+
+		// old_address_bus = cpu->address_bus;
 
 		for (size_t i = 1; i < instruction_length; i++)
 		{
@@ -242,6 +247,7 @@ void publish_cpu_state(char *command, uint16_t address_bus, uint8_t data_bus)
 	publish_message((const char *)panel_info, msg_length);
 }
 
+#ifdef AZURE_SPHERE
 bool loadRomImage(char *romImageName, uint16_t loadAddress)
 {
 	int romFd = -1;
@@ -257,6 +263,23 @@ bool loadRomImage(char *romImageName, uint16_t loadAddress)
 
 	return bytes == length;
 }
+#else
+bool loadRomImage(char *romImageName, uint16_t loadAddress)
+{
+	int romFd = -1;
+	romFd     = open(romImageName, O_RDONLY);
+	if (romFd == -1)
+		return false;
+
+	off_t length = lseek(romFd, 0, SEEK_END);
+	lseek(romFd, 0, SEEK_SET);
+
+	ssize_t bytes = read(romFd, &memory[loadAddress], (size_t)length);
+	close(romFd);
+
+	return bytes == length;
+}
+#endif
 
 void load_boot_disk(void)
 {
@@ -266,15 +289,15 @@ void load_boot_disk(void)
 	{
 		Log_Debug("Failed to open %s disk load ROM image\n", DISK_LOADER);
 	}
-	//print_console_banner();
+	// print_console_banner();
 
 	i8080_examine(&cpu, 0xff00); // 0xff00 loads from disk boot loader
 }
 
 /// <summary>
-/// Commands are deferred so not running on web socket thread
+/// Process Altair front panel commands
 /// </summary>
-DX_TIMER_HANDLER(deferred_command_handler)
+void altair_panel_command_handler(void)
 {
 	switch (deferred_command)
 	{
@@ -330,7 +353,6 @@ DX_TIMER_HANDLER(deferred_command_handler)
 			break;
 	}
 }
-DX_TIMER_HANDLER_END
 
 void process_control_panel_commands(void)
 {
@@ -347,14 +369,14 @@ void process_control_panel_commands(void)
 				break;
 			default:
 				deferred_command = cmd_switches;
-				dx_timerOneShotSet(&tmr_deferred_command, &(struct timespec){0, 100 * ONE_MS});
+				altair_panel_command_handler();
 				break;
 		}
 	}
 
-	if (cmd_switches & STOP_CMD)
-	{
-		cpu_operating_mode = CPU_STOPPED;
-	}
+	// if (cmd_switches & STOP_CMD)
+	// {
+	// 	cpu_operating_mode = CPU_STOPPED;
+	// }
 	cmd_switches = 0x00;
 }

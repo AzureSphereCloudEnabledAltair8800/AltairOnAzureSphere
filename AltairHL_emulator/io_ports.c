@@ -15,7 +15,6 @@ typedef struct
 typedef struct
 {
 	char buffer[256];
-	bool publish_pending;
 	int index;
 } JSON_UNIT_T;
 
@@ -35,21 +34,28 @@ static COPY_X_T copy_x;
 
 static JSON_UNIT_T ju;
 static REQUEST_UNIT_T ru;
-static int jitter                   = 0;
-static bool delay_enabled           = false;
-static bool publish_weather_pending = false;
+static volatile bool delay_milliseconds_enabled = false;
+static volatile bool delay_seconds_enabled      = false;
+static volatile bool publish_json_pending       = false;
+static volatile bool publish_weather_pending    = false;
 
 // set tick_count to 1 as the tick count timer doesn't kick in until 1 second after startup
 static uint32_t tick_count = 1;
 
+#ifdef ALTAIR_FRONT_PANEL_PI_SENSE
+// Font buffers
+static uint8_t bitmap[8];
+uint16_t panel_8x8_buffer[64];
+#endif // ALTAIR_FRONT_PANEL_PI_SENSE
+
 // clang-format off
 DX_MESSAGE_PROPERTY *json_msg_properties[] = {
-	&(DX_MESSAGE_PROPERTY){.key = "appid", .value = "altair"},
-	&(DX_MESSAGE_PROPERTY){.key = "type", .value = "custom"},
-	&(DX_MESSAGE_PROPERTY){.key = "schema", .value = "1"}};
+    &(DX_MESSAGE_PROPERTY){.key = "appid", .value = "altair"},
+    &(DX_MESSAGE_PROPERTY){.key = "type", .value = "custom"},
+    &(DX_MESSAGE_PROPERTY){.key = "schema", .value = "1"}};
 
 DX_MESSAGE_CONTENT_PROPERTIES json_content_properties = {
-	.contentEncoding = "utf-8", .contentType = "application/json"};
+    .contentEncoding = "utf-8", .contentType = "application/json"};
 // clang-format on
 
 static void format_double4(const void *value);
@@ -109,9 +115,15 @@ static void format_string(const void *value)
 	ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%s", (char *)value);
 }
 
-DX_TIMER_HANDLER(port_timer_expired_handler)
+DX_TIMER_HANDLER(timer_seconds_expired_handler)
 {
-	delay_enabled = false;
+	delay_seconds_enabled = false;
+}
+DX_TIMER_HANDLER_END
+
+DX_TIMER_HANDLER(timer_millisecond_expired_handler)
+{
+	delay_milliseconds_enabled = false;
 }
 DX_TIMER_HANDLER_END
 
@@ -121,21 +133,40 @@ DX_TIMER_HANDLER(tick_count_handler)
 }
 DX_TIMER_HANDLER_END
 
-DX_TIMER_HANDLER(port_out_weather_handler)
+DX_ASYNC_HANDLER(async_copyx_request_handler, handle)
+{
+	copy_web(copy_x.url);
+	copy_x.end_of_file = false;
+}
+DX_ASYNC_HANDLER_END
+
+DX_ASYNC_HANDLER(async_set_timer_seconds_handler, handle)
+{
+	int data = *((int *)handle->data);
+	dx_timerOneShotSet(&tmr_timer_seconds_expired, &(struct timespec){data, 0});
+}
+DX_ASYNC_HANDLER_END
+
+DX_ASYNC_HANDLER(async_set_timer_millisecond_handler, handle)
+{
+	int data = *((int *)handle->data);
+	dx_timerOneShotSet(&tmr_timer_millisecond_expired, &(struct timespec){0, data * ONE_MS});
+}
+DX_ASYNC_HANDLER_END
+
+DX_ASYNC_HANDLER(async_publish_weather_handler, handle)
 {
 	if (environment.valid && azure_connected)
 	{
-		environment.latest.weather.temperature += jitter;
 #ifndef ALTAIR_CLOUD
 		publish_telemetry(&environment);
 #endif
-		environment.latest.weather.temperature -= jitter;
 	}
 	publish_weather_pending = false;
 }
-DX_TIMER_HANDLER_END
+DX_ASYNC_HANDLER_END
 
-DX_TIMER_HANDLER(port_out_json_handler)
+DX_ASYNC_HANDLER(async_publish_json_handler, handle)
 {
 	if (azure_connected)
 	{
@@ -144,16 +175,9 @@ DX_TIMER_HANDLER(port_out_json_handler)
 			&json_content_properties);
 #endif
 	}
-	ju.publish_pending = false;
+	publish_json_pending = false;
 }
-DX_TIMER_HANDLER_END
-
-DX_TIMER_HANDLER(copyx_request_handler)
-{
-	copy_web(copy_x.url);
-	copy_x.end_of_file = false;
-}
-DX_TIMER_HANDLER_END
+DX_ASYNC_HANDLER_END
 
 /// <summary>
 /// Intel 8080 OUT Port handler
@@ -163,18 +187,31 @@ DX_TIMER_HANDLER_END
 void io_port_out(uint8_t port, uint8_t data)
 {
 	memset(&ru, 0x00, sizeof(REQUEST_UNIT_T));
+	static int timer_delay;
+	static int timer_milliseconds_delay;
 
 	switch (port)
 	{
-		case 30:
+		case 29:
+			delay_milliseconds_enabled = false;
 			if (data > 0)
 			{
-				dx_timerOneShotSet(&tmr_port_timer_expired, &(struct timespec){data, 0});
-				delay_enabled = true;
+				delay_milliseconds_enabled = true;
+				timer_milliseconds_delay   = data;
+				dx_asyncSend(&async_set_millisecond_timer, (void *)&timer_milliseconds_delay);
+			}
+			break;
+		case 30:
+			delay_seconds_enabled = false;
+			if (data > 0)
+			{
+				delay_seconds_enabled = true;
+				timer_delay           = data;
+				dx_asyncSend(&async_set_seconds_timer, (void *)&timer_delay);
 			}
 			break;
 		case 31:
-			if (!ju.publish_pending)
+			if (!publish_json_pending)
 			{
 				if (ju.index == 0)
 				{
@@ -188,10 +225,9 @@ void io_port_out(uint8_t port, uint8_t data)
 
 				if (data == 0)
 				{
-					ju.publish_pending = true;
-					ju.index           = 0;
-					// Throttle IoT messages to 1 second as IoT dowork clocked at 500ms
-					dx_timerOneShotSet(&tmr_deferred_port_out_json, &(struct timespec){1, 0});
+					publish_json_pending = true;
+					ju.index             = 0;
+					dx_asyncSend(&async_publish_json, NULL);
 				}
 			}
 			break;
@@ -199,9 +235,7 @@ void io_port_out(uint8_t port, uint8_t data)
 			if (!publish_weather_pending)
 			{
 				publish_weather_pending = true;
-				jitter                  = (int)data;
-				// Throttle IoT messages to 1 second as IoT dowork clocked at 500ms
-				dx_timerOneShotSet(&tmr_deferred_port_out_weather, &(struct timespec){1, 0});
+				dx_asyncSend(&async_publish_weather, NULL);
 			}
 			break;
 		case 33: // copy file from web server to mutable storage
@@ -231,7 +265,7 @@ void io_port_out(uint8_t port, uint8_t data)
 				memset(copy_x.url, 0x00, sizeof(copy_x.url));
 				snprintf(copy_x.url, sizeof(copy_x.url), "%s/%s", altair_config.copy_x_url, copy_x.filename);
 
-				dx_timerOneShotSet(&tmr_copyx_request, &(struct timespec){0, 250 * ONE_MS});
+				dx_asyncSend(&async_copyx_request, NULL);
 			}
 			break;
 		case 34: // Weather key
@@ -278,7 +312,11 @@ void io_port_out(uint8_t port, uint8_t data)
 			ru.len = strnlen(ru.buffer, sizeof(ru.buffer));
 			break;
 		case 43: // get local date and time
+#ifdef AZURE_SPHERE
 			dx_getCurrentUtc(ru.buffer, sizeof(ru.buffer));
+#else
+			dx_getLocalTime(ru.buffer, sizeof(ru.buffer));
+#endif
 			ru.len = strnlen(ru.buffer, sizeof(ru.buffer));
 			break;
 		case 44: // Generate random number to seed mbasic randomize command
@@ -299,6 +337,32 @@ void io_port_out(uint8_t port, uint8_t data)
 				data ? onboard_telemetry.pressure : onboard_telemetry.temperature);
 			break;
 #endif // AZURE_SPHERE
+#ifdef ALTAIR_FRONT_PANEL_PI_SENSE
+		case 80: // panel_mode 0 = bus data, 1 = font, 2 = bitmap
+			if (data < 3)
+			{
+				panel_mode = data;
+			}
+			break;
+		case 81:
+			gfx_set_color(data);
+			break;
+		case 82: // set pixel red color
+			break;
+		case 83: // set pixel green color
+			break;
+		case 84: // set pixel blue color
+			break;
+		case 85: // display character
+			memset(panel_8x8_buffer, 0x00, sizeof(panel_8x8_buffer));
+			gfx_load_character(data, bitmap);
+			gfx_rotate_counterclockwise(bitmap, 1, 1, bitmap);
+			gfx_reverse_panel(bitmap);
+			gfx_rotate_counterclockwise(bitmap, 1, 1, bitmap);
+			gfx_bitmap_to_rgb(bitmap, panel_8x8_buffer, sizeof(panel_8x8_buffer));
+			pi_sense_8x8_panel_update(panel_8x8_buffer, sizeof(panel_8x8_buffer));
+			break;
+#endif // PI SENSE HAT
 		default:
 			break;
 	}
@@ -315,11 +379,14 @@ uint8_t io_port_in(uint8_t port)
 
 	switch (port)
 	{
+		case 29: // Has delay expired
+			retVal = (uint8_t)delay_milliseconds_enabled;
+			break;
 		case 30: // Has delay expired
-			retVal = (uint8_t)delay_enabled;
+			retVal = (uint8_t)delay_seconds_enabled;
 			break;
 		case 31:
-			retVal = (uint8_t)ju.publish_pending;
+			retVal = (uint8_t)publish_json_pending;
 			break;
 		case 32:
 			retVal = (uint8_t)publish_weather_pending;

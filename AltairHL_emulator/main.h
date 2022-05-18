@@ -39,10 +39,9 @@
 #include "memory.h"
 
 #define ALTAIR_EMULATOR_VERSION "4.3.5"
-#define Log_Debug(f_, ...) dx_Log_Debug((f_), ##__VA_ARGS__)
-#define DX_LOGGING_ENABLED FALSE
+#define Log_Debug(f_, ...)      dx_Log_Debug((f_), ##__VA_ARGS__)
+#define DX_LOGGING_ENABLED      FALSE
 #define BASIC_SAMPLES_DIRECTORY "BasicSamples"
-
 
 // https://docs.microsoft.com/en-us/azure/iot-pnp/overview-iot-plug-and-play
 #define IOT_PLUG_AND_PLAY_MODEL_ID "dtmi:com:example:climatemonitor;1"
@@ -84,21 +83,20 @@ timer_t watchdogTimer;
 ALTAIR_COMMAND cmd_switches;
 WS_INPUT_BLOCK_T ws_input_block;
 
-
-bool azure_connected                           = false;
-bool renderText                                = false;
-char msgBuffer[MSG_BUFFER_BYTES]               = {0};
-const struct itimerspec watchdogInterval       = {{60, 0}, {60, 0}};
-int altair_spi_fd                              = -1;
-static char Log_Debug_Time_buffer[64]          = {0};
-static const char *AltairMsg                   = "\x1b[2J\r\nAzure Sphere - Altair 8800 Emulator ";
-static int app_fd                              = -1;
-bool send_partial_msg                 = false;
-CPU_OPERATING_MODE cpu_operating_mode = CPU_STOPPED;
-uint16_t bus_switches                 = 0x00;
+bool azure_connected                     = false;
+bool renderText                          = false;
+char msgBuffer[MSG_BUFFER_BYTES]         = {0};
+const struct itimerspec watchdogInterval = {{60, 0}, {60, 0}};
+int altair_spi_fd                        = -1;
+static char Log_Debug_Time_buffer[64]    = {0};
+static const char *AltairMsg             = "\x1b[2J\r\nAzure Sphere - Altair 8800 Emulator ";
+static int app_fd                        = -1;
+bool send_partial_msg                    = false;
+CPU_OPERATING_MODE cpu_operating_mode    = CPU_STOPPED;
+uint16_t bus_switches                    = 0x00;
 
 // basic app load helpers.
-static bool haveAppLoad       = false;
+static bool haveAppLoad            = false;
 static char terminalInputCharacter = 0x00;
 
 static bool terminal_read_pending     = false;
@@ -149,12 +147,11 @@ DX_INTERCORE_BINDING intercore_sd_card_ctx = {.sockFd = -1,
 	.intercore_recv_block                             = &intercore_disk_block,
 	.intercore_recv_block_length                      = sizeof(intercore_disk_block)};
 
-
 #ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
 
-//CLICK_4X4_BUTTON_MODE click_4x4_key_mode = CONTROL_MODE;
+// CLICK_4X4_BUTTON_MODE click_4x4_key_mode = CONTROL_MODE;
 //
-//as1115_t retro_click = {.interfaceId = ISU2,
+// as1115_t retro_click = {.interfaceId = ISU2,
 //	.handle                          = -1,
 //	.bitmap64                        = 0,
 //	.keymap                          = 0,
@@ -200,21 +197,14 @@ static DX_GPIO_BINDING led_output_enable = {.pin = LED_OUTPUT_ENABLE,
 
 #endif // ALTAIR_FRONT_PANEL_KIT
 
-
-
 // clang-format off
 // Common Timers
 
-DX_TIMER_BINDING tmr_copyx_request = {.name = "tmr_copyx_request", .handler = copyx_request_handler};
-DX_TIMER_BINDING tmr_deferred_command = {.name = "tmr_deferred_command", .handler = deferred_command_handler};
-
-DX_TIMER_BINDING tmr_deferred_port_out_json = {.name = "tmr_deferred_port_out_json", .handler = port_out_json_handler};
-DX_TIMER_BINDING tmr_deferred_port_out_weather = {.name = "tmr_deferred_port_out_weather", .handler = port_out_weather_handler};
 DX_TIMER_BINDING tmr_partial_message = {.repeat = &(struct timespec){0, 250 * ONE_MS}, .name = "tmr_partial_message", .handler = partial_message_handler};
-DX_TIMER_BINDING tmr_port_timer_expired = {.name = "tmr_port_timer_expired", .handler = port_timer_expired_handler};
+DX_TIMER_BINDING tmr_timer_millisecond_expired = {.name = "tmr_timer_millisecond_expired", .handler = timer_millisecond_expired_handler};
+DX_TIMER_BINDING tmr_timer_seconds_expired = {.name = "tmr_timer_seconds_expired", .handler = timer_seconds_expired_handler};
 DX_TIMER_BINDING tmr_turn_off_notifications = {.name = "tmr_turn_off_notifications", .handler = turn_off_notifications_handler};
-
-DX_ASYNC_BINDING async_terminal = {.name = "async_terminal", .handler = async_terminal_handler};
+DX_TIMER_BINDING tmr_ws_ping_pong = {.repeat = &(struct timespec){10, 0}, .name = "tmr_partial_message", .handler = ws_ping_pong_handler};
 
 static DX_TIMER_BINDING tmr_connection_status_led_off = {.name = "tmr_connection_status_led_off", .handler = connection_status_led_off_handler};
 static DX_TIMER_BINDING tmr_connection_status_led_on = {.delay = &(struct timespec){1, 0}, .name = "tmr_connection_status_led_on", .handler = connection_status_led_on_handler};
@@ -224,6 +214,13 @@ static DX_TIMER_BINDING tmr_tick_count = {.repeat = &(struct timespec){1, 0}, .n
 static DX_TIMER_BINDING tmr_update_environment = {.delay = &(struct timespec){2, 0}, .name = "tmr_update_environment", .handler = update_environment_handler};
 static DX_TIMER_BINDING tmr_watchdog_monitor = {.repeat = &(struct timespec){15, 0}, .name = "tmr_watchdog_monitor", .handler = WatchdogMonitorTimerHandler};
 
+DX_ASYNC_BINDING async_copyx_request = {.name = "async_copyx_request", .handler = async_copyx_request_handler};
+DX_ASYNC_BINDING async_expire_session = { .name = "async_expire_session", .handler = async_expire_session_handler};
+DX_ASYNC_BINDING async_publish_json = {.name = "async_publish_json", .handler = async_publish_json_handler};
+DX_ASYNC_BINDING async_publish_weather = {.name = "async_publish_weather", .handler = async_publish_weather_handler};
+DX_ASYNC_BINDING async_set_millisecond_timer = {.name = "async_set_millisecond_timer", .handler = async_set_timer_millisecond_handler};
+DX_ASYNC_BINDING async_set_seconds_timer = {.name = "async_set_seconds_timer", .handler = async_set_timer_seconds_handler};
+DX_ASYNC_BINDING async_terminal = {.name = "async_terminal", .handler = async_terminal_handler};
 
 #if defined(ALTAIR_FRONT_PANEL_RETRO_CLICK) || defined(ALTAIR_FRONT_PANEL_KIT)
 static DX_TIMER_BINDING tmr_read_panel = {.delay = &(struct timespec){10, 0}, .name = "tmr_read_panel", .handler = read_panel_handler};
@@ -292,7 +289,6 @@ static DX_GPIO_BINDING azure_connected_led = {
 	.pin = AZURE_CONNECTED_LED, .direction = DX_OUTPUT, .initialState = GPIO_Value_Low,
 	.invertPin = true, .name = "azure_connected_led"};
 
-
 // clang-format on
 
 // Initialize Sets
@@ -300,7 +296,7 @@ static DX_GPIO_BINDING azure_connected_led = {
 #ifdef SEEED_STUDIO_MDB
 static DX_GPIO_BINDING *gpioSet[] = {&azure_connected_led, &gpioRed, &gpioGreen, &gpioBlue
 #else
-static DX_GPIO_BINDING *gpioSet[] = {&buttonB, &azure_connected_led, &gpioRed, &gpioGreen, &gpioBlue
+static DX_GPIO_BINDING *gpioSet[]  = {&buttonB, &azure_connected_led, &gpioRed, &gpioGreen, &gpioBlue
 #endif
 
 #ifdef ALTAIR_FRONT_PANEL_KIT
@@ -311,18 +307,18 @@ static DX_GPIO_BINDING *gpioSet[] = {&buttonB, &azure_connected_led, &gpioRed, &
 };
 
 #ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
-	CLICK_4X4_BUTTON_MODE click_4x4_key_mode = CONTROL_MODE;
+CLICK_4X4_BUTTON_MODE click_4x4_key_mode = CONTROL_MODE;
 
-	as1115_t retro_click = {
-		.interfaceId = ISU2, .handle = -1, .bitmap64 = 0, .keymap = 0, .debouncePeriodMilliseconds = 500};
+as1115_t retro_click = {
+	.interfaceId = ISU2, .handle = -1, .bitmap64 = 0, .keymap = 0, .debouncePeriodMilliseconds = 500};
 
-	DX_I2C_BINDING i2c_as1115_retro = {
-		.interfaceId = ISU2, .speedInHz = I2C_BUS_SPEED_FAST_PLUS, .name = "i2c_as1115_retro"};
+DX_I2C_BINDING i2c_as1115_retro = {
+	.interfaceId = ISU2, .speedInHz = I2C_BUS_SPEED_FAST_PLUS, .name = "i2c_as1115_retro"};
 
-	DX_I2C_BINDING i2c_onboard_sensors = {
-		.interfaceId = ISU2, .speedInHz = I2C_BUS_SPEED_FAST_PLUS, .name = "i2c_onboard_sensors"};
-	// Note, retroclick keypad shares i2c_as1115_retro fd
-	static DX_I2C_BINDING *i2c_bindings[] = {&i2c_as1115_retro, &i2c_onboard_sensors};
+DX_I2C_BINDING i2c_onboard_sensors = {
+	.interfaceId = ISU2, .speedInHz = I2C_BUS_SPEED_FAST_PLUS, .name = "i2c_onboard_sensors"};
+// Note, retroclick keypad shares i2c_as1115_retro fd
+static DX_I2C_BINDING *i2c_bindings[] = {&i2c_as1115_retro, &i2c_onboard_sensors};
 #else
 #ifdef OEM_AVNET
 DX_I2C_BINDING i2c_onboard_sensors = {
@@ -336,30 +332,32 @@ static DX_I2C_BINDING *i2c_bindings[] = {};
 #endif // ALTAIR_FRONT_PANEL_RETRO_CLICK
 
 static DX_ASYNC_BINDING *async_bindings[] = {
-
+	&async_copyx_request,
+	&async_expire_session,
+	&async_publish_json,
+	&async_publish_weather,
+	&async_set_millisecond_timer,
+	&async_set_seconds_timer,
 	&async_terminal,
-
 };
 
 static DX_TIMER_BINDING *timerSet[] = {
 	&tmr_connection_status_led_off,
 	&tmr_connection_status_led_on,
-	&tmr_copyx_request,
-	&tmr_deferred_command,
-	&tmr_deferred_port_out_json,
-	&tmr_deferred_port_out_weather,
 	&tmr_heart_beat,
 	&tmr_panel_refresh,
 	&tmr_partial_message,
-	&tmr_port_timer_expired,
 	&tmr_read_onboard_pressure,
 	&tmr_read_onboard_temperature,
 	&tmr_read_panel,
 	&tmr_report_memory_usage,
 	&tmr_tick_count,
+	&tmr_timer_millisecond_expired,
+	&tmr_timer_seconds_expired,
 	&tmr_turn_off_notifications,
 	&tmr_update_environment,
 	&tmr_watchdog_monitor,
+	&tmr_ws_ping_pong,
 };
 
 static DX_DEVICE_TWIN_BINDING *deviceTwinBindingSet[] = {
@@ -389,9 +387,9 @@ static DX_DEVICE_TWIN_BINDING *deviceTwinBindingSet[] = {
 	&dt_country,
 	&dt_city,
 
-	&dt_filesystem_reads, 
-	&dt_difference_disk_reads, 
-	&dt_difference_disk_writes, 
+	&dt_filesystem_reads,
+	&dt_difference_disk_reads,
+	&dt_difference_disk_writes,
 	&dt_new_sessions,
 };
 
