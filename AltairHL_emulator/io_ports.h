@@ -17,6 +17,12 @@
 #ifdef AZURE_SPHERE
 #include "onboard_sensors.h"
 extern ONBOARD_TELEMETRY onboard_telemetry;
+#else
+#include "graphics.h"
+#endif
+
+#ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
+#include "front_panel_retro_click.h"
 #endif
 
 DX_DECLARE_ASYNC_HANDLER(async_copyx_request_handler);

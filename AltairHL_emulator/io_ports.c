@@ -48,10 +48,6 @@ static uint8_t bitmap[8];
 uint16_t panel_8x8_buffer[64];
 #endif // ALTAIR_FRONT_PANEL_PI_SENSE
 
-#ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
-#include "front_panel_retro_click.h"
-#endif
-
 // clang-format off
 DX_MESSAGE_PROPERTY *json_msg_properties[] = {
     &(DX_MESSAGE_PROPERTY){.key = "appid", .value = "altair"},
