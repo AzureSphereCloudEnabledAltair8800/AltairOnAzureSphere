@@ -24,6 +24,8 @@
 #include <stdio.h>
 #include <time.h>
 
+#define DISK_NAME "Disks/azsphere_cpm63k.dsk"
+
 #define REAL_TIME_COMPONENT_ID_APP_ONE "005180bc-402f-4cb3-a662-72937dbcde47"
 
 // Forward signatures
@@ -165,7 +167,7 @@ static void button_a_handler(EventLoopTimer *eventLoopTimer)
     }
 
     if (dx_gpioStateGet(&gpio_button_a, &buttonAState)) {
-        write_drive("Disks/cpm63k.dsk", 0);
+        write_drive(DISK_NAME, 0);
     }
 }
 
