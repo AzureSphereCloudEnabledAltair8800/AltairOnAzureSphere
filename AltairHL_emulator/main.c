@@ -18,13 +18,12 @@ DX_TIMER_HANDLER_END
 /// </summary>
 static DX_TIMER_HANDLER(update_environment_handler)
 {
-	static bool location_set = false;
+	static bool location_set       = false;
 	static char *network_interface = NULL;
 
-	network_interface = dx_isStringNullOrEmpty(altair_config.network_interface)
-		? "wlan0"
-		: altair_config.network_interface;
-	
+	network_interface =
+		dx_isStringNullOrEmpty(altair_config.network_interface) ? "wlan0" : altair_config.network_interface;
+
 	if (!location_set && dx_isNetworkConnected(network_interface))
 	{
 		init_environment(&altair_config);
@@ -66,8 +65,8 @@ DX_TIMER_HANDLER_END
 /// </summary>
 static DX_TIMER_HANDLER(report_memory_usage)
 {
-	if (azure_connected && dx_jsonSerialize(msgBuffer, sizeof(msgBuffer), 1, DX_JSON_INT,
-							   "memoryUsage", Applications_GetPeakUserModeMemoryUsageInKB()))
+	if (azure_connected && dx_jsonSerialize(msgBuffer, sizeof(msgBuffer), 1, DX_JSON_INT, "memoryUsage",
+							   Applications_GetPeakUserModeMemoryUsageInKB()))
 	{
 		dx_azurePublish(msgBuffer, strlen(msgBuffer), diag_msg_properties, NELEMS(diag_msg_properties),
 			&diag_content_properties);
@@ -82,7 +81,8 @@ static DX_TIMER_HANDLER(heart_beat_handler)
 {
 	if (azure_connected)
 	{
-		dx_deviceTwinReportValue(&dt_heartbeatUtc, dx_getCurrentUtc(msgBuffer, sizeof(msgBuffer))); // DX_TYPE_STRING
+		dx_deviceTwinReportValue(
+			&dt_heartbeatUtc, dx_getCurrentUtc(msgBuffer, sizeof(msgBuffer))); // DX_TYPE_STRING
 		dx_deviceTwinReportValue(&dt_filesystem_reads, dt_filesystem_reads.propertyValue);
 		dx_deviceTwinReportValue(&dt_difference_disk_reads, dt_difference_disk_reads.propertyValue);
 		dx_deviceTwinReportValue(&dt_difference_disk_writes, dt_difference_disk_writes.propertyValue);
@@ -121,24 +121,38 @@ DX_TIMER_HANDLER_END
 /// <summary>
 /// Handler called to process inbound message
 /// </summary>
-DX_TIMER_HANDLER(deferred_input_handler)
+DX_ASYNC_HANDLER(async_terminal_handler, handle)
 {
 	char command[30];
-	bool send_cr = false;
-
-	size_t application_message_size = ws_input_block.length;
-	char *data                      = ws_input_block.buffer;
-
 	memset(command, 0x00, sizeof(command));
 
-	// is last char carriage return then strip off and set flag to add line feed at then end
-	if (application_message_size > 0 && data[application_message_size - 1] == '\r')
+	WS_INPUT_BLOCK_T *in_block = (WS_INPUT_BLOCK_T *)handle->data;
+
+	pthread_mutex_lock(&in_block->block_lock);
+
+	size_t application_message_size = in_block->length;
+	char *data                      = in_block->buffer;
+
+	// Was just enter pressed
+	if (data[0] == '\r')
 	{
-		send_cr = true;
-		application_message_size--;
+		switch (cpu_operating_mode)
+		{
+			case CPU_RUNNING:
+				send_terminal_character(0x0d, false);
+				break;
+			case CPU_STOPPED:
+				data[0] = 0x00;
+				process_virtual_input(data, process_control_panel_commands);
+				break;
+			default:
+				break;
+		}
+		goto cleanup;
 	}
 
-	if (application_message_size > 0)
+	// Is it a ctrl character
+	if (application_message_size == 1 && data[0] > 0 && data[0] < 29)
 	{
 		// ctrl-m is mapped to ascii 28 to get around ctrl-m being /r
 		if (data[0] == 28)
@@ -151,38 +165,50 @@ DX_TIMER_HANDLER(deferred_input_handler)
 			}
 			else
 			{
-				haveCtrlCharacter = 0x0d;
-				spin_wait(&haveCtrlPending);
-			}
-			goto cleanup;
-		}
-
-		// test for ctlr characters
-		if (data[0] > 0 && data[0] < 27)
-		{
-			haveCtrlCharacter = data[0];
-			spin_wait(&haveCtrlPending);
-
-			if (cpu_operating_mode == CPU_RUNNING)
-			{
-				goto cleanup;
+				send_terminal_character(0x0d, false);
 			}
 		}
-
-		// upper case the first 30 chars for command processing
-		for (int i = 0; i < sizeof(command) - 1 && i < application_message_size; i++)
-		{ // -1 to allow for trailing null
-			command[i] = (char)toupper(data[i]);
-		}
-
-		// if command is loadx then try looking for in baked in samples
-		if (strncmp(command, "LOADX ", 6) == 0 && application_message_size > 6 &&
-			(command[application_message_size - 1] == '"'))
+		else // pass through the ctrl character
 		{
-			command[application_message_size - 1] = 0x00; // replace the '"' with \0
-			load_application(&command[7]);
-			goto cleanup;
+			send_terminal_character(data[0], false);
 		}
+		goto cleanup;
+	}
+
+	// The web terminal must be in single char mode as char is not a ctrl or enter char
+	// so feed to Altair terminal read
+	if (application_message_size == 1)
+	{
+		if (cpu_operating_mode == CPU_RUNNING)
+		{
+			altairOutputBufReadIndex  = 0;
+			terminalOutputMessageLen  = 0;
+			haveTerminalOutputMessage = true;
+			send_terminal_character(data[0], false);
+		}
+		else
+		{
+			data[0] = (char)toupper(data[0]);
+			data[1] = 0x00;
+			process_virtual_input(data, process_control_panel_commands);
+		}
+		goto cleanup;
+	}
+
+	// Check for loadx command
+	// upper case the first 30 chars for command processing
+	for (int i = 0; i < sizeof(command) - 1 && i < application_message_size - 1; i++)
+	{ // -1 to allow for trailing null
+		command[i] = (char)toupper(data[i]);
+	}
+
+	// if command is loadx then try looking for in baked in samples
+	if (strncmp(command, "LOADX ", 6) == 0 && application_message_size > 6 &&
+		(command[application_message_size - 2] == '"'))
+	{
+		command[application_message_size - 2] = 0x00; // replace the '"' with \0
+		load_application(&command[7]);
+		goto cleanup;
 	}
 
 	switch (cpu_operating_mode)
@@ -190,22 +216,17 @@ DX_TIMER_HANDLER(deferred_input_handler)
 		case CPU_RUNNING:
 
 			if (application_message_size > 0)
-			{ // for example just cr was send so don't try send chars to CPU
+			{
 				input_data = data;
 
 				altairInputBufReadIndex  = 0;
 				altairOutputBufReadIndex = 0;
 				terminalInputMessageLen  = (int)application_message_size;
-				terminalOutputMessageLen = (int)application_message_size;
+				terminalOutputMessageLen = (int)application_message_size - 1;
 
-				haveTerminalOutputMessage = true;
+				haveTerminalInputMessage = haveTerminalOutputMessage = true;
+
 				spin_wait(&haveTerminalInputMessage);
-			}
-
-			if (send_cr)
-			{
-				haveCtrlCharacter = 0x0d;
-				spin_wait(&haveCtrlPending);
 			}
 			break;
 		case CPU_STOPPED:
@@ -216,9 +237,10 @@ DX_TIMER_HANDLER(deferred_input_handler)
 	}
 
 cleanup:
-	ws_input_block.active = false;
+	in_block->length = 0;
+	pthread_mutex_unlock(&in_block->block_lock);
 }
-DX_TIMER_HANDLER_END
+DX_ASYNC_HANDLER_END
 
 /// <summary>
 /// Connection status led blink off oneshot timer callback
@@ -306,12 +328,28 @@ void SetupWatchdog(void)
 	}
 }
 
+static void send_terminal_character(char character, bool wait)
+{
+	int retry              = 0;
+	terminalInputCharacter = character;
+
+	if (!wait)
+	{
+		return;
+	}
+
+	while (terminalInputCharacter && retry++ < 10)
+	{
+		nanosleep(&(struct timespec){0, 1 * ONE_MS}, NULL);
+	}
+}
+
 /// <summary>
 /// Sets wait for terminal io cmd to be processed and flag reset
 /// </summary>
-static void spin_wait(volatile bool *flag)
+static void spin_wait(bool *flag)
 {
-	struct timespec delay = {0, 10 * ONE_MS};
+	struct timespec delay = {0, 1 * ONE_MS};
 	int retry             = 0;
 	*flag                 = true;
 
@@ -351,9 +389,9 @@ static bool load_application(const char *fileName)
 
 	if ((app_fd = Storage_OpenFileInImagePackage(filePathAndName)) != -1)
 	{
-		haveCtrlCharacter = 0x0d;
-		spin_wait(&haveCtrlPending);
+		send_terminal_character(0x0d, true);
 
+		terminal_read_pending    = true;
 		haveTerminalInputMessage = false;
 		haveAppLoad              = true;
 
@@ -363,11 +401,8 @@ static bool load_application(const char *fileName)
 			nanosleep(&(struct timespec){0, 10 * ONE_MS}, NULL);
 		}
 
-		haveCtrlCharacter = 0x0d;
-		spin_wait(&haveCtrlPending);
-
-		haveCtrlCharacter = 0x0d;
-		spin_wait(&haveCtrlPending);
+		send_terminal_character(0x0d, true);
+		send_terminal_character(0x0d, true);
 
 		return true;
 	}
@@ -381,10 +416,11 @@ static char terminal_read(void)
 	char retVal;
 	int ch;
 
-	if (haveCtrlPending)
+	if (terminalInputCharacter)
 	{
-		haveCtrlPending = false;
-		return haveCtrlCharacter;
+		retVal                 = terminalInputCharacter;
+		terminalInputCharacter = 0x00;
+		return retVal;
 	}
 
 	if (haveTerminalInputMessage)
@@ -397,14 +433,15 @@ static char terminal_read(void)
 		}
 		return retVal;
 	}
-	else if (haveAppLoad)
+
+	if (haveAppLoad)
 	{
 		if ((read(app_fd, &ch, 1)) == 0)
 		{
 			close(app_fd);
-			retVal      = 0x00;
-			app_fd      = -1;
-			haveAppLoad = false;
+			retVal                = 0x00;
+			app_fd                = -1;
+			terminal_read_pending = haveAppLoad = false;
 		}
 		else
 		{
@@ -428,10 +465,11 @@ static void terminal_write(char c)
 		altairOutputBufReadIndex++;
 
 		if (altairOutputBufReadIndex > terminalOutputMessageLen)
+		{
 			haveTerminalOutputMessage = false;
+		}
 	}
-
-	if (!haveTerminalOutputMessage && !haveAppLoad)
+	else
 	{
 		publish_character(c);
 	}
@@ -532,8 +570,8 @@ static void report_startup_stats(bool connected)
 		snprintf(msgBuffer, sizeof(msgBuffer), "Altair emulator version: %s, DevX version: %s",
 			ALTAIR_EMULATOR_VERSION, AZURE_SPHERE_DEVX_VERSION);
 		dx_deviceTwinReportValue(&dt_softwareVersion, msgBuffer);
-		dx_deviceTwinReportValue(&dt_deviceStartTimeUtc,
-			dx_getCurrentUtc(msgBuffer, sizeof(msgBuffer))); // DX_TYPE_STRING
+		dx_deviceTwinReportValue(
+			&dt_deviceStartTimeUtc, dx_getCurrentUtc(msgBuffer, sizeof(msgBuffer))); // DX_TYPE_STRING
 
 		dx_azureUnregisterConnectionChangedNotification(report_startup_stats);
 	}
@@ -565,6 +603,8 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
 	dx_i2cSetOpen(i2c_bindings, NELEMS(i2c_bindings));
 	init_altair_hardware();
 
+	dx_asyncSetInit(async_bindings, NELEMS(async_bindings));
+
 	// No Azure IoT connction info configured so skip setting up connection
 	if (altair_config.user_config.connectionType != DX_CONNECTION_TYPE_NOT_DEFINED)
 	{
@@ -581,8 +621,8 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
 	dx_directMethodSubscribe(directMethodBindingSet, NELEMS(directMethodBindingSet));
 
 	init_web_socket_server(client_connected_cb);
-	
-	dx_timerSetStart(timerSet, NELEMS(timerSet));	
+
+	dx_timerSetStart(timerSet, NELEMS(timerSet));
 
 	onboard_sensors_init(i2c_onboard_sensors.fd);
 	onboard_sensors_read(&onboard_telemetry);
@@ -604,7 +644,7 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
 
 	dx_startThreadDetached(altair_thread, NULL, "altair_thread");
 
-	//SetupWatchdog();
+	// SetupWatchdog();
 }
 
 /// <summary>
@@ -628,7 +668,20 @@ int main(int argc, char *argv[])
 	InitPeripheralAndHandlers(argc, argv);
 
 	// Blocking call to run main event loop until termination requested
-	dx_eventLoopRun();
+	while (!terminationRequired)
+	{
+		if (asyncEventReady)
+		{
+			dx_asyncRunEvents();
+		}
+
+		int result = EventLoop_Run(dx_timerGetEventLoop(), -1, true);
+		// Continue if interrupted by signal, e.g. due to breakpoint being set.
+		if (result == -1 && errno != EINTR)
+		{
+			dx_terminate(DX_ExitCode_Main_EventLoopFail);
+		}
+	}
 
 	ClosePeripheralAndHandlers();
 	Log_Debug("\n\nApplication exiting. Last known exit code: %d\n", dx_getTerminationExitCode());

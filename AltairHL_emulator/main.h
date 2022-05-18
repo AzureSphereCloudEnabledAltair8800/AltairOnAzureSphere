@@ -67,7 +67,6 @@
 #include "front_panel_none.h"
 #endif // ALTAIR_FRONT_PANEL_NONE
 
-
 static DX_MESSAGE_PROPERTY *diag_msg_properties[] = {
 	&(DX_MESSAGE_PROPERTY){.key = "appid", .value = "altair"},
 	&(DX_MESSAGE_PROPERTY){.key = "type", .value = "diagnostics"},
@@ -82,7 +81,7 @@ uint8_t memory[64 * 1024]; // Altair system memory.
 ENVIRONMENT_TELEMETRY environment;
 ALTAIR_CONFIG_T altair_config;
 timer_t watchdogTimer;
-volatile ALTAIR_COMMAND cmd_switches;
+ALTAIR_COMMAND cmd_switches;
 WS_INPUT_BLOCK_T ws_input_block;
 
 
@@ -94,26 +93,27 @@ int altair_spi_fd                              = -1;
 static char Log_Debug_Time_buffer[64]          = {0};
 static const char *AltairMsg                   = "\x1b[2J\r\nAzure Sphere - Altair 8800 Emulator ";
 static int app_fd                              = -1;
-volatile bool send_partial_msg                 = false;
-volatile CPU_OPERATING_MODE cpu_operating_mode = CPU_STOPPED;
-volatile uint16_t bus_switches                 = 0x00;
+bool send_partial_msg                 = false;
+CPU_OPERATING_MODE cpu_operating_mode = CPU_STOPPED;
+uint16_t bus_switches                 = 0x00;
 
 // basic app load helpers.
-static volatile bool haveAppLoad       = false;
-static volatile bool haveCtrlPending   = false;
-static volatile char haveCtrlCharacter = 0x00;
+static bool haveAppLoad       = false;
+static char terminalInputCharacter = 0x00;
 
-static volatile bool haveTerminalInputMessage  = false;
-static volatile bool haveTerminalOutputMessage = false;
-static volatile int altairInputBufReadIndex    = 0;
-static volatile int altairOutputBufReadIndex   = 0;
-static volatile int terminalInputMessageLen    = 0;
-static volatile int terminalOutputMessageLen   = 0;
+static bool terminal_read_pending     = false;
+static bool haveTerminalInputMessage  = false;
+static bool haveTerminalOutputMessage = false;
+static int altairInputBufReadIndex    = 0;
+static int altairOutputBufReadIndex   = 0;
+static int terminalInputMessageLen    = 0;
+static int terminalOutputMessageLen   = 0;
 
-static volatile char *input_data = NULL;
+static char *input_data = NULL;
 
-static void spin_wait(volatile bool *flag);
 static bool load_application(const char *fileName);
+static void send_terminal_character(char character, bool wait);
+static void spin_wait(bool *flag);
 
 static DX_DECLARE_DEVICE_TWIN_HANDLER(led_brightness_handler);
 static DX_DECLARE_TIMER_HANDLER(connection_status_led_off_handler);
@@ -207,12 +207,14 @@ static DX_GPIO_BINDING led_output_enable = {.pin = LED_OUTPUT_ENABLE,
 
 DX_TIMER_BINDING tmr_copyx_request = {.name = "tmr_copyx_request", .handler = copyx_request_handler};
 DX_TIMER_BINDING tmr_deferred_command = {.name = "tmr_deferred_command", .handler = deferred_command_handler};
-DX_TIMER_BINDING tmr_deferred_input = {.name = "tmr_deferred_input", .handler = deferred_input_handler};
+
 DX_TIMER_BINDING tmr_deferred_port_out_json = {.name = "tmr_deferred_port_out_json", .handler = port_out_json_handler};
 DX_TIMER_BINDING tmr_deferred_port_out_weather = {.name = "tmr_deferred_port_out_weather", .handler = port_out_weather_handler};
-DX_TIMER_BINDING tmr_partial_message = {.delay = &(struct timespec){1, 0}, .name = "tmr_partial_message", .handler = partial_message_handler};
+DX_TIMER_BINDING tmr_partial_message = {.repeat = &(struct timespec){0, 250 * ONE_MS}, .name = "tmr_partial_message", .handler = partial_message_handler};
 DX_TIMER_BINDING tmr_port_timer_expired = {.name = "tmr_port_timer_expired", .handler = port_timer_expired_handler};
 DX_TIMER_BINDING tmr_turn_off_notifications = {.name = "tmr_turn_off_notifications", .handler = turn_off_notifications_handler};
+
+DX_ASYNC_BINDING async_terminal = {.name = "async_terminal", .handler = async_terminal_handler};
 
 static DX_TIMER_BINDING tmr_connection_status_led_off = {.name = "tmr_connection_status_led_off", .handler = connection_status_led_off_handler};
 static DX_TIMER_BINDING tmr_connection_status_led_on = {.delay = &(struct timespec){1, 0}, .name = "tmr_connection_status_led_on", .handler = connection_status_led_on_handler};
@@ -333,12 +335,17 @@ static DX_I2C_BINDING *i2c_bindings[] = {};
 #endif // OEM_AVNET
 #endif // ALTAIR_FRONT_PANEL_RETRO_CLICK
 
+static DX_ASYNC_BINDING *async_bindings[] = {
+
+	&async_terminal,
+
+};
+
 static DX_TIMER_BINDING *timerSet[] = {
 	&tmr_connection_status_led_off,
 	&tmr_connection_status_led_on,
 	&tmr_copyx_request,
 	&tmr_deferred_command,
-	&tmr_deferred_input,
 	&tmr_deferred_port_out_json,
 	&tmr_deferred_port_out_weather,
 	&tmr_heart_beat,

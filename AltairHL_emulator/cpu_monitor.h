@@ -23,9 +23,9 @@
 extern DX_TIMER_BINDING tmr_deferred_command;
 extern intel8080_t cpu;
 extern uint8_t memory[64 * 1024];
-extern volatile ALTAIR_COMMAND cmd_switches;
-extern volatile CPU_OPERATING_MODE cpu_operating_mode;
-extern volatile uint16_t bus_switches;
+extern ALTAIR_COMMAND cmd_switches;
+extern CPU_OPERATING_MODE cpu_operating_mode;
+extern uint16_t bus_switches;
 
 DX_DECLARE_TIMER_HANDLER(deferred_command_handler);
 
