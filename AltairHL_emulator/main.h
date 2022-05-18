@@ -227,7 +227,6 @@ DX_ASYNC_BINDING async_terminal = {.name = "async_terminal", .handler = async_te
 static DX_TIMER_BINDING tmr_read_panel = {.delay = &(struct timespec){10, 0}, .name = "tmr_read_panel", .handler = read_panel_handler};
 #else
 static DX_TIMER_BINDING tmr_read_panel = {.name = "tmr_read_panel", .handler = read_panel_handler};
-static DX_TIMER_BINDING tmr_panel_refresh = {.name = "tmr_panel_refresh", .handler = panel_refresh_handler};
 #endif
 
 #ifdef OEM_AVNET
@@ -345,7 +344,6 @@ static DX_TIMER_BINDING *timerSet[] = {
 	&tmr_connection_status_led_off,
 	&tmr_connection_status_led_on,
 	&tmr_heart_beat,
-	//&tmr_panel_refresh,
 	&tmr_partial_message,
 	&tmr_read_onboard_pressure,
 	&tmr_read_onboard_temperature,
