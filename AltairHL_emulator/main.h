@@ -38,13 +38,15 @@
 #include "io_ports.h"
 #include "memory.h"
 
-#define ALTAIR_EMULATOR_VERSION "4.3.5"
+#define ALTAIR_EMULATOR_VERSION "4.5.5"
 #define Log_Debug(f_, ...)      dx_Log_Debug((f_), ##__VA_ARGS__)
 #define DX_LOGGING_ENABLED      FALSE
 #define BASIC_SAMPLES_DIRECTORY "BasicSamples"
 
 // https://docs.microsoft.com/en-us/azure/iot-pnp/overview-iot-plug-and-play
 #define IOT_PLUG_AND_PLAY_MODEL_ID "dtmi:com:example:climatemonitor;1"
+
+enum PANEL_MODE_T panel_mode = PANEL_BUS_MODE;
 
 #define CORE_ENVIRONMENT_COMPONENT_ID "2e319eae-7be5-4a0c-ba47-9353aa6ca96a"
 #define CORE_FILESYSTEM_COMPONENT_ID  "9b684af8-21b9-42aa-91e4-621d5428e497"
@@ -119,7 +121,6 @@ static DX_DECLARE_TIMER_HANDLER(connection_status_led_on_handler);
 static DX_DECLARE_TIMER_HANDLER(heart_beat_handler);
 static DX_DECLARE_TIMER_HANDLER(onboard_temperature_handler);
 static DX_DECLARE_TIMER_HANDLER(onboard_temperature_pressure);
-static DX_DECLARE_TIMER_HANDLER(panel_refresh_handler);
 static DX_DECLARE_TIMER_HANDLER(read_panel_handler);
 static DX_DECLARE_TIMER_HANDLER(report_memory_usage);
 static DX_DECLARE_TIMER_HANDLER(update_environment_handler);
@@ -224,7 +225,6 @@ DX_ASYNC_BINDING async_terminal = {.name = "async_terminal", .handler = async_te
 
 #if defined(ALTAIR_FRONT_PANEL_RETRO_CLICK) || defined(ALTAIR_FRONT_PANEL_KIT)
 static DX_TIMER_BINDING tmr_read_panel = {.delay = &(struct timespec){10, 0}, .name = "tmr_read_panel", .handler = read_panel_handler};
-static DX_TIMER_BINDING tmr_panel_refresh = {.delay = &(struct timespec){1, 0}, .name = "tmr_panel_refresh", .handler = panel_refresh_handler};
 #else
 static DX_TIMER_BINDING tmr_read_panel = {.name = "tmr_read_panel", .handler = read_panel_handler};
 static DX_TIMER_BINDING tmr_panel_refresh = {.name = "tmr_panel_refresh", .handler = panel_refresh_handler};
@@ -345,7 +345,7 @@ static DX_TIMER_BINDING *timerSet[] = {
 	&tmr_connection_status_led_off,
 	&tmr_connection_status_led_on,
 	&tmr_heart_beat,
-	&tmr_panel_refresh,
+	//&tmr_panel_refresh,
 	&tmr_partial_message,
 	&tmr_read_onboard_pressure,
 	&tmr_read_onboard_temperature,

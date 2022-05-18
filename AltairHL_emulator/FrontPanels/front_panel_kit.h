@@ -16,13 +16,13 @@
 #include <errno.h>
 #include <soc/mt3620_uarts.h>
 
-extern volatile ALTAIR_COMMAND cmd_switches;
+extern ALTAIR_COMMAND cmd_switches;
 extern int altair_spi_fd;
 extern int console_fd;
 extern DX_GPIO_BINDING led_store;
 extern DX_GPIO_BINDING switches_chip_select;
 extern DX_GPIO_BINDING switches_load;
-extern volatile uint16_t bus_switches;
+extern uint16_t bus_switches;
 extern const uint8_t reverse_lut[16];
 
 DX_DECLARE_TIMER_HANDLER(turn_off_notifications_handler);

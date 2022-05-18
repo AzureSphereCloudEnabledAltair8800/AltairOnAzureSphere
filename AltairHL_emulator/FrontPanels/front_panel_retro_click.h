@@ -19,15 +19,15 @@
 #include <stdio.h>
 
 
-extern volatile ALTAIR_COMMAND cmd_switches;
+extern ALTAIR_COMMAND cmd_switches;
 extern bool renderText;
 extern CLICK_4X4_BUTTON_MODE click_4x4_key_mode;
-extern volatile CPU_OPERATING_MODE cpu_operating_mode;
+extern CPU_OPERATING_MODE cpu_operating_mode;
 extern int console_fd;
 as1115_t retro_click;
 extern DX_GPIO_BINDING buttonB;
 extern DX_TIMER_BINDING tmr_turn_off_notifications;
-extern volatile uint16_t bus_switches;
+extern uint16_t bus_switches;
 extern DX_I2C_BINDING i2c_as1115_retro;
 
 

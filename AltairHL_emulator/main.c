@@ -99,26 +99,6 @@ static DX_TIMER_HANDLER(read_panel_handler)
 DX_TIMER_HANDLER_END
 
 /// <summary>
-/// Updates the PI Sense HAT with Altair address bus, databus, and CPU state
-/// </summary>
-DX_TIMER_HANDLER(panel_refresh_handler)
-{
-	uint8_t status = cpu.cpuStatus;
-	uint8_t data   = cpu.data_bus;
-	uint16_t bus   = cpu.address_bus;
-
-	status = (uint8_t)(reverse_lut[(status & 0xf0) >> 4] | reverse_lut[status & 0xf] << 4);
-	data   = (uint8_t)(reverse_lut[(data & 0xf0) >> 4] | reverse_lut[data & 0xf] << 4);
-	bus    = (uint16_t)(reverse_lut[(bus & 0xf000) >> 12] << 8 | reverse_lut[(bus & 0x0f00) >> 8] << 12 |
-                     reverse_lut[(bus & 0xf0) >> 4] | reverse_lut[bus & 0xf] << 4);
-
-	update_panel_status_leds(status, data, bus);
-
-	dx_timerOneShotSet(&tmr_panel_refresh, &(struct timespec){0, 50 * ONE_MS});
-}
-DX_TIMER_HANDLER_END
-
-/// <summary>
 /// Handler called to process inbound message
 /// </summary>
 DX_ASYNC_HANDLER(async_terminal_handler, handle)
@@ -498,6 +478,51 @@ void print_console_banner(void)
 	}
 }
 
+/// <summary>
+/// Updates the PI Sense HAT with Altair address bus, databus, and CPU state
+/// </summary>
+static void *panel_refresh_thread(void *arg)
+{
+	uint8_t last_status = 0;
+	uint8_t last_data   = 0;
+	uint16_t last_bus   = 0;
+
+	while (true)
+	{
+		if (panel_mode == PANEL_BUS_MODE)
+		{
+			uint8_t status = cpu.cpuStatus;
+			uint8_t data   = cpu.data_bus;
+			uint16_t bus   = cpu.address_bus;
+
+			if (status != last_status || data != last_data || bus != last_bus)
+			{
+				last_status = status;
+				last_data   = data;
+				last_bus    = bus;
+
+				status = (uint8_t)(reverse_lut[(status & 0xf0) >> 4] | reverse_lut[status & 0xf] << 4);
+				data   = (uint8_t)(reverse_lut[(data & 0xf0) >> 4] | reverse_lut[data & 0xf] << 4);
+				bus    = (uint16_t)(reverse_lut[(bus & 0xf000) >> 12] << 8 |
+                                 reverse_lut[(bus & 0x0f00) >> 8] << 12 | reverse_lut[(bus & 0xf0) >> 4] |
+                                 reverse_lut[bus & 0xf] << 4);
+
+				update_panel_status_leds(status, data, bus);
+				nanosleep(&(struct timespec){0, 50 * ONE_MS}, NULL);
+			}
+			else
+			{
+				nanosleep(&(struct timespec){0, 10 * ONE_MS}, NULL);
+			}
+		}
+		else
+		{
+			nanosleep(&(struct timespec){0, 500 * ONE_MS}, NULL);
+		}
+	}
+	return NULL;
+}
+
 static void *altair_thread(void *arg)
 {
 	Log_Debug("Altair Thread starting...\n");
@@ -627,6 +652,10 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
 	onboard_sensors_init(i2c_onboard_sensors.fd);
 	onboard_sensors_read(&onboard_telemetry);
 	onboard_telemetry.updated = true;
+
+#ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
+	dx_startThreadDetached(panel_refresh_thread, NULL, "panel_refresh_thread");
+#endif
 
 #ifdef SD_CARD_ENABLED
 
