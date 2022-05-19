@@ -42,6 +42,9 @@ set(ALTAIR_FRONT_PANEL_NONE TRUE "Altair on Azure Sphere with no panel.")
 add_compile_definitions(IOT_HUB_POLL_TIME_NANOSECONDS=500000000)
 ###################################################################################################################
 
+# overide wsServer MAX_CLIENTS
+add_compile_definitions(MAX_CLIENTS=1)
+
 if (ALTAIR_CLOUD AND MICRO_SD_CLICK)
   message(FATAL_ERROR, "YOU CANNOT HAVE ALTAIR AS A SERVICE AND SD CARD SELECTED AT THE SAME TIME")
 endif(ALTAIR_CLOUD AND MICRO_SD_CLICK)
