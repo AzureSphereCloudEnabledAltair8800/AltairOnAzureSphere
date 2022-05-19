@@ -86,7 +86,6 @@ ALTAIR_COMMAND cmd_switches;
 WS_INPUT_BLOCK_T ws_input_block;
 
 bool azure_connected                     = false;
-bool renderText                          = false;
 char msgBuffer[MSG_BUFFER_BYTES]         = {0};
 const struct itimerspec watchdogInterval = {{60, 0}, {60, 0}};
 int altair_spi_fd                        = -1;
@@ -204,7 +203,6 @@ static DX_GPIO_BINDING led_output_enable = {.pin = LED_OUTPUT_ENABLE,
 DX_TIMER_BINDING tmr_partial_message = {.repeat = &(struct timespec){0, 250 * ONE_MS}, .name = "tmr_partial_message", .handler = partial_message_handler};
 DX_TIMER_BINDING tmr_timer_millisecond_expired = {.name = "tmr_timer_millisecond_expired", .handler = timer_millisecond_expired_handler};
 DX_TIMER_BINDING tmr_timer_seconds_expired = {.name = "tmr_timer_seconds_expired", .handler = timer_seconds_expired_handler};
-DX_TIMER_BINDING tmr_turn_off_notifications = {.name = "tmr_turn_off_notifications", .handler = turn_off_notifications_handler};
 DX_TIMER_BINDING tmr_ws_ping_pong = {.repeat = &(struct timespec){10, 0}, .name = "tmr_partial_message", .handler = ws_ping_pong_handler};
 
 static DX_TIMER_BINDING tmr_connection_status_led_off = {.name = "tmr_connection_status_led_off", .handler = connection_status_led_off_handler};
@@ -306,7 +304,7 @@ static DX_GPIO_BINDING *gpioSet[]  = {&buttonB, &azure_connected_led, &gpioRed, 
 };
 
 #ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
-CLICK_4X4_BUTTON_MODE click_4x4_key_mode = CONTROL_MODE;
+CLICK_4X4_BUTTON_MODE click_4x4_key_mode = OPERATING_MODE;
 
 as1115_t retro_click = {
 	.interfaceId = ISU2, .handle = -1, .bitmap64 = 0, .keymap = 0, .debouncePeriodMilliseconds = 500};
@@ -352,7 +350,6 @@ static DX_TIMER_BINDING *timerSet[] = {
 	&tmr_tick_count,
 	&tmr_timer_millisecond_expired,
 	&tmr_timer_seconds_expired,
-	&tmr_turn_off_notifications,
 	&tmr_update_environment,
 	&tmr_watchdog_monitor,
 	&tmr_ws_ping_pong,

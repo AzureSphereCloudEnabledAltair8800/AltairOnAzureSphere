@@ -489,7 +489,7 @@ static void *panel_refresh_thread(void *arg)
 
 	while (true)
 	{
-		if (panel_mode == PANEL_BUS_MODE)
+		if (panel_mode == PANEL_BUS_MODE && cpu_operating_mode == CPU_RUNNING)
 		{
 			uint8_t status = cpu.cpuStatus;
 			uint8_t data   = cpu.data_bus;
@@ -508,12 +508,8 @@ static void *panel_refresh_thread(void *arg)
                                  reverse_lut[bus & 0xf] << 4);
 
 				update_panel_status_leds(status, data, bus);
-				nanosleep(&(struct timespec){0, 50 * ONE_MS}, NULL);
 			}
-			else
-			{
-				nanosleep(&(struct timespec){0, 10 * ONE_MS}, NULL);
-			}
+			nanosleep(&(struct timespec){0, 50 * ONE_MS}, NULL);
 		}
 		else
 		{

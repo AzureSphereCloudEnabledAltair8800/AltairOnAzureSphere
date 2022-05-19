@@ -22,30 +22,43 @@ void init_altair_hardware(void)
 /// </summary>
 void check_click_4x4key_mode_button(void)
 {
-    static GPIO_Value_Type buttonBState = GPIO_Value_High;
+	static GPIO_Value_Type buttonBState = GPIO_Value_High;
+	char mode                           = 0x00;
 
-    if (dx_gpioStateGet(&buttonB, &buttonBState)) {
-        click_4x4_key_mode = (click_4x4_key_mode == CONTROL_MODE && cpu_operating_mode == CPU_STOPPED) ? INPUT_MODE : CONTROL_MODE;
+	if (dx_gpioStateGet(&buttonB, &buttonBState) && panel_mode == PANEL_BUS_MODE)
+	{
+		//click_4x4_key_mode = (click_4x4_key_mode == CONTROL_MODE) ? INPUT_MODE : CONTROL_MODE;
 
-        renderText = true;
+        switch (click_4x4_key_mode)
+		{
+			case OPERATING_MODE:
+				click_4x4_key_mode = INPUT_MODE;
+				cpu_operating_mode = CPU_STOPPED;
+				mode               = 'I';
+				break;
+			case INPUT_MODE:
+				click_4x4_key_mode = CONTROL_MODE;
+				cpu_operating_mode = CPU_STOPPED;
+				mode               = 'C';
+				break;
+			case CONTROL_MODE:
+				click_4x4_key_mode = INPUT_MODE;
+				cpu_operating_mode = CPU_STOPPED;
+				mode               = 'I';
+				break;
+			default:
+				break;
+		}		
 
-        gfx_load_character(click_4x4_key_mode == CONTROL_MODE ? 'C' : 'I', retro_click.bitmap);
+		gfx_load_character(mode, retro_click.bitmap);
 
-        gfx_rotate_counterclockwise(retro_click.bitmap, 1, 1, retro_click.bitmap);
-        gfx_reverse_panel(retro_click.bitmap);
-        gfx_rotate_counterclockwise(retro_click.bitmap, 1, 1, retro_click.bitmap);
+		gfx_rotate_counterclockwise(retro_click.bitmap, 1, 1, retro_click.bitmap);
+		gfx_reverse_panel(retro_click.bitmap);
+		gfx_rotate_counterclockwise(retro_click.bitmap, 1, 1, retro_click.bitmap);
 
-        as1115_panel_write(&retro_click);
-
-        dx_timerOneShotSet(&tmr_turn_off_notifications, &(struct timespec){1, 0});
-    }
+		as1115_panel_write(&retro_click);
+	}
 }
-
-DX_TIMER_HANDLER(turn_off_notifications_handler)
-{
-    renderText = false;
-}
-DX_TIMER_HANDLER_END
 
 void read_altair_panel_switches(void (*process_control_panel_commands)(void))
 {
@@ -68,6 +81,15 @@ void read_altair_panel_switches(void (*process_control_panel_commands)(void))
         else
             bus_switches |= (uint16_t)(1UL << (16 - button_pressed));
 
+        retro_click.bitmap[6] = (unsigned char)(bus_switches >> 8);
+		retro_click.bitmap[7] = (unsigned char)bus_switches;
+		retro_click.bitmap[0] = retro_click.bitmap[1] = retro_click.bitmap[2] = retro_click.bitmap[3] =
+		retro_click.bitmap[4] = retro_click.bitmap[5] = 0;
+
+		// gfx_reverse_panel(retro_click.bitmap);
+
+		as1115_panel_write(&retro_click);
+
         // Log_Debug("Input data: 0x%04lx\n", bus_switches);
 
         uint8_t i8080_instruction_size = 0;
@@ -87,18 +109,22 @@ void read_altair_panel_switches(void (*process_control_panel_commands)(void))
     if (button_pressed != 0 && click_4x4_key_mode == CONTROL_MODE && button_pressed < 9) {
         if (cpu_operating_mode == CPU_STOPPED && button_pressed != 1) // if CPU stopped then ignore new attempt to stop
         {
+			if (button_pressed == 5)
+			{
+				click_4x4_key_mode = OPERATING_MODE;
+			}
             cmd_switches = commandMap[button_pressed - 1];
             controlChar = notifyMap[button_pressed - 1];
-        } else if (cpu_operating_mode == CPU_RUNNING && button_pressed == 1) {
-            cmd_switches = commandMap[button_pressed - 1];
-            controlChar = notifyMap[button_pressed - 1];
+		}
+		else if (cpu_operating_mode == CPU_RUNNING && button_pressed == 1)
+		{
+			cmd_switches = commandMap[button_pressed - 1];
+			controlChar  = notifyMap[button_pressed - 1];
         } else {
             cmd_switches = 0x00;
         }
 
         if (controlChar != ' ') {
-            renderText = true;
-
             gfx_load_character(controlChar, retro_click.bitmap);
 
             gfx_rotate_counterclockwise(retro_click.bitmap, 1, 1, retro_click.bitmap);
@@ -108,43 +134,41 @@ void read_altair_panel_switches(void (*process_control_panel_commands)(void))
             as1115_panel_write(&retro_click);
 
             process_control_panel_commands();
-
-            dx_timerOneShotSet(&tmr_turn_off_notifications, &(struct timespec){0, ONE_MS * 300});
         }
     }
 }
 
 void update_panel_status_leds(uint8_t status, uint8_t data, uint16_t bus)
 {
-    if (!renderText) {
-        switch (click_4x4_key_mode) {
-        case CONTROL_MODE:
-            retro_click.bitmap[0] = status;
-            retro_click.bitmap[1] = 0;
-            retro_click.bitmap[2] = 0;
-            retro_click.bitmap[3] = data;
-            retro_click.bitmap[4] = 0;
-            retro_click.bitmap[5] = 0;
-            retro_click.bitmap[6] = (uint8_t)(bus >> 8);
-            retro_click.bitmap[7] = (uint8_t)bus;
+	switch (click_4x4_key_mode)
+	{
+		case OPERATING_MODE:
+			retro_click.bitmap[0] = status;
+			retro_click.bitmap[1] = 0;
+			retro_click.bitmap[2] = 0;
+			retro_click.bitmap[3] = data;
+			retro_click.bitmap[4] = 0;
+			retro_click.bitmap[5] = 0;
+			retro_click.bitmap[6] = (uint8_t)(bus >> 8);
+			retro_click.bitmap[7] = (uint8_t)bus;
 
-            gfx_reverse_panel(retro_click.bitmap);
+			gfx_reverse_panel(retro_click.bitmap);
 
-            as1115_panel_write(&retro_click);
-            break;
-        case INPUT_MODE:
-            retro_click.bitmap[6] = (unsigned char)(bus_switches >> 8);
-            retro_click.bitmap[7] = (unsigned char)bus_switches;
-            retro_click.bitmap[0] = retro_click.bitmap[1] = retro_click.bitmap[2] = retro_click.bitmap[3] = retro_click.bitmap[4] = retro_click.bitmap[5] = 0;
+			as1115_panel_write(&retro_click);
+			break;
+		case INPUT_MODE:
+			retro_click.bitmap[6] = (unsigned char)(bus_switches >> 8);
+			retro_click.bitmap[7] = (unsigned char)bus_switches;
+			retro_click.bitmap[0] = retro_click.bitmap[1] = retro_click.bitmap[2] = retro_click.bitmap[3] =
+				retro_click.bitmap[4] = retro_click.bitmap[5] = 0;
 
-            //gfx_reverse_panel(retro_click.bitmap);
+			// gfx_reverse_panel(retro_click.bitmap);
 
-            as1115_panel_write(&retro_click);
-            break;
-        default:
-            break;
-        }
-    }
+			as1115_panel_write(&retro_click);
+			break;
+		default:
+			break;
+	}
 }
 
 #endif // ALTAIR_FRONT_PANEL_RETRO_CLICK

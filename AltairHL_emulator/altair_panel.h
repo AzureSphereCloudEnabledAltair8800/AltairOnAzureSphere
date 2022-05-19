@@ -27,6 +27,7 @@ typedef enum
 
 typedef enum
 {
+	OPERATING_MODE,
 	CONTROL_MODE,
 	INPUT_MODE
 } CLICK_4X4_BUTTON_MODE;
