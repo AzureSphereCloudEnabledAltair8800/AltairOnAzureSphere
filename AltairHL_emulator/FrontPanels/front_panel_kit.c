@@ -36,6 +36,10 @@ bool init_altair_hardware(void) {
 	SPIMaster_SetBitOrder(altair_spi_fd, SPI_BitOrder_MsbFirst);
 	SPIMaster_SetMode(altair_spi_fd, SPI_Mode_2);
 
+	update_panel_status_leds(0xff, 0xff, 0xffff);
+	nanosleep(&(struct timespec){0, 75 * ONE_MS}, NULL);
+	update_panel_status_leds(0xaa, 0xaa, 0xaaaa);
+
 	return true;
 }
 

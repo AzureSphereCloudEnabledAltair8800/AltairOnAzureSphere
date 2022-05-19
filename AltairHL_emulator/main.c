@@ -245,24 +245,24 @@ static DX_TIMER_HANDLER(connection_status_led_on_handler)
 		dx_timerOneShotSet(&tmr_connection_status_led_on, &(struct timespec){0, 200 * ONE_MS});
 		dx_timerOneShotSet(&tmr_connection_status_led_off, &(struct timespec){0, 100 * ONE_MS});
 	}
-	else if (dx_isAzureConnected())
+	else if (azure_connected)
 	{
 		dx_gpioOn(&azure_connected_led);
-		// on for 1400 off for 100ms = 1400 ms in total
-		dx_timerOneShotSet(&tmr_connection_status_led_on, &(struct timespec){1, 400 * ONE_MS});
-		dx_timerOneShotSet(&tmr_connection_status_led_off, &(struct timespec){1, 300 * ONE_MS});
+		// on for 100 off for 2700ms = 2800 ms in total
+		dx_timerOneShotSet(&tmr_connection_status_led_on, &(struct timespec){2, 800 * ONE_MS});
+		dx_timerOneShotSet(&tmr_connection_status_led_off, &(struct timespec){0, 100 * ONE_MS});
 	}
 	else if (dx_isNetworkReady())
 	{
 		dx_gpioOn(&azure_connected_led);
-		// on for 100ms off for 1300ms = 1400 ms in total
+		// on for 700ms off for 1400ms = 1400 ms in total
 		dx_timerOneShotSet(&tmr_connection_status_led_on, &(struct timespec){1, 400 * ONE_MS});
 		dx_timerOneShotSet(&tmr_connection_status_led_off, &(struct timespec){0, 700 * ONE_MS});
 	}
 	else
 	{
 		dx_gpioOn(&azure_connected_led);
-		// on for 700ms off for 700ms = 1400 ms in total
+		// on for 1300ms off for 100ms = 1400 ms in total
 		dx_timerOneShotSet(&tmr_connection_status_led_on, &(struct timespec){1, 400 * ONE_MS});
 		dx_timerOneShotSet(&tmr_connection_status_led_off, &(struct timespec){0, 100 * ONE_MS});
 	}
@@ -649,7 +649,7 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
 	onboard_sensors_read(&onboard_telemetry);
 	onboard_telemetry.updated = true;
 
-#ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
+#if defined(ALTAIR_FRONT_PANEL_RETRO_CLICK) || defined(ALTAIR_FRONT_PANEL_KIT)
 	dx_startThreadDetached(panel_refresh_thread, NULL, "panel_refresh_thread");
 #endif
 

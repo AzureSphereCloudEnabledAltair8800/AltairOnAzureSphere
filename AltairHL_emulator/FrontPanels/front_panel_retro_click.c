@@ -14,7 +14,9 @@ void init_altair_hardware(void)
         return;
     }
 
-    as1115_clear(&retro_click);
+	update_panel_status_leds(0xff, 0xff, 0xffff);
+	nanosleep(&(struct timespec){0, 75 * ONE_MS}, NULL);
+	update_panel_status_leds(0xaa, 0xaa, 0xaaaa);
 }
 
 /// <summary>
