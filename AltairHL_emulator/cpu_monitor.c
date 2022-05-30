@@ -356,7 +356,7 @@ void altair_panel_command_handler(void)
 
 void process_control_panel_commands(void)
 {
-	if (cpu_operating_mode == CPU_STOPPED)
+	if (cpu_operating_mode == CPU_STOPPED || cmd_switches == STOP_CMD)
 	{
 		switch (cmd_switches)
 		{
@@ -364,6 +364,7 @@ void process_control_panel_commands(void)
 				cpu_operating_mode = CPU_RUNNING;
 				break;
 			case STOP_CMD:
+				cpu_operating_mode = CPU_STOPPED;
 				i8080_examine(&cpu, cpu.registers.pc);
 				bus_switches = cpu.address_bus;
 				break;

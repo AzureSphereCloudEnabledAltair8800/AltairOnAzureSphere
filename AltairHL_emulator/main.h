@@ -121,6 +121,7 @@ static DX_DECLARE_TIMER_HANDLER(heart_beat_handler);
 static DX_DECLARE_TIMER_HANDLER(onboard_temperature_handler);
 static DX_DECLARE_TIMER_HANDLER(onboard_temperature_pressure);
 static DX_DECLARE_TIMER_HANDLER(read_panel_handler);
+static DX_DECLARE_TIMER_HANDLER(panel_refresh_handler);
 static DX_DECLARE_TIMER_HANDLER(report_memory_usage);
 static DX_DECLARE_TIMER_HANDLER(update_environment_handler);
 static DX_DECLARE_TIMER_HANDLER(WatchdogMonitorTimerHandler);
@@ -222,9 +223,11 @@ DX_ASYNC_BINDING async_set_seconds_timer = {.name = "async_set_seconds_timer", .
 DX_ASYNC_BINDING async_terminal = {.name = "async_terminal", .handler = async_terminal_handler};
 
 #if defined(ALTAIR_FRONT_PANEL_RETRO_CLICK) || defined(ALTAIR_FRONT_PANEL_KIT)
-static DX_TIMER_BINDING tmr_read_panel = {.delay = &(struct timespec){10, 0}, .name = "tmr_read_panel", .handler = read_panel_handler};
+static DX_TIMER_BINDING tmr_read_panel = {.delay = &(struct timespec){1, 0}, .name = "tmr_read_panel", .handler = read_panel_handler};
+static DX_TIMER_BINDING tmr_refresh_panel = {.delay = &(struct timespec){1, 0}, .name = "tmr_refresh_panel", .handler = panel_refresh_handler};
 #else
 static DX_TIMER_BINDING tmr_read_panel = {.name = "tmr_read_panel", .handler = read_panel_handler};
+static DX_TIMER_BINDING tmr_refresh_panel = {.name = "tmr_refresh_panel", .handler = panel_refresh_handler};
 #endif
 
 #ifdef OEM_AVNET
@@ -346,6 +349,7 @@ static DX_TIMER_BINDING *timerSet[] = {
 	&tmr_read_onboard_pressure,
 	&tmr_read_onboard_temperature,
 	&tmr_read_panel,
+	&tmr_refresh_panel,
 	&tmr_report_memory_usage,
 	&tmr_tick_count,
 	&tmr_timer_millisecond_expired,
