@@ -79,11 +79,12 @@ void read_switches(uint16_t* address, uint8_t* cmd) {
 }
 
 void read_altair_panel_switches(void (*process_control_panel_commands)(void)) {
-	static int64_t last_button_press_milliseconds = 0;
-	int64_t now_milliseconds = dx_getNowMilliseconds();
+	//static int64_t last_button_press_milliseconds = 0;
+	static ALTAIR_COMMAND last_command            = NOP;
+	//int64_t now_milliseconds = dx_getNowMilliseconds();
 
-	if ((now_milliseconds - last_button_press_milliseconds) > 250) {
-		last_button_press_milliseconds = now_milliseconds;
+	//if ((now_milliseconds - last_button_press_milliseconds) > 250) {
+	//	last_button_press_milliseconds = now_milliseconds;
 
 		uint16_t address = 0;
 		uint8_t cmd = 0;
@@ -93,10 +94,16 @@ void read_altair_panel_switches(void (*process_control_panel_commands)(void)) {
 		bus_switches = address;
 		cmd_switches = cmd;
 
+		if (cmd_switches != last_command)
+		{
+			last_command = cmd_switches;
+			process_control_panel_commands();
+		}
+
 		// Log_Debug("Switches 0x%04lx - Cmd 0x%02x\n", address, cmd);
 
-		process_control_panel_commands();
-	}
+		
+	//}
 }
 
 void update_panel_status_leds(uint8_t status, uint8_t data, uint16_t bus) {
