@@ -78,32 +78,30 @@ void read_switches(uint16_t* address, uint8_t* cmd) {
 	dx_gpioStateSet(&switches_chip_select, HIGH);
 }
 
-void read_altair_panel_switches(void (*process_control_panel_commands)(void)) {
-	//static int64_t last_button_press_milliseconds = 0;
-	static ALTAIR_COMMAND last_command            = NOP;
-	//int64_t now_milliseconds = dx_getNowMilliseconds();
+void read_altair_panel_switches(void (*process_control_panel_commands)(void))
+{
+	static ALTAIR_COMMAND last_command = NOP;
+	//static uint16_t last_address       = 0;
 
-	//if ((now_milliseconds - last_button_press_milliseconds) > 250) {
-	//	last_button_press_milliseconds = now_milliseconds;
+	uint16_t address = 0;
+	uint8_t cmd      = 0;
 
-		uint16_t address = 0;
-		uint8_t cmd = 0;
+	read_switches(&address, &cmd);
 
-		read_switches(&address, &cmd);
+	bus_switches = address;
 
-		bus_switches = address;
-		cmd_switches = cmd;
-
-		if (cmd_switches != last_command)
-		{
-			last_command = cmd_switches;
-			process_control_panel_commands();
-		}
-
-		// Log_Debug("Switches 0x%04lx - Cmd 0x%02x\n", address, cmd);
-
-		
+	//if (address != last_address)
+	//{
+	//	last_address = address;
+	//	bus_switches = address;
 	//}
+
+	if (cmd != last_command)
+	{
+		last_command = cmd;
+		cmd_switches = cmd;
+		process_control_panel_commands();
+	}
 }
 
 void update_panel_status_leds(uint8_t status, uint8_t data, uint16_t bus) {
