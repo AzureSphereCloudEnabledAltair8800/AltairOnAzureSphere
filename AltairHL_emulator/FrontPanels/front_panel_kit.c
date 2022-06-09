@@ -81,7 +81,6 @@ void read_switches(uint16_t* address, uint8_t* cmd) {
 void read_altair_panel_switches(void (*process_control_panel_commands)(void))
 {
 	static ALTAIR_COMMAND last_command = NOP;
-	//static uint16_t last_address       = 0;
 
 	uint16_t address = 0;
 	uint8_t cmd      = 0;
@@ -89,12 +88,6 @@ void read_altair_panel_switches(void (*process_control_panel_commands)(void))
 	read_switches(&address, &cmd);
 
 	bus_switches = address;
-
-	//if (address != last_address)
-	//{
-	//	last_address = address;
-	//	bus_switches = address;
-	//}
 
 	if (cmd != last_command)
 	{
