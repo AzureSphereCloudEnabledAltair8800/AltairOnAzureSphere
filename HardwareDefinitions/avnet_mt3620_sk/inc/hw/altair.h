@@ -51,3 +51,6 @@
 // AVNET Start Kit Definition
 #define ISU2 AVNET_MT3620_SK_ISU2_I2C
 
+// AVNET Start Kit Definition
+#define AVNET_LIGHT_SENSOR AVNET_MT3620_SK_ADC_CONTROLLER0
+

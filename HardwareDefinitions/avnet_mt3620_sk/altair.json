@@ -32,6 +32,7 @@
         {"Name": "LED_STORE", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO2", "Comment": "Altair panel - LED Store"},
         {"Name": "LED_OUTPUT_ENABLE", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO28", "Comment": "Altair panel - LED Output enbale"},
         {"Name": "SD_CARD_CHIP_SELECT", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO26", "Comment": "Altair panel - SD Card select"},
-        {"Name": "ISU2", "Type": "I2cMaster", "Mapping": "AVNET_MT3620_SK_ISU2_I2C", "Comment": "AVNET Start Kit Definition"}
+        {"Name": "ISU2", "Type": "I2cMaster", "Mapping": "AVNET_MT3620_SK_ISU2_I2C", "Comment": "AVNET Start Kit Definition"},
+        {"Name": "AVNET_LIGHT_SENSOR", "Type": "Adc", "Mapping": "AVNET_MT3620_SK_ADC_CONTROLLER0", "Comment": "AVNET Start Kit Definition"}
     ]
 }
