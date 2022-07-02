@@ -52,12 +52,9 @@ enum PANEL_MODE_T panel_mode = PANEL_BUS_MODE;
 #define CORE_FILESYSTEM_COMPONENT_ID  "9b684af8-21b9-42aa-91e4-621d5428e497"
 #define CORE_SD_CARD_COMPONENT_ID     "005180bc-402f-4cb3-a662-72937dbcde47"
 
-#ifdef ALTAIR_FRONT_PANEL_CLICK
-#include "front_panel_click.h"
-#endif
-
 #ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
 #include "front_panel_retro_click.h"
+#include "light_sensor.h"
 #endif
 
 #ifdef ALTAIR_FRONT_PANEL_KIT
@@ -66,6 +63,7 @@ enum PANEL_MODE_T panel_mode = PANEL_BUS_MODE;
 
 #ifdef ALTAIR_FRONT_PANEL_NONE
 #include "front_panel_none.h"
+#include "light_sensor.h"
 #endif // ALTAIR_FRONT_PANEL_NONE
 
 static DX_MESSAGE_PROPERTY *diag_msg_properties[] = {

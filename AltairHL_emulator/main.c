@@ -676,6 +676,11 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
 	dx_deviceTwinSubscribe(deviceTwinBindingSet, NELEMS(deviceTwinBindingSet));
 	dx_directMethodSubscribe(directMethodBindingSet, NELEMS(directMethodBindingSet));
 
+#ifdef ALTAIR_FRONT_PANEL_NONE
+	avnet_open_adc(0);
+#endif // ALTAIR_FRONT_PANEL_NONE
+
+
 	init_web_socket_server(client_connected_cb);
 
 	dx_timerSetStart(timerSet, NELEMS(timerSet));
