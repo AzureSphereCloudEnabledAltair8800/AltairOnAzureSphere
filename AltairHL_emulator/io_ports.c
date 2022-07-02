@@ -336,6 +336,13 @@ void io_port_out(uint8_t port, uint8_t data)
 			ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%d",
 				data ? onboard_telemetry.pressure : onboard_telemetry.temperature);
 			break;
+		case 64: // Avnet onboard light sensor
+#ifdef ONBOARD_LIGHT_SENSOR
+			ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%d", avnet_get_light_level() * 2 );
+#else
+			ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%d", 0);
+#endif
+			break;
 #endif // AZURE_SPHERE
 
 #ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK

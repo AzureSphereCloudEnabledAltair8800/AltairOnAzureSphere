@@ -54,7 +54,6 @@ enum PANEL_MODE_T panel_mode = PANEL_BUS_MODE;
 
 #ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
 #include "front_panel_retro_click.h"
-#include "light_sensor.h"
 #endif
 
 #ifdef ALTAIR_FRONT_PANEL_KIT
@@ -63,8 +62,11 @@ enum PANEL_MODE_T panel_mode = PANEL_BUS_MODE;
 
 #ifdef ALTAIR_FRONT_PANEL_NONE
 #include "front_panel_none.h"
-#include "light_sensor.h"
 #endif // ALTAIR_FRONT_PANEL_NONE
+
+#ifdef ONBOARD_LIGHT_SENSOR
+#include "light_sensor.h"
+#endif // ONBOARD_LIGHT_SENSOR
 
 static DX_MESSAGE_PROPERTY *diag_msg_properties[] = {
 	&(DX_MESSAGE_PROPERTY){.key = "appid", .value = "altair"},

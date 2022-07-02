@@ -676,9 +676,9 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
 	dx_deviceTwinSubscribe(deviceTwinBindingSet, NELEMS(deviceTwinBindingSet));
 	dx_directMethodSubscribe(directMethodBindingSet, NELEMS(directMethodBindingSet));
 
-#ifdef ALTAIR_FRONT_PANEL_NONE
+#ifdef ONBOARD_LIGHT_SENSOR
 	avnet_open_adc(0);
-#endif // ALTAIR_FRONT_PANEL_NONE
+#endif // ONBOARD_LIGHT_SENSOR
 
 
 	init_web_socket_server(client_connected_cb);
