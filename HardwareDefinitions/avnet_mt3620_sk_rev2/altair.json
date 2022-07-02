@@ -31,6 +31,7 @@
         {"Name": "LED_MASTER_RESET", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO0", "Comment": "Altair panel - LED reset"},
         {"Name": "LED_STORE", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO5", "Comment": "Altair panel - LED Store"},
         {"Name": "LED_OUTPUT_ENABLE", "Type": "Gpio", "Mapping": "AVNET_MT3620_SK_GPIO1", "Comment": "Altair panel - LED Output enbale"},
-        {"Name": "ISU2", "Type": "I2cMaster", "Mapping": "AVNET_MT3620_SK_ISU2_I2C", "Comment": "AVNET Start Kit Definition"}
+        {"Name": "ISU2", "Type": "I2cMaster", "Mapping": "AVNET_MT3620_SK_ISU2_I2C", "Comment": "AVNET Start Kit Definition"},
+        {"Name": "AVNET_LIGHT_SENSOR", "Type": "Adc", "Mapping": "AVNET_MT3620_SK_ADC_CONTROLLER0", "Comment": "AVNET Start Kit Definition"}
     ]
 }
