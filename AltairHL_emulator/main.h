@@ -95,6 +95,7 @@ static int app_fd                        = -1;
 bool send_partial_msg                    = false;
 CPU_OPERATING_MODE cpu_operating_mode    = CPU_STOPPED;
 uint16_t bus_switches                    = 0x00;
+static bool network_connected = false;
 
 // basic app load helpers.
 static bool haveAppLoad            = false;
@@ -118,10 +119,11 @@ static DX_DECLARE_DEVICE_TWIN_HANDLER(led_brightness_handler);
 static DX_DECLARE_TIMER_HANDLER(connection_status_led_off_handler);
 static DX_DECLARE_TIMER_HANDLER(connection_status_led_on_handler);
 static DX_DECLARE_TIMER_HANDLER(heart_beat_handler);
+static DX_DECLARE_TIMER_HANDLER(network_state_handler);
 static DX_DECLARE_TIMER_HANDLER(onboard_temperature_handler);
 static DX_DECLARE_TIMER_HANDLER(onboard_temperature_pressure);
-static DX_DECLARE_TIMER_HANDLER(read_panel_handler);
 static DX_DECLARE_TIMER_HANDLER(panel_refresh_handler);
+static DX_DECLARE_TIMER_HANDLER(read_panel_handler);
 static DX_DECLARE_TIMER_HANDLER(report_memory_usage);
 static DX_DECLARE_TIMER_HANDLER(update_environment_handler);
 static DX_DECLARE_TIMER_HANDLER(WatchdogMonitorTimerHandler);
@@ -208,6 +210,7 @@ DX_TIMER_BINDING tmr_ws_ping_pong = {.repeat = &(struct timespec){10, 0}, .name 
 
 static DX_TIMER_BINDING tmr_connection_status_led_off = {.name = "tmr_connection_status_led_off", .handler = connection_status_led_off_handler};
 static DX_TIMER_BINDING tmr_connection_status_led_on = {.delay = &(struct timespec){1, 0}, .name = "tmr_connection_status_led_on", .handler = connection_status_led_on_handler};
+static DX_TIMER_BINDING tmr_network_state = {.repeat = &(struct timespec){20, 0}, .name = "tmr_network_state", .handler = network_state_handler};
 static DX_TIMER_BINDING tmr_heart_beat = {.repeat = &(struct timespec){60, 0}, .name = "tmr_heart_beat", .handler = heart_beat_handler};
 static DX_TIMER_BINDING tmr_report_memory_usage = {.repeat = &(struct timespec){45, 0}, .name = "tmr_report_memory_usage", .handler = report_memory_usage};
 static DX_TIMER_BINDING tmr_tick_count = {.repeat = &(struct timespec){1, 0}, .name = "tmr_tick_count", .handler = tick_count_handler};
@@ -345,6 +348,7 @@ static DX_TIMER_BINDING *timerSet[] = {
 	&tmr_connection_status_led_off,
 	&tmr_connection_status_led_on,
 	&tmr_heart_beat,
+	&tmr_network_state,
 	&tmr_partial_message,
 	&tmr_read_onboard_pressure,
 	&tmr_read_onboard_temperature,

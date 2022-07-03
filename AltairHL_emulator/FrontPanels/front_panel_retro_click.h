@@ -11,7 +11,7 @@
 #include "dx_timer.h"
 #include "dx_i2c.h"
 #include "graphics.h"
-#include "hw/azure_sphere_learning_path.h"
+#include "hw/altair.h"
 #include "as1115.h"
 #include "altair_panel.h"
 #include "utils.h"

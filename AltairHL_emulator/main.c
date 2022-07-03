@@ -287,7 +287,7 @@ static DX_TIMER_HANDLER(connection_status_led_on_handler)
 		dx_timerOneShotSet(&tmr_connection_status_led_on, &(struct timespec){2, 800 * ONE_MS});
 		dx_timerOneShotSet(&tmr_connection_status_led_off, &(struct timespec){0, 100 * ONE_MS});
 	}
-	else if (dx_isNetworkReady())
+	else if (network_connected)
 	{
 		dx_gpioOn(&azure_connected_led);
 		// on for 700ms off for 1400ms = 1400 ms in total
@@ -301,6 +301,11 @@ static DX_TIMER_HANDLER(connection_status_led_on_handler)
 		dx_timerOneShotSet(&tmr_connection_status_led_on, &(struct timespec){1, 400 * ONE_MS});
 		dx_timerOneShotSet(&tmr_connection_status_led_off, &(struct timespec){0, 100 * ONE_MS});
 	}
+}
+DX_TIMER_HANDLER_END
+
+DX_TIMER_HANDLER(network_state_handler){
+	network_connected = dx_isNetworkReady();
 }
 DX_TIMER_HANDLER_END
 
@@ -661,7 +666,7 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
 
 	dx_asyncSetInit(async_bindings, NELEMS(async_bindings));
 
-	// No Azure IoT connction info configured so skip setting up connection
+	// No Azure IoT connection info configured so skip setting up connection
 	if (altair_config.user_config.connectionType != DX_CONNECTION_TYPE_NOT_DEFINED)
 	{
 		dx_azureConnect(&altair_config.user_config,
@@ -671,15 +676,14 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
 
 		dx_azureRegisterConnectionChangedNotification(report_startup_stats);
 		dx_azureRegisterConnectionChangedNotification(azure_connection_state);
-	}
 
-	dx_deviceTwinSubscribe(deviceTwinBindingSet, NELEMS(deviceTwinBindingSet));
-	dx_directMethodSubscribe(directMethodBindingSet, NELEMS(directMethodBindingSet));
+		dx_deviceTwinSubscribe(deviceTwinBindingSet, NELEMS(deviceTwinBindingSet));
+		dx_directMethodSubscribe(directMethodBindingSet, NELEMS(directMethodBindingSet));
+	}
 
 #ifdef AVNET_LIGHT_SENSOR
 	avnet_open_adc(0);
 #endif // AVNET_LIGHT_SENSOR
-
 
 	init_web_socket_server(client_connected_cb);
 
@@ -688,10 +692,6 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
 	onboard_sensors_init(i2c_onboard_sensors.fd);
 	onboard_sensors_read(&onboard_telemetry);
 	onboard_telemetry.updated = true;
-
-//#if defined(ALTAIR_FRONT_PANEL_RETRO_CLICK) || defined(ALTAIR_FRONT_PANEL_KIT)
-//	dx_startThreadDetached(panel_refresh_thread, NULL, "panel_refresh_thread");
-//#endif
 
 #ifdef SD_CARD_ENABLED
 
