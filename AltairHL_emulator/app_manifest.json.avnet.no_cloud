@@ -35,7 +35,6 @@
         "Adc": [ "$AVNET_LIGHT_SENSOR" ],
         "AllowedConnections": [
         ],
-        "DeviceAuthentication": "",
         "AllowedApplicationConnections": [
             "2e319eae-7be5-4a0c-ba47-9353aa6ca96a",
             "9b684af8-21b9-42aa-91e4-621d5428e497",
