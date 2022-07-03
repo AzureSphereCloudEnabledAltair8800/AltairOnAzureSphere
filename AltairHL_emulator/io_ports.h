@@ -21,9 +21,9 @@ extern ONBOARD_TELEMETRY onboard_telemetry;
 #include "graphics.h"
 #endif
 
-#ifdef ONBOARD_LIGHT_SENSOR
+#ifdef AVNET_LIGHT_SENSOR
 #include "light_sensor.h"
-#endif // ONBOARD_LIGHT_SENSOR
+#endif // AVNET_LIGHT_SENSOR
 
 #ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
 #include "front_panel_retro_click.h"
