@@ -1,0 +1,45 @@
+{
+  "SchemaVersion": 1,
+  "Name": "AltairHL_emulator",
+  "ComponentId": "ac8d863a-4424-11eb-b378-0242ac130002",
+  "EntryPoint": "/bin/app",
+    "CmdArgs": [
+        "--ScopeID",
+        "",
+        "-o",
+        "",
+        "-u",
+        ""
+    ],
+    "Capabilities": {
+        "MutableStorage": {
+            "SizeKB": 64
+        },
+        "Gpio": [
+            "$AZURE_CONNECTED_LED",
+            "$BUTTON_A",
+            "$BUTTON_B",
+            "$LED_RED",
+            "$LED_GREEN",
+            "$LED_BLUE"
+        ],
+        "PowerControls": [
+            "SetPowerProfile"
+        ],
+        "AllowedTcpServerPorts": [
+            8082
+        ],
+        "I2cMaster": [
+            "$ISU2"
+        ],
+        "AllowedConnections": [
+        ],
+        "AllowedApplicationConnections": [
+            "2e319eae-7be5-4a0c-ba47-9353aa6ca96a",
+            "9b684af8-21b9-42aa-91e4-621d5428e497",
+            "005180bc-402f-4cb3-a662-72937dbcde47",
+            "6583cf17-d321-4d72-8283-0b7c5b56442b"
+        ]
+    },
+  "ApplicationType": "Default"
+}
