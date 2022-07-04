@@ -49,8 +49,8 @@ static void publish_virtual_input_data(void)
 
 static void process_virtual_switches(const char *command)
 {
-	uint16_t temp_bus_switches = 0;
-	uint16_t mask              = 1;
+	unsigned int temp_bus_switches = 0;
+	unsigned int mask              = 1;
 
 	size_t len = strlen(command);
 
@@ -66,7 +66,7 @@ static void process_virtual_switches(const char *command)
 			temp_bus_switches |= (command[i - 1] == '1' ? mask * 1 : 0);
 			mask <<= 1;
 		}
-		bus_switches = temp_bus_switches;
+		bus_switches = (uint16_t)temp_bus_switches;
 		publish_virtual_input_data();
 	}
 }
