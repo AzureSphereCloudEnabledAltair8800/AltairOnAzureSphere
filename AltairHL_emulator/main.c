@@ -29,22 +29,15 @@ static DX_TIMER_HANDLER(update_environment_handler)
 		init_environment(&altair_config);
 		location_set = true;
 	}
-	else
-	{
-		dx_timerOneShotSet(&tmr_update_environment, &(struct timespec){10, 0});
-	}
 
 	update_weather();
 
 	if (azure_connected && environment.valid)
 	{
-		publish_properties(&environment);
-		dx_timerOneShotSet(&tmr_update_environment, &(struct timespec){60, 0});
+		publish_properties(&environment);		
 	}
-	else
-	{
-		dx_timerOneShotSet(&tmr_update_environment, &(struct timespec){10, 0});
-	}
+
+	dx_timerOneShotSet(&tmr_update_environment, &(struct timespec){5 * 60, 0});
 }
 DX_TIMER_HANDLER_END
 
