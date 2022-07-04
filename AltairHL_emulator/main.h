@@ -38,7 +38,7 @@
 #include "io_ports.h"
 #include "memory.h"
 
-#define ALTAIR_EMULATOR_VERSION "4.5.5"
+const char ALTAIR_EMULATOR_VERSION[] = "4.6.1";
 #define Log_Debug(f_, ...)      dx_Log_Debug((f_), ##__VA_ARGS__)
 #define DX_LOGGING_ENABLED      FALSE
 #define BASIC_SAMPLES_DIRECTORY "BasicSamples"
@@ -120,8 +120,6 @@ static DX_DECLARE_TIMER_HANDLER(connection_status_led_off_handler);
 static DX_DECLARE_TIMER_HANDLER(connection_status_led_on_handler);
 static DX_DECLARE_TIMER_HANDLER(heart_beat_handler);
 static DX_DECLARE_TIMER_HANDLER(network_state_handler);
-static DX_DECLARE_TIMER_HANDLER(onboard_temperature_handler);
-static DX_DECLARE_TIMER_HANDLER(onboard_temperature_pressure);
 static DX_DECLARE_TIMER_HANDLER(panel_refresh_handler);
 static DX_DECLARE_TIMER_HANDLER(read_panel_handler);
 static DX_DECLARE_TIMER_HANDLER(report_memory_usage);
@@ -131,8 +129,6 @@ static void *altair_thread(void *arg);
 
 const uint8_t reverse_lut[16] = {
 	0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe, 0x1, 0x9, 0x5, 0xd, 0x3, 0xb, 0x7, 0xf};
-
-ONBOARD_TELEMETRY onboard_telemetry;
 
 INTERCORE_DISK_DATA_BLOCK_T intercore_disk_block;
 
@@ -232,15 +228,6 @@ static DX_TIMER_BINDING tmr_refresh_panel = {.delay = &(struct timespec){1, 0}, 
 static DX_TIMER_BINDING tmr_read_panel = {.name = "tmr_read_panel", .handler = read_panel_handler};
 static DX_TIMER_BINDING tmr_refresh_panel = {.name = "tmr_refresh_panel", .handler = panel_refresh_handler};
 #endif
-
-#ifdef OEM_AVNET
-static DX_TIMER_BINDING tmr_read_onboard_temperature = {.repeat = &(struct timespec){75, 0}, .name = "tmr_read_onboard_temperature", .handler = onboard_temperature_handler};
-static DX_TIMER_BINDING tmr_read_onboard_pressure = {.repeat = &(struct timespec){90, 0}, .name = "tmr_read_onboard_pressure", .handler = onboard_temperature_pressure};
-#else
-static DX_TIMER_BINDING tmr_read_onboard_temperature = {.name = "tmr_read_onboard_temperature", .handler = onboard_temperature_handler };
-static DX_TIMER_BINDING tmr_read_onboard_pressure = {.name = "tmr_read_onboard_pressure", .handler = onboard_temperature_pressure};
-#endif
-
 
 // Azure IoT Central Properties (Device Twins)
 
@@ -350,8 +337,6 @@ static DX_TIMER_BINDING *timerSet[] = {
 	&tmr_heart_beat,
 	&tmr_network_state,
 	&tmr_partial_message,
-	&tmr_read_onboard_pressure,
-	&tmr_read_onboard_temperature,
 	&tmr_read_panel,
 	&tmr_refresh_panel,
 	&tmr_report_memory_usage,

@@ -41,18 +41,6 @@ static DX_TIMER_HANDLER(update_environment_handler)
 }
 DX_TIMER_HANDLER_END
 
-DX_TIMER_HANDLER(onboard_temperature_handler)
-{
-	onboard_telemetry.temperature = (int)onboard_get_temperature();
-}
-DX_TIMER_HANDLER_END
-
-DX_TIMER_HANDLER(onboard_temperature_pressure)
-{
-	onboard_telemetry.pressure = (int)onboard_get_pressure();
-}
-DX_TIMER_HANDLER_END
-
 /// <summary>
 /// Reports memory usage to IoT Central
 /// </summary>
@@ -644,8 +632,6 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
 	dx_timerSetStart(timerSet, NELEMS(timerSet));
 
 	onboard_sensors_init(i2c_onboard_sensors.fd);
-	onboard_sensors_read(&onboard_telemetry);
-	onboard_telemetry.updated = true;
 
 #ifdef SD_CARD_ENABLED
 

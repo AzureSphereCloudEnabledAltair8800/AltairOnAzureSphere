@@ -335,7 +335,7 @@ void io_port_out(uint8_t port, uint8_t data)
 		case 63: // Onboard temperature or pressure
 			// Temperature minus 9 is super rough calibration
 			ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%d",
-				data ? onboard_telemetry.pressure : onboard_telemetry.temperature - 9);
+				data ? (int)onboard_get_pressure() : (int)onboard_get_temperature() - 9);
 			break;
 		case 64: // Avnet onboard light sensor
 #ifdef AVNET_LIGHT_SENSOR
@@ -345,6 +345,10 @@ void io_port_out(uint8_t port, uint8_t data)
 #endif // AVNET_LIGHT_SENSOR
 			break;
 #endif // AZURE_SPHERE
+
+		case 70:
+			ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%s", ALTAIR_EMULATOR_VERSION);
+			break;
 
 #ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
 

@@ -14,9 +14,10 @@
 #include <stdio.h>
 #include <unistd.h>
 
+extern const char ALTAIR_EMULATOR_VERSION[];
+
 #ifdef AZURE_SPHERE
 #include "onboard_sensors.h"
-extern ONBOARD_TELEMETRY onboard_telemetry;
 #else
 #include "graphics.h"
 #endif
