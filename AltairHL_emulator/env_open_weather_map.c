@@ -34,6 +34,17 @@ static void generate_fake_telemetry(ENVIRONMENT_TELEMETRY *telemetry)
 	telemetry->latest.weather.wind_speed     = 0.0;
 	telemetry->latest.weather.wind_direction = 0;
 	telemetry->latest.weather.updated        = true;
+
+	telemetry->latest.pollution.air_quality_index = 2;
+	telemetry->latest.pollution.ammonia           = 0.9f;
+	telemetry->latest.pollution.carbon_monoxide   = 250.34f;
+	telemetry->latest.pollution.nitrogen_dioxide  = 7.45f;
+	telemetry->latest.pollution.nitrogen_monoxide = 0.72f;
+	telemetry->latest.pollution.ozone             = 133.04f;
+	telemetry->latest.pollution.pm10              = 23.07f;
+	telemetry->latest.pollution.pm2_5             = 15.94f;
+	telemetry->latest.pollution.sulphur_dioxide   = 12.52f;
+	telemetry->latest.pollution.updated           = true;
 }
 
 static DX_TIMER_HANDLER(weather_cache_expired)
