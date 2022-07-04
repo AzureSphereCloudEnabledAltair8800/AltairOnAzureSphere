@@ -332,9 +332,10 @@ void io_port_out(uint8_t port, uint8_t data)
 		case 62: // Blue LEB
 			dx_gpioStateSet(&gpioBlue, (bool)data);
 			break;
-		case 63: // Onboard temperature
+		case 63: // Onboard temperature or pressure
+			// Temperature minus 9 is super rough calibration
 			ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%d",
-				data ? onboard_telemetry.pressure : onboard_telemetry.temperature);
+				data ? onboard_telemetry.pressure : onboard_telemetry.temperature - 9);
 			break;
 		case 64: // Avnet onboard light sensor
 #ifdef AVNET_LIGHT_SENSOR
