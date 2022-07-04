@@ -23,7 +23,7 @@ static void generate_fake_location(LOCATION_T *locationInfo)
 	{
 		locationInfo->lat = 51.477928;
 		locationInfo->lng = -0.001545;
-		DX_SAFE_STRING_COPY(locationInfo->city, "Blackheath", sizeof(locationInfo->city));
+		DX_SAFE_STRING_COPY(locationInfo->city, "Greenwich", sizeof(locationInfo->city));
 		DX_SAFE_STRING_COPY(locationInfo->country, "England", sizeof(locationInfo->country));
 		locationInfo->updated = true;
 	}
