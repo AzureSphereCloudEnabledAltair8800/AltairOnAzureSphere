@@ -202,15 +202,20 @@ $StartTime = $(get-date)
 
 Set-Location "C:\GitHub\Altair8800Emulator"
 
-build_application 'AltairHL_emulator' 'app_manifest.json.avnet.geo_owm_games' 'AVNET' 'altair_avnet_r1_geo_owm_games'
-build_application 'AltairHL_emulator' 'app_manifest.json.avnet.geo_owm_games' 'AVNET_REV_2' 'altair_avnet_r2_geo_owm_games'
-build_application 'AltairHL_emulator' 'app_manifest.json.avnet.no_cloud' 'AVNET' 'altair_avnet_r1_no_cloud'
-build_application 'AltairHL_emulator' 'app_manifest.json.avnet.no_cloud' 'AVNET_REV_2' 'altair_avnet_r2_no_cloud'
+build_application 'AltairHL_emulator' 'app_manifest.json.avnet.geo_owm_games' 'AVNET' 'emulator_avnet_r1_geo_owm_games'
+build_application 'AltairHL_emulator' 'app_manifest.json.avnet.geo_owm_games' 'AVNET_REV_2' 'emulator_avnet_r2_geo_owm_games'
+build_application 'AltairHL_emulator' 'app_manifest.json.avnet.no_cloud' 'AVNET' 'emulator_avnet_r1_no_cloud'
+build_application 'AltairHL_emulator' 'app_manifest.json.avnet.no_cloud' 'AVNET_REV_2' 'emulator_avnet_r2_no_cloud'
 
-build_application 'AltairHL_emulator' 'app_manifest.json.avnet.geo_owm_games' 'AVNET' 'altair_avnet_r1_geo_owm_games_sd_retro' 'mikroe'
-build_application 'AltairHL_emulator' 'app_manifest.json.avnet.geo_owm_games' 'AVNET_REV_2' 'altair_avnet_r2_geo_owm_games_sd_retro' 'mikroe'
-build_application 'AltairHL_emulator' 'app_manifest.json.avnet.no_cloud' 'AVNET' 'altair_avnet_r1_no_cloud_sd_retro' 'mikroe'
-build_application 'AltairHL_emulator' 'app_manifest.json.avnet.no_cloud' 'AVNET_REV_2' 'altair_avnet_r2_no_cloud_sd_retro' 'mikroe'
+build_application 'AltairHL_emulator' 'app_manifest.json.avnet.geo_owm_games' 'AVNET' 'emulator_avnet_r1_geo_owm_games_sd_retro' 'mikroe'
+build_application 'AltairHL_emulator' 'app_manifest.json.avnet.geo_owm_games' 'AVNET_REV_2' 'emulator_avnet_r2_geo_owm_games_sd_retro' 'mikroe'
+build_application 'AltairHL_emulator' 'app_manifest.json.avnet.no_cloud' 'AVNET' 'emulator_avnet_r1_no_cloud_sd_retro' 'mikroe'
+build_application 'AltairHL_emulator' 'app_manifest.json.avnet.no_cloud' 'AVNET_REV_2' 'emulator_avnet_r2_no_cloud_sd_retro' 'mikroe'
+
+build_application 'AltairHL_emulator' 'app_manifest.json.seeed.geo_owm_games' 'SEEED_STUDIO_RDB' 'emulator_seeed_rdb_geo_owm_games'
+build_application 'AltairHL_emulator' 'app_manifest.json.seeed.no_cloud' 'SEEED_STUDIO_RDB' 'emulator_seeed_rdb_no_cloud'
+build_application 'AltairHL_emulator' 'app_manifest.json.seeed.geo_owm_games' 'SEEED_STUDIO_MDB' 'emulator_seeed_mdb_geo_owm_games'
+build_application 'AltairHL_emulator' 'app_manifest.json.seeed.no_cloud' 'SEEED_STUDIO_MDB' 'emulator_seeed_mdb_no_cloud'
 
 $elapsedTime = $(get-date) - $StartTime
 $totalTime = "{0:HH:mm:ss}" -f ([datetime]$elapsedTime.Ticks)
