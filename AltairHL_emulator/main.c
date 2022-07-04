@@ -75,14 +75,13 @@ static DX_TIMER_HANDLER(report_memory_usage)
 DX_TIMER_HANDLER_END
 
 /// <summary>
-/// Reports IoT Central Heatbeat UTC Date and Time
+/// Reports IoT Central Heartbeat UTC Date and Time
 /// </summary>
 static DX_TIMER_HANDLER(heart_beat_handler)
 {
 	if (azure_connected)
 	{
-		dx_deviceTwinReportValue(
-			&dt_heartbeatUtc, dx_getCurrentUtc(msgBuffer, sizeof(msgBuffer))); // DX_TYPE_STRING
+		dx_deviceTwinReportValue(&dt_heartbeatUtc, dx_getCurrentUtc(msgBuffer, sizeof(msgBuffer)));
 		dx_deviceTwinReportValue(&dt_filesystem_reads, dt_filesystem_reads.propertyValue);
 		dx_deviceTwinReportValue(&dt_difference_disk_reads, dt_difference_disk_reads.propertyValue);
 		dx_deviceTwinReportValue(&dt_difference_disk_writes, dt_difference_disk_writes.propertyValue);
@@ -97,7 +96,6 @@ static DX_TIMER_HANDLER(read_panel_handler)
 	dx_timerOneShotSet(&tmr_read_panel, &(struct timespec){0, 200 * ONE_MS});
 }
 DX_TIMER_HANDLER_END
-
 
 /// <summary>
 /// Updates the PI Sense HAT with Altair address bus, databus, and CPU state
@@ -258,7 +256,7 @@ cleanup:
 DX_ASYNC_HANDLER_END
 
 /// <summary>
-/// Connection status led blink off oneshot timer callback
+/// Network connection status LED blink off oneshot timer callback
 /// </summary>
 static DX_TIMER_HANDLER(connection_status_led_off_handler)
 {
@@ -267,7 +265,7 @@ static DX_TIMER_HANDLER(connection_status_led_off_handler)
 DX_TIMER_HANDLER_END
 
 /// <summary>
-/// Blink LEDs timer handler
+/// Show network connection state
 /// </summary>
 static DX_TIMER_HANDLER(connection_status_led_on_handler)
 {
@@ -304,7 +302,11 @@ static DX_TIMER_HANDLER(connection_status_led_on_handler)
 }
 DX_TIMER_HANDLER_END
 
-DX_TIMER_HANDLER(network_state_handler){
+/// <summary>
+/// Check network connection state every 20 seconds
+/// </summary>
+DX_TIMER_HANDLER(network_state_handler)
+{
 	network_connected = dx_isNetworkReady();
 }
 DX_TIMER_HANDLER_END
@@ -518,47 +520,6 @@ void print_console_banner(void)
 	}
 }
 
-///// <summary>
-///// Updates the PI Sense HAT with Altair address bus, databus, and CPU state
-///// </summary>
-//static void *panel_refresh_thread(void *arg)
-//{
-//	uint8_t last_status = 0;
-//	uint8_t last_data   = 0;
-//	uint16_t last_bus   = 0;
-//
-//	while (true)
-//	{
-//		if (panel_mode == PANEL_BUS_MODE && cpu_operating_mode == CPU_RUNNING)
-//		{
-//			uint8_t status = cpu.cpuStatus;
-//			uint8_t data   = cpu.data_bus;
-//			uint16_t bus   = cpu.address_bus;
-//
-//			if (status != last_status || data != last_data || bus != last_bus)
-//			{
-//				last_status = status;
-//				last_data   = data;
-//				last_bus    = bus;
-//
-//				status = (uint8_t)(reverse_lut[(status & 0xf0) >> 4] | reverse_lut[status & 0xf] << 4);
-//				data   = (uint8_t)(reverse_lut[(data & 0xf0) >> 4] | reverse_lut[data & 0xf] << 4);
-//				bus    = (uint16_t)(reverse_lut[(bus & 0xf000) >> 12] << 8 |
-//                                 reverse_lut[(bus & 0x0f00) >> 8] << 12 | reverse_lut[(bus & 0xf0) >> 4] |
-//                                 reverse_lut[bus & 0xf] << 4);
-//
-//				update_panel_status_leds(status, data, bus);
-//			}
-//			nanosleep(&(struct timespec){0, 50 * ONE_MS}, NULL);
-//		}
-//		else
-//		{
-//			nanosleep(&(struct timespec){0, 500 * ONE_MS}, NULL);
-//		}
-//	}
-//	return NULL;
-//}
-
 static void *altair_thread(void *arg)
 {
 	Log_Debug("Altair Thread starting...\n");
@@ -676,10 +637,10 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
 
 		dx_azureRegisterConnectionChangedNotification(report_startup_stats);
 		dx_azureRegisterConnectionChangedNotification(azure_connection_state);
-
-		dx_deviceTwinSubscribe(deviceTwinBindingSet, NELEMS(deviceTwinBindingSet));
-		dx_directMethodSubscribe(directMethodBindingSet, NELEMS(directMethodBindingSet));
 	}
+
+	dx_deviceTwinSubscribe(deviceTwinBindingSet, NELEMS(deviceTwinBindingSet));
+	dx_directMethodSubscribe(directMethodBindingSet, NELEMS(directMethodBindingSet));
 
 #ifdef AVNET_LIGHT_SENSOR
 	avnet_open_adc(0);
