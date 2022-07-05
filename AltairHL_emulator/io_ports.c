@@ -118,7 +118,10 @@ static void format_string(const void *value)
 
 DX_TIMER_HANDLER(read_accelerometer_handler)
 {
+#ifdef OEM_AVNET
 	avnet_get_acceleration(&x, &y, &z);
+#endif // OEM_AVNET
+
 	dx_timerOneShotSet(&tmr_read_accelerometer, &(struct timespec){0, 10 * ONE_MS});
 }
 DX_TIMER_HANDLER_END
