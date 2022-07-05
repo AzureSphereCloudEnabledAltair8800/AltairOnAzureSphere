@@ -123,9 +123,8 @@ DX_TIMER_HANDLER(read_accelerometer_handler)
 {
 #ifdef OEM_AVNET
 	avnet_get_acceleration(&x, &y, &z);
-#endif // OEM_AVNET
-
 	dx_timerOneShotSet(&tmr_read_accelerometer, &(struct timespec){0, 10 * ONE_MS});
+#endif // OEM_AVNET	
 }
 DX_TIMER_HANDLER_END
 
@@ -149,14 +148,18 @@ DX_TIMER_HANDLER_END
 
 DX_ASYNC_HANDLER(async_accelerometer_start_handler, handle)
 {
+#ifdef OEM_AVNET
 	dx_timerStart(&tmr_read_accelerometer);
 	dx_timerOneShotSet(&tmr_read_accelerometer, &(struct timespec){0, 10 * ONE_MS});
+#endif // OEM_AVNET
 }
 DX_ASYNC_HANDLER_END
 
 DX_ASYNC_HANDLER(async_accelerometer_stop_handler, handle)
 {
+#ifdef OEM_AVNET
 	dx_timerStop(&tmr_read_accelerometer);
+#endif // OEM_AVNET
 }
 DX_ASYNC_HANDLER_END
 
