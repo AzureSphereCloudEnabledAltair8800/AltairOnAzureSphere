@@ -623,9 +623,9 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
 	dx_deviceTwinSubscribe(deviceTwinBindingSet, NELEMS(deviceTwinBindingSet));
 	dx_directMethodSubscribe(directMethodBindingSet, NELEMS(directMethodBindingSet));
 
-#ifdef AVNET_LIGHT_SENSOR
+#ifdef OEM_AVNET
 	avnet_open_adc(0);
-#endif // AVNET_LIGHT_SENSOR
+#endif // OEM_AVNET
 
 	init_web_socket_server(client_connected_cb);
 
