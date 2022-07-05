@@ -231,8 +231,13 @@ void io_port_out(uint8_t port, uint8_t data)
 	memset(&ru, 0x00, sizeof(REQUEST_UNIT_T));
 	static int timer_delay;
 	static int timer_milliseconds_delay;
-	uint64_t pixel_mask;
-	uint64_t one = 1;
+
+#if defined(ALTAIR_FRONT_PANEL_RETRO_CLICK) || defined(ALTAIR_FRONT_PANEL_PI_SENSE)
+	union {
+		uint32_t mask[2];
+		uint64_t mask64;
+	} pixel_mask;
+#endif
 
 	switch (port)
 	{
@@ -478,6 +483,8 @@ void io_port_out(uint8_t port, uint8_t data)
 			break;
 #endif // PI SENSE HAT
 
+#if defined(ALTAIR_FRONT_PANEL_RETRO_CLICK) || defined(ALTAIR_FRONT_PANEL_PI_SENSE)
+
 		case 90: // Bitmap row 0
 			pixel_map.bitmap[0] = data;
 			break;
@@ -505,30 +512,60 @@ void io_port_out(uint8_t port, uint8_t data)
 		case 98: // Pixel on
 			if (data < 64)
 			{
-				one        = 1;
-				pixel_mask = one << data;				
-				pixel_map.bitmap64 = pixel_map.bitmap64 | pixel_mask;
+				pixel_mask.mask64  = 0;
+
+				if (data < 32)
+				{
+					pixel_mask.mask[0] = 1u << data;
+				}
+				else
+				{
+					pixel_mask.mask[1] = 1u << (data - 32);
+				}
+
+				pixel_map.bitmap64 = pixel_map.bitmap64 | pixel_mask.mask64;
 			}
 			break;
 		case 99: // Pixel off
 			if (data < 64)
 			{
-				one                = 1;
-				pixel_mask         = 1 << data ^ 0xFFFFFFFFFFFFFFFF;
-				pixel_map.bitmap64 = pixel_map.bitmap64 & pixel_mask;
+				pixel_mask.mask64 = 0;
+
+				if (data < 32)
+				{
+					pixel_mask.mask[0] = 1u << data;
+				}
+				else
+				{
+					pixel_mask.mask[1] = 1u << (data - 32);
+				}
+
+				pixel_mask.mask64 ^= 0xFFFFFFFFFFFFFFFF;
+				pixel_map.bitmap64 = pixel_map.bitmap64 & pixel_mask.mask64;
 			}
 			break;
 		case 100: // Pixel flip 
 			if (data < 64)
 			{
-				one                = 1;
-				pixel_mask         = one << data;
-				pixel_map.bitmap64 = pixel_map.bitmap64 ^ pixel_mask;
+				pixel_mask.mask64 = 0;
+
+				if (data < 32)
+				{
+					pixel_mask.mask[0] = 1u << data;
+				}
+				else
+				{
+					pixel_mask.mask[1] = 1u << (data - 32);
+				}
+
+				pixel_map.bitmap64 = pixel_map.bitmap64 ^ pixel_mask.mask64;
 			}
 			break;
 		case 101:
 			pixel_map.bitmap64 = 0;
 			break;
+
+#endif // defined(ALTAIR_FRONT_PANEL_RETRO_CLICK) || defined(ALTAIR_FRONT_PANEL_PI_SENSE)
 
 #ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
 		case 102: // Bitmap draw
