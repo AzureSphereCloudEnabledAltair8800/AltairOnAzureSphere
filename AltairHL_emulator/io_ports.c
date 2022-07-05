@@ -384,8 +384,8 @@ void io_port_out(uint8_t port, uint8_t data)
 			break;
 #endif // AZURE_SPHERE
 
-		case 64:
 #ifdef OEM_AVNET
+		case 64:
 			switch (data)
 			{
 				case 0:
