@@ -41,7 +41,10 @@ static volatile bool publish_weather_pending    = false;
 
 // set tick_count to 1 as the tick count timer doesn't kick in until 1 second after startup
 static uint32_t tick_count = 1;
+
+#ifdef OEM_AVNET
 static float x, y, z;
+#endif // OEM_AVNET
 
 #ifdef ALTAIR_FRONT_PANEL_PI_SENSE
 // Font buffers
