@@ -50,7 +50,19 @@ static float x, y, z;
 // Font buffers
 static uint8_t bitmap[8];
 uint16_t panel_8x8_buffer[64];
+
 #endif // ALTAIR_FRONT_PANEL_PI_SENSE
+
+#if defined(ALTAIR_FRONT_PANEL_RETRO_CLICK) || defined(ALTAIR_FRONT_PANEL_PI_SENSE)
+
+typedef union {
+	uint8_t bitmap[8];
+	uint64_t bitmap64;
+} PIXEL_MAP;
+
+PIXEL_MAP pixel_map;
+
+#endif // ALTAIR_FRONT_PANEL_RETRO_CLICK
 
 // clang-format off
 DX_MESSAGE_PROPERTY *json_msg_properties[] = {
@@ -124,7 +136,7 @@ DX_TIMER_HANDLER(read_accelerometer_handler)
 #ifdef OEM_AVNET
 	avnet_get_acceleration(&x, &y, &z);
 	dx_timerOneShotSet(&tmr_read_accelerometer, &(struct timespec){0, 10 * ONE_MS});
-#endif // OEM_AVNET	
+#endif // OEM_AVNET
 }
 DX_TIMER_HANDLER_END
 
@@ -219,6 +231,8 @@ void io_port_out(uint8_t port, uint8_t data)
 	memset(&ru, 0x00, sizeof(REQUEST_UNIT_T));
 	static int timer_delay;
 	static int timer_milliseconds_delay;
+	uint64_t pixel_mask;
+	uint64_t one = 1;
 
 	switch (port)
 	{
@@ -367,14 +381,17 @@ void io_port_out(uint8_t port, uint8_t data)
 			{
 				case 0:
 					// Temperature minus 9 is super rough calibration
-					ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%d", (int)onboard_get_temperature() - 9);
+					ru.len = (size_t)snprintf(
+						ru.buffer, sizeof(ru.buffer), "%d", (int)onboard_get_temperature() - 9);
 					break;
 				case 1:
-					ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%d", (int)onboard_get_pressure());
+					ru.len =
+						(size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%d", (int)onboard_get_pressure());
 					break;
 				case 2:
 #ifdef OEM_AVNET
-					ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%d", avnet_get_light_level() * 2);
+					ru.len =
+						(size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%d", avnet_get_light_level() * 2);
 #else
 					ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%d", 0);
 #endif // OEM_AVNET
@@ -454,6 +471,79 @@ void io_port_out(uint8_t port, uint8_t data)
 			memset(panel_8x8_buffer, 0x00, sizeof(panel_8x8_buffer));
 			gfx_load_character(data, bitmap);
 			gfx_rotate_counterclockwise(bitmap, 1, 1, bitmap);
+			gfx_reverse_panel(bitmap);
+			gfx_rotate_counterclockwise(bitmap, 1, 1, bitmap);
+			gfx_bitmap_to_rgb(bitmap, panel_8x8_buffer, sizeof(panel_8x8_buffer));
+			pi_sense_8x8_panel_update(panel_8x8_buffer, sizeof(panel_8x8_buffer));
+			break;
+#endif // PI SENSE HAT
+
+		case 90: // Bitmap row 0
+			pixel_map.bitmap[0] = data;
+			break;
+		case 91: // Bitmap row 1
+			pixel_map.bitmap[1] = data;
+			break;
+		case 92: // Bitmap row 2
+			pixel_map.bitmap[2] = data;
+			break;
+		case 93: // Bitmap row 3
+			pixel_map.bitmap[3] = data;
+			break;
+		case 94: // Bitmap row 4
+			pixel_map.bitmap[4] = data;
+			break;
+		case 95: // Bitmap row 5
+			pixel_map.bitmap[5] = data;
+			break;
+		case 96: // Bitmap row 6
+			pixel_map.bitmap[6] = data;
+			break;
+		case 97: // Bitmap row 7
+			pixel_map.bitmap[7] = data;
+			break;
+		case 98: // Pixel on
+			if (data < 64)
+			{
+				one        = 1;
+				pixel_mask = one << data;				
+				pixel_map.bitmap64 = pixel_map.bitmap64 | pixel_mask;
+			}
+			break;
+		case 99: // Pixel off
+			if (data < 64)
+			{
+				one                = 1;
+				pixel_mask         = 1 << data ^ 0xFFFFFFFFFFFFFFFF;
+				pixel_map.bitmap64 = pixel_map.bitmap64 & pixel_mask;
+			}
+			break;
+		case 100: // Pixel flip 
+			if (data < 64)
+			{
+				one                = 1;
+				pixel_mask         = one << data;
+				pixel_map.bitmap64 = pixel_map.bitmap64 ^ pixel_mask;
+			}
+			break;
+		case 101:
+			pixel_map.bitmap64 = 0;
+			break;
+
+#ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
+		case 102: // Bitmap draw
+			gfx_rotate_counterclockwise(pixel_map.bitmap, 1, 1, retro_click.bitmap);
+			gfx_reverse_panel(retro_click.bitmap);
+			gfx_rotate_counterclockwise(retro_click.bitmap, 1, 1, retro_click.bitmap);
+			// retro_click.bitmap64 = pixel_map.bitmap64;
+			as1115_panel_write(&retro_click);
+			break;
+
+#endif // ALTAIR_FRONT_PANEL_RETRO_CLICK
+
+#ifdef ALTAIR_FRONT_PANEL_PI_SENSE
+		case 102: // Bitmap draw
+			gfx_rotate_counterclockwise(pixel_map.bitmap, 1, 1, bitmap);
 			gfx_reverse_panel(bitmap);
 			gfx_rotate_counterclockwise(bitmap, 1, 1, bitmap);
 			gfx_bitmap_to_rgb(bitmap, panel_8x8_buffer, sizeof(panel_8x8_buffer));
