@@ -44,6 +44,7 @@ static uint32_t tick_count = 1;
 
 #ifdef OEM_AVNET
 static float x, y, z;
+static bool accelerometer_running = false;
 #endif // OEM_AVNET
 
 #ifdef ALTAIR_FRONT_PANEL_PI_SENSE
@@ -420,15 +421,36 @@ void io_port_out(uint8_t port, uint8_t data)
 					ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%f", z);
 					break;
 				case 3:
-					dx_asyncSend(&async_accelerometer_stop, NULL);
-					avnet_calibrate_angular_rate();
-					dx_asyncSend(&async_accelerometer_start, NULL);
+					if (!accelerometer_running)
+					{
+						dx_asyncSend(&async_accelerometer_start, NULL);
+						accelerometer_running = true;
+					}
 					break;
 				case 4:
-					dx_asyncSend(&async_accelerometer_stop, NULL);
+					if (accelerometer_running)
+					{
+						dx_asyncSend(&async_accelerometer_stop, NULL);
+						accelerometer_running = false;
+					}
 					break;
 				case 5:
-					avnet_get_acceleration(&x, &y, &z);
+					if (!accelerometer_running)
+					{
+						avnet_get_acceleration(&x, &y, &z);
+					}
+					break;
+				case 6:
+					if (!accelerometer_running)
+					{
+						avnet_calibrate_angular_rate();
+					}
+					break;
+				case 7:
+					if (!accelerometer_running)
+					{
+						avnet_get_angular_rate(&x, &y, &z);
+					}
 					break;
 			}
 			break;
@@ -512,53 +534,26 @@ void io_port_out(uint8_t port, uint8_t data)
 		case 98: // Pixel on
 			if (data < 64)
 			{
-				pixel_mask.mask64  = 0;
-
-				if (data < 32)
-				{
-					pixel_mask.mask[0] = 1u << data;
-				}
-				else
-				{
-					pixel_mask.mask[1] = 1u << (data - 32);
-				}
-
-				pixel_map.bitmap64 = pixel_map.bitmap64 | pixel_mask.mask64;
+				pixel_mask.mask64                 = 0;
+				pixel_mask.mask[(int)(data / 32)] = data < 32 ? 1u << data : 1u << (data - 32);
+				pixel_map.bitmap64                = pixel_map.bitmap64 | pixel_mask.mask64;
 			}
 			break;
 		case 99: // Pixel off
 			if (data < 64)
 			{
-				pixel_mask.mask64 = 0;
-
-				if (data < 32)
-				{
-					pixel_mask.mask[0] = 1u << data;
-				}
-				else
-				{
-					pixel_mask.mask[1] = 1u << (data - 32);
-				}
-
+				pixel_mask.mask64                 = 0;
+				pixel_mask.mask[(int)(data / 32)] = data < 32 ? 1u << data : 1u << (data - 32);
 				pixel_mask.mask64 ^= 0xFFFFFFFFFFFFFFFF;
 				pixel_map.bitmap64 = pixel_map.bitmap64 & pixel_mask.mask64;
 			}
 			break;
-		case 100: // Pixel flip 
+		case 100: // Pixel flip
 			if (data < 64)
 			{
-				pixel_mask.mask64 = 0;
-
-				if (data < 32)
-				{
-					pixel_mask.mask[0] = 1u << data;
-				}
-				else
-				{
-					pixel_mask.mask[1] = 1u << (data - 32);
-				}
-
-				pixel_map.bitmap64 = pixel_map.bitmap64 ^ pixel_mask.mask64;
+				pixel_mask.mask64                 = 0;
+				pixel_mask.mask[(int)(data / 32)] = data < 32 ? 1u << data : 1u << (data - 32);
+				pixel_map.bitmap64                = pixel_map.bitmap64 ^ pixel_mask.mask64;
 			}
 			break;
 		case 101:
