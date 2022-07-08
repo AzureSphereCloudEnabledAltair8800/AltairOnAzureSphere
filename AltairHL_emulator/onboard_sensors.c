@@ -14,7 +14,7 @@ bool onboard_sensors_init(int i2c_fd) {
 
 int onboard_get_temperature(void)
 {
-	return (int)avnet_get_temperature();
+	return (int)avnet_get_temperature_lps22h();
 }
 
 int onboard_get_pressure(void)
