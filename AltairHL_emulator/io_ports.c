@@ -45,6 +45,7 @@ static uint32_t tick_count = 1;
 #ifdef OEM_AVNET
 static float x, y, z;
 static bool accelerometer_running = false;
+static char PREDICTION[20]        = {'n', 'o', 'r', 'm', 'a', 'l'};
 #endif // OEM_AVNET
 
 #ifdef ALTAIR_FRONT_PANEL_PI_SENSE
@@ -132,10 +133,53 @@ static void format_string(const void *value)
 	ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%s", (char *)value);
 }
 
+/// <summary>
+/// Callback handler for Asynchronous Inter-Core Messaging Pattern
+/// </summary>
+void intercore_classify_response_handler(void *data_block, ssize_t message_length)
+{
+	INTERCORE_PREDICTION_BLOCK_T *ic_message_block = (INTERCORE_PREDICTION_BLOCK_T *)data_block;
+
+#ifdef OEM_AVNET
+
+	switch (ic_message_block->cmd)
+	{
+		case IC_PREDICTION:
+			//Log_Debug("Prediction %s\n", ic_message_block->PREDICTION);
+			memcpy(PREDICTION, ic_message_block->PREDICTION, sizeof(PREDICTION));
+			break;
+		default:
+			break;
+	}
+
+#endif // OEM_AVNET
+}
+
 DX_TIMER_HANDLER(read_accelerometer_handler)
 {
 #ifdef OEM_AVNET
-	avnet_get_acceleration(&x, &y, &z);
+	float xx, yy, zz;
+
+	avnet_get_acceleration(&xx, &yy, &zz);
+
+	//Log_Debug("now x %f, y %f, z %f\n", xx, yy, zz);
+
+	x += xx;
+	y += yy;
+	z += zz;
+	x /= 2;
+	y /= 2;
+	z /= 2;
+
+	intercore_ml_classify_block.x = x;
+	intercore_ml_classify_block.y = y;
+	intercore_ml_classify_block.z = z;
+
+	dx_intercorePublish(
+		&intercore_ml_classify_ctx, &intercore_ml_classify_block, sizeof(intercore_ml_classify_block));
+
+	//dx_Log_Debug("avg x %f, y %f, z %f\n", x, y, z);
+
 	dx_timerOneShotSet(&tmr_read_accelerometer, &(struct timespec){0, 10 * ONE_MS});
 #endif // OEM_AVNET
 }
@@ -162,6 +206,7 @@ DX_TIMER_HANDLER_END
 DX_ASYNC_HANDLER(async_accelerometer_start_handler, handle)
 {
 #ifdef OEM_AVNET
+	avnet_get_temperature_lps22h(); // This is a hack to initialize the accelerometer :)
 	dx_timerStart(&tmr_read_accelerometer);
 	dx_timerOneShotSet(&tmr_read_accelerometer, &(struct timespec){0, 10 * ONE_MS});
 #endif // OEM_AVNET
@@ -451,6 +496,9 @@ void io_port_out(uint8_t port, uint8_t data)
 					{
 						avnet_get_angular_rate(&x, &y, &z);
 					}
+					break;
+				case 8:
+					ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%s", PREDICTION);
 					break;
 			}
 			break;

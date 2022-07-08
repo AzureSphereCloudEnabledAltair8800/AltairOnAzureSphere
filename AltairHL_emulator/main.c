@@ -625,6 +625,7 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
 
 #ifdef OEM_AVNET
 	avnet_open_adc(0);
+	dx_intercoreConnect(&intercore_ml_classify_ctx);
 #endif // OEM_AVNET
 
 	init_web_socket_server(client_connected_cb);

@@ -51,6 +51,7 @@ enum PANEL_MODE_T panel_mode = PANEL_BUS_MODE;
 #define CORE_ENVIRONMENT_COMPONENT_ID "2e319eae-7be5-4a0c-ba47-9353aa6ca96a"
 #define CORE_FILESYSTEM_COMPONENT_ID  "9b684af8-21b9-42aa-91e4-621d5428e497"
 #define CORE_SD_CARD_COMPONENT_ID     "005180bc-402f-4cb3-a662-72937dbcde47"
+#define CORE_ML_CLASSIFY_COMPONENT_ID "AF8B26DB-355E-405C-BBDE-3B851668EE23"
 
 #ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
 #include "front_panel_retro_click.h"
@@ -131,6 +132,7 @@ const uint8_t reverse_lut[16] = {
 	0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe, 0x1, 0x9, 0x5, 0xd, 0x3, 0xb, 0x7, 0xf};
 
 INTERCORE_DISK_DATA_BLOCK_T intercore_disk_block;
+INTERCORE_ML_CLASSIFY_BLOCK_T intercore_ml_classify_block;
 
 DX_INTERCORE_BINDING intercore_filesystem_ctx = {.sockFd = -1,
 	.nonblocking_io                                      = true,
@@ -145,6 +147,13 @@ DX_INTERCORE_BINDING intercore_sd_card_ctx = {.sockFd = -1,
 	.interCoreCallback                                = NULL,
 	.intercore_recv_block                             = &intercore_disk_block,
 	.intercore_recv_block_length                      = sizeof(intercore_disk_block)};
+
+DX_INTERCORE_BINDING intercore_ml_classify_ctx = {.sockFd = -1,
+	.nonblocking_io                                       = true,
+	.rtAppComponentId                                     = CORE_ML_CLASSIFY_COMPONENT_ID,
+	.interCoreCallback                                    = intercore_classify_response_handler,
+	.intercore_recv_block                                 = &intercore_ml_classify_block,
+	.intercore_recv_block_length                          = sizeof(intercore_ml_classify_block)};
 
 #ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
 

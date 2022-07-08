@@ -15,6 +15,8 @@
 #include <unistd.h>
 
 extern const char ALTAIR_EMULATOR_VERSION[];
+extern INTERCORE_ML_CLASSIFY_BLOCK_T intercore_ml_classify_block;
+extern DX_INTERCORE_BINDING intercore_ml_classify_ctx;
 
 #ifdef AZURE_SPHERE
 #include "onboard_sensors.h"
@@ -72,3 +74,4 @@ extern enum PANEL_MODE_T panel_mode;
 
 uint8_t io_port_in(uint8_t port);
 void io_port_out(uint8_t port, uint8_t data);
+void intercore_classify_response_handler(void *data_block, ssize_t message_length);
