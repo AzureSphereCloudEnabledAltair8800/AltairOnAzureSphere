@@ -41,6 +41,12 @@ typedef struct  __attribute__((packed, aligned(4))) {
 	uint8_t sector[137];
 } INTERCORE_DISK_DATA_BLOCK_T;
 
+typedef struct  __attribute__((packed, aligned(4))) {
+	float x;
+	float y;
+	float z;
+} INTERCORE_ML_CLASSIFY_BLOCK_T;
+
 typedef enum __attribute__((packed))
 {
 	IC_UNKNOWN,
@@ -55,3 +61,10 @@ typedef struct __attribute__((packed, aligned(4)))
 	char PREDICTION[20];
 
 } INTERCORE_BLOCK;
+
+typedef struct __attribute__((packed, aligned(4)))
+{
+	INTERCORE_CMD cmd;
+	char PREDICTION[20];
+
+} INTERCORE_PREDICTION_BLOCK_T;
