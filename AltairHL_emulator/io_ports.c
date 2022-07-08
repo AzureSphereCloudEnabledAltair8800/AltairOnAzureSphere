@@ -138,9 +138,9 @@ static void format_string(const void *value)
 /// </summary>
 void intercore_classify_response_handler(void *data_block, ssize_t message_length)
 {
-	INTERCORE_PREDICTION_BLOCK_T *ic_message_block = (INTERCORE_PREDICTION_BLOCK_T *)data_block;
-
 #ifdef OEM_AVNET
+
+	INTERCORE_PREDICTION_BLOCK_T *ic_message_block = (INTERCORE_PREDICTION_BLOCK_T *)data_block;
 
 	switch (ic_message_block->cmd)
 	{
