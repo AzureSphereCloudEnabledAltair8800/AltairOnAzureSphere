@@ -1,0 +1,13 @@
+{
+  "SchemaVersion": 1,
+  "Name": "FreeRTOS_RTApp_2C_Accelerometer",
+  "ComponentId": "AF8B26DB-355E-405C-BBDE-3B851668EE23",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "Capabilities": {
+    "I2cMaster": [ ],
+    "Uart": [ ],
+    "AllowedApplicationConnections": [ "ac8d863a-4424-11eb-b378-0242ac130002" ]
+  },
+  "ApplicationType": "RealTimeCapable"
+}
