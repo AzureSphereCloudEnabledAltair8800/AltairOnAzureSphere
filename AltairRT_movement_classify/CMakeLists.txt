@@ -13,7 +13,7 @@ cmake_minimum_required(VERSION 3.10)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Configurations
-project(FreeRTOS_RTcore_I2C_Accelerometer)
+project(AltairRT_movement_classify)
 include(utils/cmake/utils.cmake)
 azsphere_configure_tools(TOOLS_REVISION "21.10")
 

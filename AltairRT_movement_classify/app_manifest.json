@@ -1,6 +1,6 @@
 {
   "SchemaVersion": 1,
-  "Name": "FreeRTOS_RTApp_2C_Accelerometer",
+  "Name": "AltairRT_movement_classify",
   "ComponentId": "AF8B26DB-355E-405C-BBDE-3B851668EE23",
   "EntryPoint": "/bin/app",
   "CmdArgs": [],
