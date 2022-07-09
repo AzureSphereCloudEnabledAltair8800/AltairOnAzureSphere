@@ -15,8 +15,8 @@
 #include "os_hal_mbox.h"
 #include "os_hal_mbox_shared_mem.h"
 
-#include "lsm6dso_driver.h"
-#include "lsm6dso_reg.h"
+// #include "lsm6dso_driver.h"
+// #include "lsm6dso_reg.h"
 
 #include "ei_run_classifier.h"
 

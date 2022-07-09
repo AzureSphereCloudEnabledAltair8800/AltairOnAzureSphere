@@ -88,8 +88,6 @@ endforeach(TMP_PATH)
 # Executable
 target_sources(${PROJECT_NAME} PRIVATE ${SOURCE_FILES})
 target_sources(${PROJECT_NAME} PRIVATE ./main.cpp)
-target_sources(${PROJECT_NAME} PRIVATE ./lsm6dso_driver.c)
-target_sources(${PROJECT_NAME} PRIVATE ./lsm6dso_reg.c)
 target_sources(${PROJECT_NAME} PRIVATE ./porting/debug_log.cpp)
 target_sources(${PROJECT_NAME} PRIVATE ./porting/ei_classifier_porting.cpp)
 target_sources(${PROJECT_NAME} PRIVATE mt3620_m4_software/MT3620_M4_Sample_Code/OS_HAL/src/os_hal_gpio.c)
