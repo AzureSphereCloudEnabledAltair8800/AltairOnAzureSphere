@@ -1,4 +1,4 @@
-Welcome to the Altair 8800 emulator repo. If you're interested in [retrocomputing](https://en.wikipedia.org/wiki/Retrocomputing), software development, AI, cloud services, and climate monitoring you've arrived at the right repo.
+Welcome to the _AI and Cloud powered Altair 8800_ emulator repo. If you're interested in [retrocomputing](https://en.wikipedia.org/wiki/Retrocomputing), software development, AI, cloud services, and climate monitoring you've arrived at the right repo.
 
 The [Altair 8800](https://en.wikipedia.org/wiki/Altair_8800?azure-portal=true) kick-started the personal computer revolution. Microsoft's first product was [Altair BASIC](https://en.wikipedia.org/wiki/Altair_BASIC?azure-portal=true) written for the Altair 8800 by Bill Gates and Paul Allen. At the time, Altair BASIC was a huge step forward as it allowed people to write programs using a high-level programming language.
 
