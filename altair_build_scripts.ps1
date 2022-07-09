@@ -180,7 +180,7 @@ function build_application {
             $imagefile = Get-ChildItem "*.imagepackage" -Recurse
             if ($imagefile.count -ne 0) {
                 Write-Output "`nSuccessful build: $dir.`n"
-                Copy-Item -Path $imagefile[0] -Destination ../../AltairRT_imagepackages/$image_name.imagepackage
+                Copy-Item -Path $imagefile[0] -Destination ../../Altair_imagepackages/$image_name.imagepackage
             }
             else {
                 Set-Location ".."
