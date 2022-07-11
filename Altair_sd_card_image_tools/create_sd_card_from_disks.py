@@ -1,3 +1,4 @@
+
 import os
 
 disks = ['azsphere_cpm63k.dsk', 'bdsc-v1.60.dsk', 'blank.dsk', 'blank.dsk']
@@ -20,8 +21,6 @@ for disk in disks:
     # filename = disk
 
     with open(filename, 'rb') as altair_disk:
-
-        # size= os.path.getsize(filename)
 
         while True:
             sector = altair_disk.read(137)
