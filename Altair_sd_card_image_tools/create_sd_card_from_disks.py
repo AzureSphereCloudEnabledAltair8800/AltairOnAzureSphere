@@ -27,7 +27,7 @@ for disk in disks:
             sector = altair_disk.read(137)
             if not sector:
                 break
-            length = len(sector)
+
             write_altair_image(sector)
             sector_number = sector_number + 1
 

@@ -1,10 +1,9 @@
 # Burn altair_burn_disk_image.bin image to sd card with dd or balenaEtcher
 # sudo dd if=altair_burn_disk_image.bin of=/dev/sda bs=512
 
-import os
-import re
 import sys
 import getopt
+import json
 
 disk_number = 5
 disk_offset = 3000
@@ -46,8 +45,7 @@ def main(argv):
         write_altair_image(sector)
 
         # Write WiFi config
-        sector = bytearray(
-            '{"ssid":"NCW","psk":"malolos5459","op":"add"}', 'utf-8')
+        sector = bytearray(json.dumps(config), 'utf-8')
         write_altair_image(sector)
 
 
