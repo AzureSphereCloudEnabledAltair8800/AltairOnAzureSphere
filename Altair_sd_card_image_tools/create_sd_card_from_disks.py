@@ -16,8 +16,8 @@ def write_altair_image(data):
 
 
 for disk in disks:
-    # filename = "../AltairHL_emulator/Disks/" + disk
-    filename = disk
+    filename = "../AltairHL_emulator/Disks/" + disk
+    # filename = disk
 
     with open(filename, 'rb') as altair_disk:
 
