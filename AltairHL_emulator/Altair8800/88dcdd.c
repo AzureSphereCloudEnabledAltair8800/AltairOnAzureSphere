@@ -35,6 +35,12 @@ void disk_select(uint8_t b)
 		case 1:
 			disk_drive.current = &disk_drive.disk2;
 			break;
+		case 2:
+			disk_drive.current = &disk_drive.disk3;
+			break;
+		case 3:
+			disk_drive.current = &disk_drive.disk4;
+			break;
 #endif // SD_CARD_ENABLED
 
 		default:

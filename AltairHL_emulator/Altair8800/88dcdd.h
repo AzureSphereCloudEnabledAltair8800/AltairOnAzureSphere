@@ -48,6 +48,8 @@ typedef struct
 	disk_t disk1;
 #ifdef SD_CARD_ENABLED
 	disk_t disk2;
+	disk_t disk3;
+	disk_t disk4;
 #endif // SD_CARD_ENABLED
 	disk_t nodisk;
 	disk_t *current;

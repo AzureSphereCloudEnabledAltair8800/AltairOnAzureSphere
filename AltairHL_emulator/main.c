@@ -534,6 +534,16 @@ static void *altair_thread(void *arg)
 	disk_drive.disk2.sector      = 0;
 	disk_drive.disk2.track       = 0;
 
+	disk_drive.disk3.fp          = -1;
+	disk_drive.disk3.diskPointer = 0;
+	disk_drive.disk3.sector      = 0;
+	disk_drive.disk3.track       = 0;
+
+	disk_drive.disk4.fp          = -1;
+	disk_drive.disk4.diskPointer = 0;
+	disk_drive.disk4.sector      = 0;
+	disk_drive.disk4.track       = 0;
+
 #endif
 
 	i8080_reset(&cpu, (port_in)terminal_read, (port_out)terminal_write, sense, &disk_controller,
@@ -639,6 +649,8 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
 	dx_intercoreConnect(&intercore_sd_card_ctx);
 	// set intercore read after publish timeout to 10000000 microseconds = 10 seconds
 	dx_intercorePublishThenReadTimeout(&intercore_sd_card_ctx, 10000000);
+
+	wifi_config();
 
 #else
 

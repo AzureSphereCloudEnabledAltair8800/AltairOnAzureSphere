@@ -14,6 +14,7 @@
 #include "dx_timer.h"
 #include "dx_version.h"
 #include "onboard_sensors.h"
+#include "wifi_config.h"
 
 // System Libraries
 #include "applibs_versions.h"
