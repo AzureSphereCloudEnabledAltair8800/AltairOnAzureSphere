@@ -14,10 +14,6 @@
 #include <stdio.h>
 #include <unistd.h>
 
-extern const char ALTAIR_EMULATOR_VERSION[];
-extern INTERCORE_ML_CLASSIFY_BLOCK_T intercore_ml_classify_block;
-extern DX_INTERCORE_BINDING intercore_ml_classify_ctx;
-
 #ifdef AZURE_SPHERE
 #include "onboard_sensors.h"
 #else
@@ -48,6 +44,12 @@ DX_DECLARE_TIMER_HANDLER(timer_seconds_expired_handler);
 extern DX_GPIO_BINDING gpioRed;
 extern DX_GPIO_BINDING gpioGreen;
 extern DX_GPIO_BINDING gpioBlue;
+
+extern const char ALTAIR_EMULATOR_VERSION[];
+extern INTERCORE_ML_CLASSIFY_BLOCK_T intercore_ml_classify_block;
+extern DX_INTERCORE_BINDING intercore_ml_classify_ctx;
+
+void intercore_classify_response_handler(void *data_block, ssize_t message_length);
 #endif
 
 extern ALTAIR_CONFIG_T altair_config;
@@ -74,4 +76,3 @@ extern enum PANEL_MODE_T panel_mode;
 
 uint8_t io_port_in(uint8_t port);
 void io_port_out(uint8_t port, uint8_t data);
-void intercore_classify_response_handler(void *data_block, ssize_t message_length);
