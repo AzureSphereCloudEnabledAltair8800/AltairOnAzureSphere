@@ -16,7 +16,8 @@
             "partnerComponents": [
                 "2e319eae-7be5-4a0c-ba47-9353aa6ca96a",
                 "9b684af8-21b9-42aa-91e4-621d5428e497",
-                "005180bc-402f-4cb3-a662-72937dbcde47"
+                "005180bc-402f-4cb3-a662-72937dbcde47",
+                "AF8B26DB-355E-405C-BBDE-3B851668EE23"
             ],
             "MIMode": "gdb",
             "setupCommands": [
