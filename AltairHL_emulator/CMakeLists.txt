@@ -136,6 +136,7 @@ set(Source
     "onboard_sensors.c"
     "utils.c"
     "web_socket_server.c"
+    "wifi_config.c"
 )
 source_group("Source" FILES ${Source})
 

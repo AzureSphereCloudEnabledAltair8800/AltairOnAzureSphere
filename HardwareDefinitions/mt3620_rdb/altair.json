@@ -32,6 +32,7 @@
         {"Name": "LED_MASTER_RESET", "Type": "Gpio", "Mapping": "MT3620_RDB_HEADER4_PIN10_GPIO", "Comment": "Altair panel - LED reset"},
         {"Name": "LED_STORE", "Type": "Gpio", "Mapping": "MT3620_RDB_HEADER4_PIN8_GPIO", "Comment": "Altair panel - LED Store"},
         {"Name": "LED_OUTPUT_ENABLE", "Type": "Gpio", "Mapping": "MT3620_RDB_HEADER4_PIN6_GPIO", "Comment": "Altair panel - LED Output enbale"},
-        {"Name": "SD_CARD_CHIP_SELECT", "Type": "Gpio", "Mapping": "MT3620_RDB_HEADER3_PIN12_GPIO", "Comment": "Altair panel - SD Card select"}
+        {"Name": "SD_CARD_CHIP_SELECT", "Type": "Gpio", "Mapping": "MT3620_RDB_HEADER3_PIN12_GPIO", "Comment": "Altair panel - SD Card select"},
+        {"Name": "AVNET_LIGHT_SENSOR", "Type": "Adc", "Mapping": "MT3620_RDB_ADC_CONTROLLER0", "Comment": "Ignored on non Avnet boards"}
     ]
 }

@@ -26,6 +26,7 @@
         "PowerControls": [
             "SetPowerProfile"
         ],
+        "WifiConfig": true,
         "AllowedTcpServerPorts": [
             8082
         ],

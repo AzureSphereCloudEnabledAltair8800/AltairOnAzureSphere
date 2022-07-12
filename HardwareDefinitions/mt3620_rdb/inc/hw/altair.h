@@ -51,3 +51,6 @@
 // Altair panel - SD Card select
 #define SD_CARD_CHIP_SELECT MT3620_RDB_HEADER3_PIN12_GPIO
 
+// Ignored on non Avnet boards
+#define AVNET_LIGHT_SENSOR MT3620_RDB_ADC_CONTROLLER0
+
