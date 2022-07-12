@@ -31,6 +31,7 @@
         {"Name": "SWITCHES_CHIP_SELECT", "Type": "Gpio", "Mapping": "SEEED_MT3620_MDB_J1_PIN5_GPIO8", "Comment": "NOT USED"},
         {"Name": "LED_MASTER_RESET", "Type": "Gpio", "Mapping": "SEEED_MT3620_MDB_J1_PIN6_GPIO9", "Comment": "NOT USED"},
         {"Name": "LED_STORE", "Type": "Gpio", "Mapping": "SEEED_MT3620_MDB_J2_PIN13_GPIO31", "Comment": "NOT USED"},
-        {"Name": "LED_OUTPUT_ENABLE", "Type": "Gpio", "Mapping": "SEEED_MT3620_MDB_J1_PIN10_GPIO32", "Comment": "NOT USED"}
+        {"Name": "LED_OUTPUT_ENABLE", "Type": "Gpio", "Mapping": "SEEED_MT3620_MDB_J1_PIN10_GPIO32", "Comment": "NOT USED"},
+        {"Name": "AVNET_LIGHT_SENSOR", "Type": "Adc", "Mapping": "SEEED_MT3620_MDB_ADC_CONTROLLER0", "Comment": "Ignored on non Avnet boards"}
     ]
 }
