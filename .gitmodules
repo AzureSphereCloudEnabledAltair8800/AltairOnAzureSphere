@@ -22,9 +22,6 @@
 [submodule "AltairHL_emulator/wsServer"]
 	path = AltairHL_emulator/wsServer
 	url = https://github.com/Theldus/wsServer.git
-[submodule "AltairRT_tiny_ml_classify/mt3620_m4_software"]
-	path = AltairRT_tiny_ml_classify/mt3620_m4_software
-	url = https://github.com/MediaTek-Labs/mt3620_m4_software.git
 [submodule "AltairRT_difference_disk/mt3620_m4_software"]
 	path = AltairRT_difference_disk/mt3620_m4_software
 	url = https://github.com/MediaTek-Labs/mt3620_m4_software.git
