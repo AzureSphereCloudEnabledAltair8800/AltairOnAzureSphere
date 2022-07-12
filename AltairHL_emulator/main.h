@@ -40,6 +40,7 @@
 #include "memory.h"
 
 const char ALTAIR_EMULATOR_VERSION[] = "4.6.1";
+const char DEFAULT_NETWORK_INTERFACE[] = "wlan0";
 #define Log_Debug(f_, ...)      dx_Log_Debug((f_), ##__VA_ARGS__)
 #define DX_LOGGING_ENABLED      FALSE
 #define BASIC_SAMPLES_DIRECTORY "BasicSamples"
@@ -66,9 +67,9 @@ enum PANEL_MODE_T panel_mode = PANEL_BUS_MODE;
 #include "front_panel_none.h"
 #endif // ALTAIR_FRONT_PANEL_NONE
 
-#ifdef AVNET_LIGHT_SENSOR
+#ifdef OEM_AVNET
 #include "light_sensor.h"
-#endif // AVNET_LIGHT_SENSOR
+#endif // OEM_AVNET
 
 static DX_MESSAGE_PROPERTY *diag_msg_properties[] = {
 	&(DX_MESSAGE_PROPERTY){.key = "appid", .value = "altair"},
@@ -214,6 +215,8 @@ DX_TIMER_BINDING tmr_partial_message = {.repeat = &(struct timespec){0, 250 * ON
 DX_TIMER_BINDING tmr_timer_millisecond_expired = {.name = "tmr_timer_millisecond_expired", .handler = timer_millisecond_expired_handler};
 DX_TIMER_BINDING tmr_timer_seconds_expired = {.name = "tmr_timer_seconds_expired", .handler = timer_seconds_expired_handler};
 DX_TIMER_BINDING tmr_ws_ping_pong = {.repeat = &(struct timespec){10, 0}, .name = "tmr_partial_message", .handler = ws_ping_pong_handler};
+DX_TIMER_BINDING tmr_display_ip_address = {.handler = display_ip_address_handler};
+
 
 static DX_TIMER_BINDING tmr_connection_status_led_off = {.name = "tmr_connection_status_led_off", .handler = connection_status_led_off_handler};
 static DX_TIMER_BINDING tmr_connection_status_led_on = {.delay = &(struct timespec){1, 0}, .name = "tmr_connection_status_led_on", .handler = connection_status_led_on_handler};
@@ -287,7 +290,12 @@ DX_GPIO_BINDING gpioGreen = {.pin = LED_GREEN, .direction = DX_OUTPUT, .initialS
 DX_GPIO_BINDING gpioBlue = {.pin = LED_BLUE, .direction = DX_OUTPUT, .initialState = GPIO_Value_Low, .invertPin = true, .name = "blue led"};
 #endif
 
-//static DX_GPIO_BINDING buttonA = {.pin = BUTTON_A, .direction = DX_INPUT, .detect = DX_GPIO_DETECT_LOW, .name = "buttonA"};
+#ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
+static DX_GPIO_BINDING buttonA = {.pin = BUTTON_A, .direction = DX_INPUT, .detect = DX_GPIO_DETECT_LOW, .name = "buttonA"};
+#else
+static DX_GPIO_BINDING buttonA = {.direction = DX_INPUT, .detect = DX_GPIO_DETECT_LOW, .name = "buttonA"};
+#endif
+
 DX_GPIO_BINDING buttonB = {.pin = BUTTON_B, .direction = DX_INPUT, .detect = DX_GPIO_DETECT_LOW, .name = "buttonB"};
 static DX_GPIO_BINDING azure_connected_led = {
 	.pin = AZURE_CONNECTED_LED, .direction = DX_OUTPUT, .initialState = GPIO_Value_Low,
@@ -300,7 +308,7 @@ static DX_GPIO_BINDING azure_connected_led = {
 #ifdef SEEED_STUDIO_MDB
 static DX_GPIO_BINDING *gpioSet[] = {&azure_connected_led, &gpioRed, &gpioGreen, &gpioBlue
 #else
-static DX_GPIO_BINDING *gpioSet[]  = {&buttonB, &azure_connected_led, &gpioRed, &gpioGreen, &gpioBlue
+static DX_GPIO_BINDING *gpioSet[]  = {&buttonA, &buttonB, &azure_connected_led, &gpioRed, &gpioGreen, &gpioBlue
 #endif
 
 #ifdef ALTAIR_FRONT_PANEL_KIT
@@ -350,6 +358,7 @@ static DX_ASYNC_BINDING *async_bindings[] = {
 static DX_TIMER_BINDING *timerSet[] = {
 	&tmr_connection_status_led_off,
 	&tmr_connection_status_led_on,
+	&tmr_display_ip_address,
 	&tmr_heart_beat,
 	&tmr_network_state,
 	&tmr_partial_message,

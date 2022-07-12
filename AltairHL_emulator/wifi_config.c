@@ -7,6 +7,35 @@ const char *configName = "Altair_WiFi";
 // bool is_network_config_stored(uint8_t *configName, bool forget);
 void execute_wifi_operation(uint8_t *wifi_config);
 
+#ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
+static enum PANEL_MODE_T previous_panel_mode;
+static char display_ip_address[20] = {0};
+static char *ip_address_ptr;
+#endif
+
+DX_TIMER_HANDLER(display_ip_address_handler)
+{
+#ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
+
+	if (*ip_address_ptr)
+	{
+		gfx_load_character(*ip_address_ptr, retro_click.bitmap);
+		gfx_rotate_counterclockwise(retro_click.bitmap, 1, 1, retro_click.bitmap);
+		gfx_reverse_panel(retro_click.bitmap);
+		gfx_rotate_counterclockwise(retro_click.bitmap, 1, 1, retro_click.bitmap);
+		as1115_panel_write(&retro_click);
+
+		ip_address_ptr++;
+		dx_timerOneShotSet(&tmr_display_ip_address, &(struct timespec){1, 0});
+	}
+	else
+	{
+		panel_mode = previous_panel_mode;
+	}
+#endif
+}
+DX_TIMER_HANDLER_END
+
 void wifi_config(void)
 {
 	memset(intercore_disk_block.sector, 0x00, sizeof(intercore_disk_block.sector));
@@ -28,6 +57,8 @@ void wifi_config(void)
 			execute_wifi_operation(intercore_disk_block.sector);
 		}
 	}
+
+	memset(&intercore_disk_block, 0x00, sizeof(intercore_disk_block));
 }
 
 void execute_wifi_operation(uint8_t *wifi_config)
@@ -68,10 +99,24 @@ void execute_wifi_operation(uint8_t *wifi_config)
 		strnlen(ssid, WIFICONFIG_SSID_MAX_LENGTH) > WIFICONFIG_SSID_MAX_LENGTH ||
 		strnlen(psk, WIFICONFIG_WPA2_KEY_MAX_BUFFER_SIZE) > WIFICONFIG_WPA2_KEY_MAX_BUFFER_SIZE)
 	{
+	}
+
+	if (strncmp(operation, "add", 3))
+	{
 		goto cleanup;
 	}
 
-	if (WifiConfig_ForgetAllNetworks() != -1 && strncmp(operation, "add", 3) == 0)
+	// Wait for the WiFi to be ready
+	int result, retry = 0;
+
+	result = WifiConfig_ForgetAllNetworks();
+	while (result == -1 && errno == EAGAIN && retry++ < 10)
+	{
+		nanosleep(&(struct timespec){0, 250 * ONE_MS}, NULL);
+		result = WifiConfig_ForgetAllNetworks();
+	}
+
+	if (result == 0)
 	{
 		if (WifiConfig_ForgetAllNetworks() != -1)
 		{
@@ -143,3 +188,46 @@ cleanup:
 // 	}
 // 	return false; // network config doesn't exist
 // }
+
+void getIP(void)
+{
+	struct ifaddrs *addr_list;
+	struct ifaddrs *it;
+	int n;
+
+	if (getifaddrs(&addr_list) < 0)
+	{
+		Log_Debug("***** GETIFADDRs failed! ***\n");
+	}
+	else
+	{
+		for (it = addr_list, n = 0; it != NULL; it = it->ifa_next, ++n)
+		{
+			if (it->ifa_addr == NULL)
+			{
+				continue;
+			}
+			if (strncmp(it->ifa_name, DEFAULT_NETWORK_INTERFACE, strlen(DEFAULT_NETWORK_INTERFACE)) == 0)
+			{
+				if (it->ifa_addr->sa_family == AF_INET)
+				{
+					struct sockaddr_in *addr = (struct sockaddr_in *)it->ifa_addr;
+					char *ip_address         = inet_ntoa(addr->sin_addr);
+
+#ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
+					strncpy(display_ip_address, ip_address, sizeof(display_ip_address));
+
+					previous_panel_mode = panel_mode;
+					panel_mode          = PANEL_FONT_MODE;
+					ip_address_ptr      = ip_address;
+
+					dx_timerOneShotSet(&tmr_display_ip_address, &(struct timespec){1, 0});
+#else
+					Log_Debug("**** wlan0 IP found: %s ***\n", ip_address);
+#endif
+				}
+			}
+		}
+	}
+	freeifaddrs(addr_list);
+}

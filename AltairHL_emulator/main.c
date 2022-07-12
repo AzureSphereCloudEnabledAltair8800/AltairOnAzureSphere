@@ -73,7 +73,15 @@ DX_TIMER_HANDLER_END
 
 static DX_TIMER_HANDLER(read_panel_handler)
 {
+	static GPIO_Value_Type buttonAState;
+
 	read_altair_panel_switches(process_control_panel_commands);
+
+	if (dx_gpioStateGet(&buttonA, &buttonAState) && network_connected)
+	{
+		getIP();
+	}
+
 	dx_timerOneShotSet(&tmr_read_panel, &(struct timespec){0, 200 * ONE_MS});
 }
 DX_TIMER_HANDLER_END
@@ -607,10 +615,10 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
 
 	curl_global_init(CURL_GLOBAL_ALL);
 
-	if (PowerManagement_SetSystemPowerProfile(PowerManagement_HighPerformance) == -1)
-	{
-		dx_Log_Debug("Setting power profile failed\n");
-	}
+	// if (PowerManagement_SetSystemPowerProfile(PowerManagement_HighPerformance) == -1)
+	// {
+	// 	dx_Log_Debug("Setting power profile failed\n");
+	// }
 
 	dx_gpioSetOpen(gpioSet, NELEMS(gpioSet));
 	dx_i2cSetOpen(i2c_bindings, NELEMS(i2c_bindings));
@@ -622,7 +630,7 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
 	if (altair_config.user_config.connectionType != DX_CONNECTION_TYPE_NOT_DEFINED)
 	{
 		dx_azureConnect(&altair_config.user_config,
-			dx_isStringNullOrEmpty(altair_config.network_interface) ? "wlan0"
+			dx_isStringNullOrEmpty(altair_config.network_interface) ? DEFAULT_NETWORK_INTERFACE
 																	: altair_config.network_interface,
 			IOT_PLUG_AND_PLAY_MODEL_ID);
 

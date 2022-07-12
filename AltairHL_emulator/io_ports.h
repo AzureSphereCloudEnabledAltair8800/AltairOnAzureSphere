@@ -24,9 +24,9 @@ extern DX_INTERCORE_BINDING intercore_ml_classify_ctx;
 #include "graphics.h"
 #endif
 
-#ifdef AVNET_LIGHT_SENSOR
+#ifdef OEM_AVNET
 #include "light_sensor.h"
-#endif // AVNET_LIGHT_SENSOR
+#endif // OEM_AVNET
 
 #ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
 #include "front_panel_retro_click.h"
