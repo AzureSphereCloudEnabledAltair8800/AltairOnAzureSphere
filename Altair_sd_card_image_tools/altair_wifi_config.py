@@ -9,13 +9,11 @@ disk_number = 5
 disk_offset = 3000
 sector_number = 0
 
-altair_image = open('altair_disk_image.bin', 'wb')
-
-
-def write_altair_image(data):
+def write_altair_image(data, altair_image):
     seek = ((disk_offset * disk_number) + sector_number) * 512
     altair_image.seek(seek)
     altair_image.write(data)
+    print(data)
 
 
 def main(argv):
@@ -38,15 +36,23 @@ def main(argv):
         print("usage -s YOUR_WIFI_SSID -p YOUR_WIFI_PSK -o OPERATION=add or remove")
         return
 
-    with open('altair_burn_disk_image.bin', 'wb') as altair_image:
+    with open('altair_burn_disk_image.bin', 'rb') as altair_image:
 
-        # Clear wifi config sector
-        sector = bytearray(137)
-        write_altair_image(sector)
+        data = altair_image.read()
 
-        # Write WiFi config
-        sector = bytearray(json.dumps(config), 'utf-8')
-        write_altair_image(sector)
+        with open('altair_burn_disk_image_wifi.bin', 'wb') as altair_image_wifi:
+
+            altair_image_wifi.write(data)
+
+            # Clear wifi config sector
+            sector = bytearray(137)
+            write_altair_image(sector, altair_image_wifi)
+
+            data = json.dumps(config)
+
+            # Write WiFi config
+            sector = bytearray(data, 'utf-8')
+            write_altair_image(sector, altair_image_wifi)
 
 
 if __name__ == "__main__":
