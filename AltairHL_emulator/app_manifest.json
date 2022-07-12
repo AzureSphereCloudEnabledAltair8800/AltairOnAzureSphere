@@ -5,11 +5,11 @@
     "EntryPoint": "/bin/app",
     "CmdArgs": [
         "--ScopeID",
-        "REPLACE_WITH_YOUR_WITH_YOUR_ID_SCOPE",
+        "REMOVE_OR_REPLACE_WITH_YOUR_WITH_YOUR_ID_SCOPE",
         "-o",
-        "REPLACE_WITH_YOUR_OPEN_WEATHER_MAP_API_KEY",
+        "EMOVE_OR_REPLACE_WITH_YOUR_OPEN_WEATHER_MAP_API_KEY",
         "-u",
-        "REPLACE_WITH_YOUR_COPYX_URL"
+        "EMOVE_OR_REPLACE_WITH_YOUR_COPYX_URL"
     ],
     "Capabilities": {
         "MutableStorage": {
@@ -43,7 +43,7 @@
             "REPLACE_WITH_YOUR_IOT_CENTRAL_URLS",
             "REPLACE_WITH_YOUR_COPYX_URL"
         ],
-        "DeviceAuthentication": "REPLACE_WITH_YOUR_AZURE_SPHERE_TENANT_ID",
+        "DeviceAuthentication": "EMOVE_OR_REPLACE_WITH_YOUR_AZURE_SPHERE_TENANT_ID",
         "AllowedApplicationConnections": [
             "2e319eae-7be5-4a0c-ba47-9353aa6ca96a",
             "9b684af8-21b9-42aa-91e4-621d5428e497",
