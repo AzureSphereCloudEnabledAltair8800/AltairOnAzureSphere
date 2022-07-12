@@ -9,7 +9,7 @@ static char panel_info[256] = {0};
 void init_altair_hardware(void)
 {
 
-    if (!as1115_init(i2c_as1115_retro.fd,  &retro_click, 1)) {
+    if (!as1115_init(i2c_as1115_retro.fd,  &retro_click, 0)) {
         dx_terminate(APP_EXIT_RETRO_CLICK_OPEN);
         return;
     }
