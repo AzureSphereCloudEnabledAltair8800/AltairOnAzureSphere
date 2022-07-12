@@ -431,7 +431,7 @@ static char terminal_read(void)
 	{
 		retVal                 = terminalInputCharacter;
 		terminalInputCharacter = 0x00;
-		retVal &= 0x7F; // take first 7 bits (127 ascii chars)
+		retVal &= 0x7F; // take first 7 bits (128 ascii chars)
 		return retVal;
 	}
 
@@ -443,7 +443,7 @@ static char terminal_read(void)
 		{
 			haveTerminalInputMessage = false;
 		}
-		retVal &= 0x7F; // take first 7 bits (127 ascii chars)
+		retVal &= 0x7F; // take first 7 bits (128 ascii chars)
 		return retVal;
 	}
 
@@ -464,7 +464,7 @@ static char terminal_read(void)
 				retVal = 0x0D;
 			}
 		}
-		retVal &= 0x7F; // take first 7 bits (127 ascii chars)
+		retVal &= 0x7F; // take first 7 bits (128 ascii chars)
 		return retVal;
 	}
 	return 0;
@@ -618,10 +618,10 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
 
 	curl_global_init(CURL_GLOBAL_ALL);
 
-	// if (PowerManagement_SetSystemPowerProfile(PowerManagement_HighPerformance) == -1)
-	// {
-	// 	dx_Log_Debug("Setting power profile failed\n");
-	// }
+	if (PowerManagement_SetSystemPowerProfile(PowerManagement_HighPerformance) == -1)
+	{
+		dx_Log_Debug("Setting power profile failed\n");
+	}
 
 	dx_gpioSetOpen(gpioSet, NELEMS(gpioSet));
 	dx_i2cSetOpen(i2c_bindings, NELEMS(i2c_bindings));
