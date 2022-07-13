@@ -59,9 +59,6 @@ typedef struct
 extern disks disk_drive;
 extern DX_INTERCORE_BINDING intercore_sd_card_ctx;
 extern INTERCORE_DISK_DATA_BLOCK_T intercore_disk_block;
-extern DX_DEVICE_TWIN_BINDING dt_difference_disk_reads;
-extern DX_DEVICE_TWIN_BINDING dt_difference_disk_writes;
-extern DX_DEVICE_TWIN_BINDING dt_filesystem_reads;
 
 void disk_select(uint8_t b);
 uint8_t disk_status(void);

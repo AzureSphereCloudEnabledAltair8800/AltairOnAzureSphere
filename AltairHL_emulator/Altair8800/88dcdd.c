@@ -241,14 +241,12 @@ uint8_t disk_read()
 			disk_drive.current->sectorPointer  = 0;
 			disk_drive.current->haveSectorData = true;
 			memcpy(disk_drive.current->sectorData, intercore_disk_block.sector, SECTOR_SIZE);
-			(*(int *)dt_difference_disk_reads.propertyValue)++;
 		}
 		else
 		{
 			disk_drive.current->sectorPointer  = 0;
 			disk_drive.current->haveSectorData = true;
 			read(disk_drive.current->fp, disk_drive.current->sectorData, SECTOR_SIZE);
-			(*(int *)dt_filesystem_reads.propertyValue)++;
 		}
 	}
 
@@ -278,7 +276,6 @@ void writeSector(disk_t *pDisk, uint8_t drive_number)
 	intercore_disk_block.sector_number    = requested_sector_number;
 	intercore_disk_block.disk_ic_msg_type = DISK_IC_WRITE;
 	dx_intercorePublish(&intercore_filesystem_ctx, &intercore_disk_block, sizeof(intercore_disk_block));
-	(*(int *)dt_difference_disk_writes.propertyValue)++;
 
 #endif // SD_CARD_ENABLED
 
