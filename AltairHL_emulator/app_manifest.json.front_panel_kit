@@ -33,6 +33,7 @@
         "PowerControls": [
             "SetPowerProfile"
         ],
+        "NetworkConfig" : true,
         "WifiConfig": true,
         "AllowedTcpServerPorts": [
             8082
