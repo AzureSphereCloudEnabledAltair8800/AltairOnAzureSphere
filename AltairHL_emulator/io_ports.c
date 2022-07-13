@@ -145,7 +145,7 @@ void intercore_classify_response_handler(void *data_block, ssize_t message_lengt
 	switch (ic_message_block->cmd)
 	{
 		case IC_PREDICTION:
-			//Log_Debug("Prediction %s\n", ic_message_block->PREDICTION);
+			// Log_Debug("Prediction %s\n", ic_message_block->PREDICTION);
 			memcpy(PREDICTION, ic_message_block->PREDICTION, sizeof(PREDICTION));
 			break;
 		default:
@@ -162,7 +162,7 @@ DX_TIMER_HANDLER(read_accelerometer_handler)
 
 	avnet_get_acceleration(&xx, &yy, &zz);
 
-	//Log_Debug("now x %f, y %f, z %f\n", xx, yy, zz);
+	// Log_Debug("now x %f, y %f, z %f\n", xx, yy, zz);
 
 	x += xx;
 	y += yy;
@@ -178,7 +178,7 @@ DX_TIMER_HANDLER(read_accelerometer_handler)
 	dx_intercorePublish(
 		&intercore_ml_classify_ctx, &intercore_ml_classify_block, sizeof(intercore_ml_classify_block));
 
-	//dx_Log_Debug("avg x %f, y %f, z %f\n", x, y, z);
+	// dx_Log_Debug("avg x %f, y %f, z %f\n", x, y, z);
 
 	dx_timerOneShotSet(&tmr_read_accelerometer, &(struct timespec){0, 10 * ONE_MS});
 #endif // OEM_AVNET
@@ -503,6 +503,21 @@ void io_port_out(uint8_t port, uint8_t data)
 			}
 			break;
 #endif // OEM_AVNET
+
+#ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
+		case 65:
+			if (data == 0)
+			{
+				dx_timerStop(&tmr_read_panel);
+				dx_timerStop(&tmr_refresh_panel);
+				as1115_clear(&retro_click);
+			} else {
+				dx_timerStart(&tmr_read_panel);
+				dx_timerStart(&tmr_refresh_panel);
+				as1115_set_brightness(&retro_click, (unsigned char)data - 1);
+			}			
+			break;
+#endif
 
 		case 70:
 			ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%s", ALTAIR_EMULATOR_VERSION);

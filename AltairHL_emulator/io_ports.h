@@ -26,6 +26,8 @@
 
 #ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
 #include "front_panel_retro_click.h"
+extern DX_TIMER_BINDING tmr_read_panel;
+extern DX_TIMER_BINDING tmr_refresh_panel;
 #endif
 
 DX_DECLARE_ASYNC_HANDLER(async_accelerometer_start_handler);
