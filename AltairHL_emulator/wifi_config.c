@@ -195,6 +195,10 @@ void getIP(void)
 	struct ifaddrs *it;
 	int n;
 
+	const char *network_interface = dx_isStringNullOrEmpty(altair_config.network_interface)
+										? DEFAULT_NETWORK_INTERFACE
+										: altair_config.network_interface;
+
 	if (getifaddrs(&addr_list) < 0)
 	{
 		Log_Debug("***** GETIFADDRs failed! ***\n");
@@ -207,7 +211,7 @@ void getIP(void)
 			{
 				continue;
 			}
-			if (strncmp(it->ifa_name, DEFAULT_NETWORK_INTERFACE, strlen(DEFAULT_NETWORK_INTERFACE)) == 0)
+			if (strncmp(it->ifa_name, network_interface, strlen(network_interface)) == 0)
 			{
 				if (it->ifa_addr->sa_family == AF_INET)
 				{

@@ -16,6 +16,7 @@
 #include "front_panel_retro_click.h"
 #endif
 
+extern ALTAIR_CONFIG_T altair_config;
 extern DX_INTERCORE_BINDING intercore_sd_card_ctx;
 extern DX_TIMER_BINDING tmr_display_ip_address;
 extern INTERCORE_DISK_DATA_BLOCK_T intercore_disk_block;
