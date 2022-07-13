@@ -18,26 +18,35 @@ DX_TIMER_HANDLER_END
 /// </summary>
 static DX_TIMER_HANDLER(update_environment_handler)
 {
-	static bool location_set       = false;
-	static char *network_interface = NULL;
-
-	network_interface =
-		dx_isStringNullOrEmpty(altair_config.network_interface) ? "wlan0" : altair_config.network_interface;
-
-	if (!location_set && dx_isNetworkConnected(network_interface))
-	{
-		init_environment(&altair_config);
-		location_set = true;
-	}
-
 	update_weather();
 
 	if (azure_connected && environment.valid)
 	{
-		publish_properties(&environment);		
+		// publish_properties(&environment);
+		publish_telemetry(&environment);
 	}
 
-	dx_timerOneShotSet(&tmr_update_environment, &(struct timespec){5 * 60, 0});
+	dx_timerOneShotSet(&tmr_update_environment, &(struct timespec){20 * 60, 0});
+}
+DX_TIMER_HANDLER_END
+
+DX_TIMER_HANDLER(initialize_environment_handler)
+{
+	static const char *network_interface = NULL;
+
+	network_interface = dx_isStringNullOrEmpty(altair_config.network_interface)
+							? DEFAULT_NETWORK_INTERFACE
+							: altair_config.network_interface;
+
+	if (dx_isNetworkConnected(network_interface))
+	{
+		init_environment(&altair_config);
+		dx_timerOneShotSet(&tmr_update_environment, &(struct timespec){1, 0});
+	}
+	else
+	{
+		dx_timerOneShotSet(&tmr_initialize_environment, &(struct timespec){8, 0});
+	}
 }
 DX_TIMER_HANDLER_END
 
@@ -63,9 +72,6 @@ static DX_TIMER_HANDLER(heart_beat_handler)
 	if (azure_connected)
 	{
 		dx_deviceTwinReportValue(&dt_heartbeatUtc, dx_getCurrentUtc(msgBuffer, sizeof(msgBuffer)));
-		dx_deviceTwinReportValue(&dt_filesystem_reads, dt_filesystem_reads.propertyValue);
-		dx_deviceTwinReportValue(&dt_difference_disk_reads, dt_difference_disk_reads.propertyValue);
-		dx_deviceTwinReportValue(&dt_difference_disk_writes, dt_difference_disk_writes.propertyValue);
 		dx_deviceTwinReportValue(&dt_new_sessions, dt_new_sessions.propertyValue);
 	}
 }
@@ -73,16 +79,42 @@ DX_TIMER_HANDLER_END
 
 static DX_TIMER_HANDLER(read_panel_handler)
 {
-	static GPIO_Value_Type buttonAState;
-
 	read_altair_panel_switches(process_control_panel_commands);
+	dx_timerOneShotSet(&tmr_read_panel, &(struct timespec){0, 250 * ONE_MS});
+}
+DX_TIMER_HANDLER_END
+
+DX_TIMER_HANDLER(read_buttons_handler)
+{
+	static GPIO_Value_Type buttonAState;
+	static GPIO_Value_Type buttonBState;
+	static bool screen_blanked = false;
 
 	if (dx_gpioStateGet(&buttonA, &buttonAState) && network_connected)
 	{
 		getIP();
 	}
 
-	dx_timerOneShotSet(&tmr_read_panel, &(struct timespec){0, 200 * ONE_MS});
+	if (cpu_operating_mode != CPU_STOPPED)
+	{
+		if (dx_gpioStateGet(&buttonB, &buttonBState))
+		{
+			if (screen_blanked)
+			{
+				dx_timerStart(&tmr_read_panel);
+				dx_timerStart(&tmr_refresh_panel);
+				screen_blanked = false;
+			}
+			else
+			{
+				dx_timerStop(&tmr_read_panel);
+				dx_timerStop(&tmr_refresh_panel);
+				as1115_clear(&retro_click);
+				screen_blanked = true;
+			}
+		}
+	}
+	dx_timerOneShotSet(&tmr_read_buttons, &(struct timespec){0, 250 * ONE_MS});
 }
 DX_TIMER_HANDLER_END
 
@@ -91,9 +123,9 @@ DX_TIMER_HANDLER_END
 /// </summary>
 DX_TIMER_HANDLER(panel_refresh_handler)
 {
-	uint8_t last_status = 0;
-	uint8_t last_data   = 0;
-	uint16_t last_bus   = 0;
+	static uint8_t last_status = 0;
+	static uint8_t last_data   = 0;
+	static uint16_t last_bus   = 0;
 
 	if (panel_mode == PANEL_BUS_MODE)
 	{
@@ -101,7 +133,7 @@ DX_TIMER_HANDLER(panel_refresh_handler)
 		uint8_t data   = cpu.data_bus;
 		uint16_t bus   = cpu.address_bus;
 
-		if (status != last_status || data != last_data || bus != last_bus)
+		if (status != last_status || data != last_data || bus != last_bus || cpu_operating_mode == CPU_STARTING)
 		{
 			last_status = status;
 			last_data   = data;
@@ -299,25 +331,6 @@ DX_TIMER_HANDLER(network_state_handler)
 	network_connected = dx_isNetworkReady();
 }
 DX_TIMER_HANDLER_END
-
-/// <summary>
-/// Device Twin Handler to set the brightness of MAX7219 8x8 LED panel8x8
-/// </summary>
-static DX_DEVICE_TWIN_HANDLER(led_brightness_handler, deviceTwinBinding)
-{
-	int led_brightness = *(int *)deviceTwinBinding->propertyValue;
-
-	led_brightness = led_brightness > 7 ? 7 : led_brightness;
-	led_brightness = led_brightness < 0 ? 0 : led_brightness;
-
-#ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
-	as1115_set_brightness(&retro_click, (unsigned char)led_brightness);
-#endif // ALTAIR_FRONT_PANEL_RETRO_CLICK
-
-	dx_deviceTwinAckDesiredValue(
-		deviceTwinBinding, deviceTwinBinding->propertyValue, DX_DEVICE_TWIN_RESPONSE_COMPLETED);
-}
-DX_DEVICE_TWIN_HANDLER_END
 
 /// <summary>
 /// Set up watchdog timer - the lease is extended via the WatchdogMonitorTimerHandler function

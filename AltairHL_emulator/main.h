@@ -96,7 +96,7 @@ static char Log_Debug_Time_buffer[64]    = {0};
 static const char *AltairMsg             = "\x1b[2J\r\nAzure Sphere - Altair 8800 Emulator ";
 static int app_fd                        = -1;
 bool send_partial_msg                    = false;
-CPU_OPERATING_MODE cpu_operating_mode    = CPU_STOPPED;
+CPU_OPERATING_MODE cpu_operating_mode    = CPU_STARTING;
 uint16_t bus_switches                    = 0x00;
 static bool network_connected = false;
 
@@ -118,12 +118,13 @@ static bool load_application(const char *fileName);
 static void send_terminal_character(char character, bool wait);
 static void spin_wait(bool *flag);
 
-static DX_DECLARE_DEVICE_TWIN_HANDLER(led_brightness_handler);
 static DX_DECLARE_TIMER_HANDLER(connection_status_led_off_handler);
 static DX_DECLARE_TIMER_HANDLER(connection_status_led_on_handler);
 static DX_DECLARE_TIMER_HANDLER(heart_beat_handler);
+static DX_DECLARE_TIMER_HANDLER(initialize_environment_handler);
 static DX_DECLARE_TIMER_HANDLER(network_state_handler);
 static DX_DECLARE_TIMER_HANDLER(panel_refresh_handler);
+static DX_DECLARE_TIMER_HANDLER(read_buttons_handler);
 static DX_DECLARE_TIMER_HANDLER(read_panel_handler);
 static DX_DECLARE_TIMER_HANDLER(report_memory_usage);
 static DX_DECLARE_TIMER_HANDLER(update_environment_handler);
@@ -222,9 +223,11 @@ static DX_TIMER_BINDING tmr_connection_status_led_off = {.name = "tmr_connection
 static DX_TIMER_BINDING tmr_connection_status_led_on = {.delay = &(struct timespec){1, 0}, .name = "tmr_connection_status_led_on", .handler = connection_status_led_on_handler};
 static DX_TIMER_BINDING tmr_heart_beat = {.repeat = &(struct timespec){60, 0}, .name = "tmr_heart_beat", .handler = heart_beat_handler};
 static DX_TIMER_BINDING tmr_network_state = {.repeat = &(struct timespec){20, 0}, .name = "tmr_network_state", .handler = network_state_handler};
+static DX_TIMER_BINDING tmr_read_buttons = {.delay = &(struct timespec){0, 250 * ONE_MS}, .name = "tmr_read_buttons", .handler = read_buttons_handler};
 static DX_TIMER_BINDING tmr_report_memory_usage = {.repeat = &(struct timespec){45, 0}, .name = "tmr_report_memory_usage", .handler = report_memory_usage};
 static DX_TIMER_BINDING tmr_tick_count = {.repeat = &(struct timespec){1, 0}, .name = "tmr_tick_count", .handler = tick_count_handler};
-static DX_TIMER_BINDING tmr_update_environment = {.delay = &(struct timespec){2, 0}, .name = "tmr_update_environment", .handler = update_environment_handler};
+static DX_TIMER_BINDING tmr_update_environment = {.name = "tmr_update_environment", .handler = update_environment_handler};
+static DX_TIMER_BINDING tmr_initialize_environment = {.delay = &(struct timespec){8, 0}, .name = "tmr_update_environment", .handler = initialize_environment_handler};
 static DX_TIMER_BINDING tmr_watchdog_monitor = {.repeat = &(struct timespec){15, 0}, .name = "tmr_watchdog_monitor", .handler = WatchdogMonitorTimerHandler};
 
 DX_ASYNC_BINDING async_copyx_request = {.name = "async_copyx_request", .handler = async_copyx_request_handler};
@@ -239,8 +242,8 @@ DX_ASYNC_BINDING async_accelerometer_stop = {.name = "async_accelerometer_stop",
 
 
 #if defined(ALTAIR_FRONT_PANEL_RETRO_CLICK) || defined(ALTAIR_FRONT_PANEL_KIT)
-static DX_TIMER_BINDING tmr_read_panel = {.delay = &(struct timespec){1, 0}, .name = "tmr_read_panel", .handler = read_panel_handler};
-static DX_TIMER_BINDING tmr_refresh_panel = {.delay = &(struct timespec){1, 0}, .name = "tmr_refresh_panel", .handler = panel_refresh_handler};
+DX_TIMER_BINDING tmr_read_panel = {.delay = &(struct timespec){1, 0}, .name = "tmr_read_panel", .handler = read_panel_handler};
+DX_TIMER_BINDING tmr_refresh_panel = {.delay = &(struct timespec){1, 0}, .name = "tmr_refresh_panel", .handler = panel_refresh_handler};
 #else
 static DX_TIMER_BINDING tmr_read_panel = {.name = "tmr_read_panel", .handler = read_panel_handler};
 static DX_TIMER_BINDING tmr_refresh_panel = {.name = "tmr_refresh_panel", .handler = panel_refresh_handler};
@@ -269,12 +272,8 @@ DX_DEVICE_TWIN_BINDING dt_location = {.propertyName = "Location", .twinType = DX
 DX_DEVICE_TWIN_BINDING dt_country = {.propertyName = "Country", .twinType = DX_DEVICE_TWIN_STRING};
 DX_DEVICE_TWIN_BINDING dt_city = {.propertyName = "City", .twinType = DX_DEVICE_TWIN_STRING};
 
-DX_DEVICE_TWIN_BINDING dt_filesystem_reads = {.propertyName = "FilesystemReads", .twinType = DX_DEVICE_TWIN_INT};
-DX_DEVICE_TWIN_BINDING dt_difference_disk_reads = {.propertyName = "DifferenceDiskReads", .twinType = DX_DEVICE_TWIN_INT};
-DX_DEVICE_TWIN_BINDING dt_difference_disk_writes = {.propertyName = "DifferenceDiskWrites", .twinType = DX_DEVICE_TWIN_INT};
 DX_DEVICE_TWIN_BINDING dt_new_sessions = {.propertyName = "NewSessions", .twinType = DX_DEVICE_TWIN_INT};
 
-static DX_DEVICE_TWIN_BINDING dt_ledBrightness = {.propertyName = "LedBrightness", .twinType = DX_DEVICE_TWIN_INT, .handler = led_brightness_handler};
 static DX_DEVICE_TWIN_BINDING dt_deviceStartTimeUtc = {.propertyName = "StartTimeUTC", .twinType = DX_DEVICE_TWIN_STRING};
 static DX_DEVICE_TWIN_BINDING dt_heartbeatUtc = {.propertyName = "HeartbeatUTC", .twinType = DX_DEVICE_TWIN_STRING};
 static DX_DEVICE_TWIN_BINDING dt_softwareVersion = {.propertyName = "SoftwareVersion", .twinType = DX_DEVICE_TWIN_STRING};
@@ -360,8 +359,10 @@ static DX_TIMER_BINDING *timerSet[] = {
 	&tmr_connection_status_led_on,
 	&tmr_display_ip_address,
 	&tmr_heart_beat,
+	&tmr_initialize_environment,
 	&tmr_network_state,
 	&tmr_partial_message,
+	&tmr_read_buttons,
 	&tmr_read_panel,
 	&tmr_refresh_panel,
 	&tmr_report_memory_usage,
@@ -374,7 +375,6 @@ static DX_TIMER_BINDING *timerSet[] = {
 };
 
 static DX_DEVICE_TWIN_BINDING *deviceTwinBindingSet[] = {
-	&dt_ledBrightness,
 	&dt_deviceStartTimeUtc,
 	&dt_heartbeatUtc,
 	&dt_softwareVersion,
@@ -400,9 +400,6 @@ static DX_DEVICE_TWIN_BINDING *deviceTwinBindingSet[] = {
 	&dt_country,
 	&dt_city,
 
-	&dt_filesystem_reads,
-	&dt_difference_disk_reads,
-	&dt_difference_disk_writes,
 	&dt_new_sessions,
 };
 
