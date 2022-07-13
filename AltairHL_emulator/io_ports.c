@@ -514,7 +514,7 @@ void io_port_out(uint8_t port, uint8_t data)
 			} else {
 				dx_timerStart(&tmr_read_panel);
 				dx_timerStart(&tmr_refresh_panel);
-				as1115_set_brightness(&retro_click, (unsigned char)data - 1);
+				as1115_set_brightness(&retro_click, (unsigned char)(data - 1));
 			}			
 			break;
 #endif
