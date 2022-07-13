@@ -81,10 +81,6 @@ void check_click_4x4key_mode_button(void)
 	}
 }
 
-static void process_input(uint8_t button_pressed)
-{
-}
-
 void read_altair_panel_switches(void (*process_control_panel_commands)(void))
 {
 	const ALTAIR_COMMAND commandMap[] = {
