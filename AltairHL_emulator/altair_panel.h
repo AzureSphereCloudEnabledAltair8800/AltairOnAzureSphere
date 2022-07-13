@@ -6,7 +6,7 @@
 
 #include "types.h"
 
-#define MSG_BUFFER_BYTES 128 * 3
+#define MSG_BUFFER_BYTES 128 * 4
 
 #define LOW  false
 #define HIGH true
@@ -21,6 +21,7 @@
 
 typedef enum
 {
+	CPU_STARTING = 0,
 	CPU_RUNNING = 1,
 	CPU_STOPPED = 2
 } CPU_OPERATING_MODE;
