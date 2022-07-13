@@ -39,7 +39,7 @@
 #include "io_ports.h"
 #include "memory.h"
 
-const char ALTAIR_EMULATOR_VERSION[] = "4.6.5";
+const char ALTAIR_EMULATOR_VERSION[]   = "4.6.5";
 const char DEFAULT_NETWORK_INTERFACE[] = "wlan0";
 #define Log_Debug(f_, ...)      dx_Log_Debug((f_), ##__VA_ARGS__)
 #define DX_LOGGING_ENABLED      FALSE
@@ -98,7 +98,10 @@ static int app_fd                        = -1;
 bool send_partial_msg                    = false;
 CPU_OPERATING_MODE cpu_operating_mode    = CPU_STARTING;
 uint16_t bus_switches                    = 0x00;
-static bool network_connected = false;
+static bool network_connected            = false;
+static bool stop_cpu                     = false;
+static bool terminal_io_activity         = false;
+static int inactivity_period             = 0;
 
 // basic app load helpers.
 static bool haveAppLoad            = false;
@@ -115,8 +118,11 @@ static int terminalOutputMessageLen   = 0;
 static char *input_data = NULL;
 
 static bool load_application(const char *fileName);
+static void altair_sleep(void);
+static void altair_wake(void);
 static void send_terminal_character(char character, bool wait);
 static void spin_wait(bool *flag);
+static void start_network_interface(void);
 
 static DX_DECLARE_TIMER_HANDLER(connection_status_led_off_handler);
 static DX_DECLARE_TIMER_HANDLER(connection_status_led_on_handler);
@@ -127,6 +133,7 @@ static DX_DECLARE_TIMER_HANDLER(panel_refresh_handler);
 static DX_DECLARE_TIMER_HANDLER(read_buttons_handler);
 static DX_DECLARE_TIMER_HANDLER(read_panel_handler);
 static DX_DECLARE_TIMER_HANDLER(report_memory_usage);
+static DX_DECLARE_TIMER_HANDLER(terminal_io_monitor_handler);
 static DX_DECLARE_TIMER_HANDLER(update_environment_handler);
 static DX_DECLARE_TIMER_HANDLER(WatchdogMonitorTimerHandler);
 static void *altair_thread(void *arg);
@@ -229,6 +236,7 @@ static DX_TIMER_BINDING tmr_tick_count = {.repeat = &(struct timespec){1, 0}, .n
 static DX_TIMER_BINDING tmr_update_environment = {.name = "tmr_update_environment", .handler = update_environment_handler};
 static DX_TIMER_BINDING tmr_initialize_environment = {.delay = &(struct timespec){8, 0}, .name = "tmr_update_environment", .handler = initialize_environment_handler};
 static DX_TIMER_BINDING tmr_watchdog_monitor = {.repeat = &(struct timespec){15, 0}, .name = "tmr_watchdog_monitor", .handler = WatchdogMonitorTimerHandler};
+static DX_TIMER_BINDING tmr_terminal_io_monitor = {.repeat = &(struct timespec){60, 0}, .name = "tmr_terminal_io_monitor", .handler = terminal_io_monitor_handler};
 
 DX_ASYNC_BINDING async_copyx_request = {.name = "async_copyx_request", .handler = async_copyx_request_handler};
 DX_ASYNC_BINDING async_expire_session = { .name = "async_expire_session", .handler = async_expire_session_handler};
@@ -307,7 +315,7 @@ static DX_GPIO_BINDING azure_connected_led = {
 #ifdef SEEED_STUDIO_MDB
 static DX_GPIO_BINDING *gpioSet[] = {&azure_connected_led, &gpioRed, &gpioGreen, &gpioBlue
 #else
-static DX_GPIO_BINDING *gpioSet[]  = {&buttonA, &buttonB, &azure_connected_led, &gpioRed, &gpioGreen, &gpioBlue
+static DX_GPIO_BINDING *gpioSet[] = {&buttonA, &buttonB, &azure_connected_led, &gpioRed, &gpioGreen, &gpioBlue
 #endif
 
 #ifdef ALTAIR_FRONT_PANEL_KIT
@@ -366,6 +374,7 @@ static DX_TIMER_BINDING *timerSet[] = {
 	&tmr_read_panel,
 	&tmr_refresh_panel,
 	&tmr_report_memory_usage,
+	&tmr_terminal_io_monitor,
 	&tmr_tick_count,
 	&tmr_timer_millisecond_expired,
 	&tmr_timer_seconds_expired,

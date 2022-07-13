@@ -13,30 +13,48 @@ static DX_TIMER_HANDLER(WatchdogMonitorTimerHandler)
 DX_TIMER_HANDLER_END
 
 /// <summary>
+/// Monitor Altair Terminal Input and Output. If no activity for 10 minutes then disable WiFi, and sleep the
+/// Altair i8080
+/// </summary>
+DX_TIMER_HANDLER(terminal_io_monitor_handler)
+{
+	if (terminal_io_activity)
+	{
+		inactivity_period    = 0;
+		terminal_io_activity = false;
+	}
+	else
+	{
+		inactivity_period++;
+		if (inactivity_period > 9 && !stop_cpu)
+		{
+			altair_sleep();
+			inactivity_period = 0;
+		}
+	}
+}
+DX_TIMER_HANDLER_END
+
+/// <summary>
 /// Get geo location and environment for geo location from Open Weather Map
 /// Requires Open Weather Map free api key
 /// </summary>
 static DX_TIMER_HANDLER(update_environment_handler)
 {
 	update_weather();
-
-	if (azure_connected && environment.valid)
-	{
-		// publish_properties(&environment);
-		publish_telemetry(&environment);
-	}
-
-	dx_timerOneShotSet(&tmr_update_environment, &(struct timespec){20 * 60, 0});
+	dx_timerOneShotSet(&tmr_update_environment, &(struct timespec){30 * 60, 0});
 }
 DX_TIMER_HANDLER_END
 
+
+/// <summary>
+/// Initialise cloud weather and geo cloud services
+/// </summary>
 DX_TIMER_HANDLER(initialize_environment_handler)
 {
-	static const char *network_interface = NULL;
-
-	network_interface = dx_isStringNullOrEmpty(altair_config.network_interface)
-							? DEFAULT_NETWORK_INTERFACE
-							: altair_config.network_interface;
+	const char *network_interface = dx_isStringNullOrEmpty(altair_config.network_interface)
+										? DEFAULT_NETWORK_INTERFACE
+										: altair_config.network_interface;
 
 	if (dx_isNetworkConnected(network_interface))
 	{
@@ -77,6 +95,9 @@ static DX_TIMER_HANDLER(heart_beat_handler)
 }
 DX_TIMER_HANDLER_END
 
+/// <summary>
+/// Read panel input
+/// </summary>
 static DX_TIMER_HANDLER(read_panel_handler)
 {
 	read_altair_panel_switches(process_control_panel_commands);
@@ -84,11 +105,13 @@ static DX_TIMER_HANDLER(read_panel_handler)
 }
 DX_TIMER_HANDLER_END
 
+/// <summary>
+/// Read buttons A Display IP address and B for sleep mode 
+/// </summary>
 DX_TIMER_HANDLER(read_buttons_handler)
 {
 	static GPIO_Value_Type buttonAState;
 	static GPIO_Value_Type buttonBState;
-	static bool screen_blanked = false;
 
 	if (dx_gpioStateGet(&buttonA, &buttonAState) && network_connected)
 	{
@@ -99,18 +122,15 @@ DX_TIMER_HANDLER(read_buttons_handler)
 	{
 		if (dx_gpioStateGet(&buttonB, &buttonBState))
 		{
-			if (screen_blanked)
+			if (stop_cpu)
 			{
-				dx_timerStart(&tmr_read_panel);
-				dx_timerStart(&tmr_refresh_panel);
-				screen_blanked = false;
+				altair_wake();
 			}
 			else
 			{
-				dx_timerStop(&tmr_read_panel);
-				dx_timerStop(&tmr_refresh_panel);
-				as1115_clear(&retro_click);
-				screen_blanked = true;
+				altair_sleep();
+				dx_timerOneShotSet(&tmr_read_buttons, &(struct timespec){2, 0});
+				return;
 			}
 		}
 	}
@@ -133,7 +153,8 @@ DX_TIMER_HANDLER(panel_refresh_handler)
 		uint8_t data   = cpu.data_bus;
 		uint16_t bus   = cpu.address_bus;
 
-		if (status != last_status || data != last_data || bus != last_bus || cpu_operating_mode == CPU_STARTING)
+		if (status != last_status || data != last_data || bus != last_bus ||
+			cpu_operating_mode == CPU_STARTING)
 		{
 			last_status = status;
 			last_data   = data;
@@ -292,7 +313,14 @@ static DX_TIMER_HANDLER(connection_status_led_on_handler)
 {
 	static int init_sequence = 25;
 
-	if (init_sequence-- > 0)
+	if (stop_cpu)
+	{
+		dx_gpioOn(&azure_connected_led);
+		// on for 100ms off for 8 seconds - 100ms
+		dx_timerOneShotSet(&tmr_connection_status_led_on, &(struct timespec){8, 0});
+		dx_timerOneShotSet(&tmr_connection_status_led_off, &(struct timespec){0, 100 * ONE_MS});
+	}
+	else if (init_sequence-- > 0)
 	{
 		dx_gpioOn(&azure_connected_led);
 		// on for 100ms off for 100ms = 200 ms in total
@@ -333,6 +361,47 @@ DX_TIMER_HANDLER(network_state_handler)
 DX_TIMER_HANDLER_END
 
 /// <summary>
+/// Wake the Altair, enable WiFi, start timers and i8080 cpu emulator
+/// </summary>
+static void altair_wake(void)
+{
+	dx_timerStart(&tmr_read_panel);
+	dx_timerStart(&tmr_refresh_panel);
+	dx_timerStart(&tmr_terminal_io_monitor);
+
+	PowerManagement_SetSystemPowerProfile(PowerManagement_HighPerformance);
+	start_network_interface();
+	dx_timerStart(&tmr_partial_message);
+	dx_startThreadDetached(altair_thread, NULL, "altair_thread");
+
+	inactivity_period = 0;
+	stop_cpu          = false;
+}
+
+
+/// <summary>
+/// Sleep the Altair, disable WiFi, stop timers and  stop the i8080 cpu emulator
+/// </summary>
+static void altair_sleep(void)
+{
+	const char *network_interface = dx_isStringNullOrEmpty(altair_config.network_interface)
+										? DEFAULT_NETWORK_INTERFACE
+										: altair_config.network_interface;
+	stop_cpu                      = true;
+
+	dx_timerStop(&tmr_read_panel);
+	dx_timerStop(&tmr_refresh_panel);
+	dx_timerStop(&tmr_terminal_io_monitor);
+
+	as1115_clear(&retro_click);
+
+	PowerManagement_SetSystemPowerProfile(PowerManagement_PowerSaver);
+	Networking_SetInterfaceState(network_interface, false);
+
+	dx_timerStop(&tmr_partial_message);
+}
+
+/// <summary>
 /// Set up watchdog timer - the lease is extended via the WatchdogMonitorTimerHandler function
 /// </summary>
 /// <param name=""></param>
@@ -352,6 +421,9 @@ void SetupWatchdog(void)
 	}
 }
 
+/// <summary>
+/// Send character by character to Altair terminal input when ready 
+/// </summary>
 static void send_terminal_character(char character, bool wait)
 {
 	int retry              = 0;
@@ -435,6 +507,10 @@ static bool load_application(const char *fileName)
 	return false;
 }
 
+
+/// <summary>
+/// Altair terminal input callback
+/// </summary>
 static char terminal_read(void)
 {
 	char retVal;
@@ -444,7 +520,9 @@ static char terminal_read(void)
 	{
 		retVal                 = terminalInputCharacter;
 		terminalInputCharacter = 0x00;
+		terminal_io_activity   = true;
 		retVal &= 0x7F; // take first 7 bits (128 ascii chars)
+
 		return retVal;
 	}
 
@@ -456,6 +534,7 @@ static char terminal_read(void)
 		{
 			haveTerminalInputMessage = false;
 		}
+		terminal_io_activity = true;
 		retVal &= 0x7F; // take first 7 bits (128 ascii chars)
 		return retVal;
 	}
@@ -477,12 +556,16 @@ static char terminal_read(void)
 				retVal = 0x0D;
 			}
 		}
+		terminal_io_activity = true;
 		retVal &= 0x7F; // take first 7 bits (128 ascii chars)
 		return retVal;
 	}
 	return 0;
 }
 
+/// <summary>
+/// Altair write Terminal output callback
+/// </summary>
 static void terminal_write(char c)
 {
 	c &= 0x7F;
@@ -498,6 +581,7 @@ static void terminal_write(char c)
 	}
 	else
 	{
+		terminal_io_activity = true;
 		publish_character(c);
 	}
 }
@@ -507,6 +591,10 @@ static inline uint8_t sense(void)
 	return (uint8_t)(bus_switches >> 8);
 }
 
+
+/// <summary>
+/// Print welcome banner
+/// </summary>
 void print_console_banner(void)
 {
 	for (int x = 0; x < strlen(AltairMsg); x++)
@@ -525,9 +613,12 @@ void print_console_banner(void)
 	}
 }
 
-static void *altair_thread(void *arg)
+
+/// <summary>
+/// Intialize the Altair disks and i8080 cpu
+/// </summary>
+static void init_altair(void)
 {
-	Log_Debug("Altair Thread starting...\n");
 	print_console_banner();
 
 	memset(memory, 0x00, 64 * 1024); // clear memory.
@@ -578,8 +669,17 @@ static void *altair_thread(void *arg)
 		Log_Debug("Failed to load Disk ROM image\n");
 
 	i8080_examine(&cpu, 0xff00); // 0xff00 loads from disk, 0x0000 loads basic
+}
 
-	while (1)
+
+/// <summary>
+/// Thread to run the i8080 cpu emulator on
+/// </summary>
+static void *altair_thread(void *arg)
+{
+	// Log_Debug("Altair Thread starting...\n");
+
+	while (!stop_cpu)
 	{
 		if (cpu_operating_mode == CPU_RUNNING)
 		{
@@ -614,9 +714,31 @@ static void report_startup_stats(bool connected)
 	}
 }
 
+
+/// <summary>
+/// Azure IoT connection state callback
+/// </summary>
 static void azure_connection_state(bool connection_state)
 {
 	azure_connected = connection_state;
+}
+
+/// <summary>
+/// Start network interface and retry until enabled
+/// </summary>
+static void start_network_interface(void)
+{
+	int result, retry = 0;
+	const char *network_interface = dx_isStringNullOrEmpty(altair_config.network_interface)
+										? DEFAULT_NETWORK_INTERFACE
+										: altair_config.network_interface;
+
+	result = Networking_SetInterfaceState(network_interface, true);
+	while (result == -1 && errno == EAGAIN && retry++ < 10)
+	{
+		nanosleep(&(struct timespec){0, 250 * ONE_MS}, NULL);
+		result = Networking_SetInterfaceState(network_interface, true);
+	}
 }
 
 /// <summary>
@@ -626,6 +748,8 @@ static void azure_connection_state(bool connection_state)
 static void InitPeripheralAndHandlers(int argc, char *argv[])
 {
 	dx_Log_Debug_Init(Log_Debug_Time_buffer, sizeof(Log_Debug_Time_buffer));
+
+	start_network_interface();
 
 	parse_altair_cmd_line_arguments(argc, argv, &altair_config);
 
@@ -684,6 +808,7 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
 
 #endif // SD_CARD_ENABLED
 
+	init_altair();
 	dx_startThreadDetached(altair_thread, NULL, "altair_thread");
 
 	// SetupWatchdog();
