@@ -35,10 +35,13 @@ extern DX_TIMER_BINDING tmr_refresh_panel;
 DX_DECLARE_ASYNC_HANDLER(async_accelerometer_start_handler);
 DX_DECLARE_ASYNC_HANDLER(async_accelerometer_stop_handler);
 DX_DECLARE_ASYNC_HANDLER(async_copyx_request_handler);
+DX_DECLARE_ASYNC_HANDLER(async_power_management_disable_handler);
+DX_DECLARE_ASYNC_HANDLER(async_power_management_enable_handler);
 DX_DECLARE_ASYNC_HANDLER(async_publish_json_handler);
 DX_DECLARE_ASYNC_HANDLER(async_publish_weather_handler);
 DX_DECLARE_ASYNC_HANDLER(async_set_timer_millisecond_handler);
 DX_DECLARE_ASYNC_HANDLER(async_set_timer_seconds_handler);
+
 DX_DECLARE_TIMER_HANDLER(read_accelerometer_handler);
 DX_DECLARE_TIMER_HANDLER(tick_count_handler);
 DX_DECLARE_TIMER_HANDLER(timer_millisecond_expired_handler);
@@ -58,6 +61,7 @@ void intercore_classify_response_handler(void *data_block, ssize_t message_lengt
 
 extern ALTAIR_CONFIG_T altair_config;
 extern DX_TIMER_BINDING tmr_read_accelerometer;
+extern DX_TIMER_BINDING tmr_terminal_io_monitor;
 extern DX_TIMER_BINDING tmr_timer_millisecond_expired;
 extern DX_TIMER_BINDING tmr_timer_seconds_expired;
 
@@ -68,6 +72,8 @@ extern DX_ASYNC_BINDING async_publish_json;
 extern DX_ASYNC_BINDING async_publish_weather;
 extern DX_ASYNC_BINDING async_set_millisecond_timer;
 extern DX_ASYNC_BINDING async_set_seconds_timer;
+extern DX_ASYNC_BINDING async_power_management_disable;
+extern DX_ASYNC_BINDING async_power_management_enable;
 
 enum PANEL_MODE_T
 {

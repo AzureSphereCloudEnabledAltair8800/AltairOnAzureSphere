@@ -28,7 +28,7 @@ typedef struct
 	bool end_of_file;
 	int index;
 	int ch;
-} COPY_X_T;
+} webget_T;
 
 typedef struct
 {
@@ -41,7 +41,7 @@ typedef struct
 	int ch;
 } DEVGET_T;
 
-static COPY_X_T copy_x;
+static webget_T webget;
 static DEVGET_T devget;
 
 static JSON_UNIT_T ju;
@@ -215,6 +215,22 @@ DX_TIMER_HANDLER(tick_count_handler)
 }
 DX_TIMER_HANDLER_END
 
+/******************************************************************************************************************************************************* 
+ * Async handlers. These async handlers marshall calls from threads calling event loop functions of the event loop running on the main thread.
+*******************************************************************************************************************************************************/
+
+DX_ASYNC_HANDLER(async_power_management_enable_handler, handle)
+{
+	dx_timerStart(&tmr_terminal_io_monitor);
+}
+DX_ASYNC_HANDLER_END
+
+DX_ASYNC_HANDLER(async_power_management_disable_handler, handle)
+{
+	dx_timerStop(&tmr_terminal_io_monitor);
+}
+DX_ASYNC_HANDLER_END
+
 DX_ASYNC_HANDLER(async_accelerometer_start_handler, handle)
 {
 #ifdef OEM_AVNET
@@ -235,8 +251,8 @@ DX_ASYNC_HANDLER_END
 
 DX_ASYNC_HANDLER(async_copyx_request_handler, handle)
 {
-	copy_web(copy_x.url);
-	copy_x.end_of_file = false;
+	copy_web(webget.url);
+	webget.end_of_file = false;
 }
 DX_ASYNC_HANDLER_END
 
@@ -346,31 +362,31 @@ void io_port_out(uint8_t port, uint8_t data)
 			}
 			break;
 		case 33: // copy file from web server to mutable storage
-			if (copy_x.index == 0)
+			if (webget.index == 0)
 			{
-				memset(copy_x.filename, 0x00, sizeof(copy_x.filename));
-				if (copy_x.file_opened && copy_x.fd != -1)
+				memset(webget.filename, 0x00, sizeof(webget.filename));
+				if (webget.file_opened && webget.fd != -1)
 				{
-					close(copy_x.fd);
-					copy_x.file_opened = false;
-					copy_x.end_of_file = true;
-					copy_x.fd          = -1;
+					close(webget.fd);
+					webget.file_opened = false;
+					webget.end_of_file = true;
+					webget.fd          = -1;
 				}
 			}
 
-			if (data != 0 && copy_x.index < sizeof(copy_x.filename))
+			if (data != 0 && webget.index < sizeof(webget.filename))
 			{
-				copy_x.filename[copy_x.index] = data;
-				copy_x.index++;
+				webget.filename[webget.index] = data;
+				webget.index++;
 			}
 
 			if (data == 0) // NULL TERMINATION
 			{
-				copy_x.index       = 0;
-				copy_x.end_of_file = true;
+				webget.index       = 0;
+				webget.end_of_file = true;
 
-				memset(copy_x.url, 0x00, sizeof(copy_x.url));
-				snprintf(copy_x.url, sizeof(copy_x.url), "%s/%s", altair_config.copy_x_url, copy_x.filename);
+				memset(webget.url, 0x00, sizeof(webget.url));
+				snprintf(webget.url, sizeof(webget.url), "%s/%s", altair_config.copy_x_url, webget.filename);
 
 				dx_asyncSend(&async_copyx_request, NULL);
 			}
@@ -536,6 +552,15 @@ void io_port_out(uint8_t port, uint8_t data)
 #ifdef AZURE_SPHERE
 		case 66: // enable/disable power management
 
+			if (data)
+			{
+				dx_asyncSend(&async_power_management_enable, NULL);
+			}
+			else
+			{
+				dx_asyncSend(&async_power_management_disable, NULL);
+			}
+
 			break;
 
 		case 67: // set devget filename
@@ -665,7 +690,7 @@ void io_port_out(uint8_t port, uint8_t data)
 				pixel_map.bitmap64                = pixel_map.bitmap64 ^ pixel_mask.mask64;
 			}
 			break;
-		case 101:  // clear all pixels
+		case 101: // clear all pixels
 			pixel_map.bitmap64 = 0;
 			break;
 
@@ -721,7 +746,7 @@ uint8_t io_port_in(uint8_t port)
 			retVal = (uint8_t)publish_weather_pending;
 			break;
 		case 33: // has copyx file need copied and loaded
-			retVal = copy_x.end_of_file;
+			retVal = webget.end_of_file;
 			break;
 		case 67: // has devget eof
 			retVal = devget.end_of_file;
@@ -737,38 +762,38 @@ uint8_t io_port_in(uint8_t port)
 			}
 			break;
 		case 201: // READ COPYX file from mutable storage
-			if (copy_x.end_of_file)
+			if (webget.end_of_file)
 			{
 				retVal = 0x00;
 			}
 			else
 			{
-				if (!copy_x.file_opened)
+				if (!webget.file_opened)
 				{
 					/* open the file */
 #ifdef AZURE_SPHERE
-					copy_x.fd = Storage_OpenMutableFile();
+					webget.fd = Storage_OpenMutableFile();
 #else
-					copy_x.fd = open("MutableStorage/copyx", O_RDONLY);
+					webget.fd = open("MutableStorage/copyx", O_RDONLY);
 #endif
-					if (copy_x.fd != -1)
+					if (webget.fd != -1)
 					{
-						lseek(copy_x.fd, 0, SEEK_SET);
-						copy_x.file_opened = true;
+						lseek(webget.fd, 0, SEEK_SET);
+						webget.file_opened = true;
 					}
 				}
 
-				if (copy_x.file_opened)
+				if (webget.file_opened)
 				{
-					if (read(copy_x.fd, &retVal, 1) == 0)
+					if (read(webget.fd, &retVal, 1) == 0)
 					{
-						close(copy_x.fd);
+						close(webget.fd);
 #ifdef AZURE_SPHERE
 						Storage_DeleteMutableFile();
 #endif
-						copy_x.file_opened = false;
-						copy_x.end_of_file = true;
-						copy_x.fd          = -1;
+						webget.file_opened = false;
+						webget.end_of_file = true;
+						webget.fd          = -1;
 						retVal             = 0x00;
 					}
 				}

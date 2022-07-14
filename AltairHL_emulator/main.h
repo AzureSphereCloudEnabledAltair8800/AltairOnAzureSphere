@@ -218,13 +218,13 @@ static DX_GPIO_BINDING led_output_enable = {.pin = LED_OUTPUT_ENABLE,
 // clang-format off
 // Common Timers
 
-DX_TIMER_BINDING tmr_read_accelerometer = {.name = "tmr_read_accelerometer", .handler = read_accelerometer_handler};
+DX_TIMER_BINDING tmr_display_ip_address = {.handler = display_ip_address_handler};
 DX_TIMER_BINDING tmr_partial_message = {.repeat = &(struct timespec){0, 250 * ONE_MS}, .name = "tmr_partial_message", .handler = partial_message_handler};
+DX_TIMER_BINDING tmr_read_accelerometer = {.name = "tmr_read_accelerometer", .handler = read_accelerometer_handler};
+DX_TIMER_BINDING tmr_terminal_io_monitor = {.repeat = &(struct timespec){60, 0}, .name = "tmr_terminal_io_monitor", .handler = terminal_io_monitor_handler};
 DX_TIMER_BINDING tmr_timer_millisecond_expired = {.name = "tmr_timer_millisecond_expired", .handler = timer_millisecond_expired_handler};
 DX_TIMER_BINDING tmr_timer_seconds_expired = {.name = "tmr_timer_seconds_expired", .handler = timer_seconds_expired_handler};
 DX_TIMER_BINDING tmr_ws_ping_pong = {.repeat = &(struct timespec){10, 0}, .name = "tmr_partial_message", .handler = ws_ping_pong_handler};
-DX_TIMER_BINDING tmr_display_ip_address = {.handler = display_ip_address_handler};
-
 
 static DX_TIMER_BINDING tmr_connection_status_led_off = {.name = "tmr_connection_status_led_off", .handler = connection_status_led_off_handler};
 static DX_TIMER_BINDING tmr_connection_status_led_on = {.delay = &(struct timespec){1, 0}, .name = "tmr_connection_status_led_on", .handler = connection_status_led_on_handler};
@@ -236,17 +236,17 @@ static DX_TIMER_BINDING tmr_tick_count = {.repeat = &(struct timespec){1, 0}, .n
 static DX_TIMER_BINDING tmr_update_environment = {.name = "tmr_update_environment", .handler = update_environment_handler};
 static DX_TIMER_BINDING tmr_initialize_environment = {.delay = &(struct timespec){8, 0}, .name = "tmr_update_environment", .handler = initialize_environment_handler};
 static DX_TIMER_BINDING tmr_watchdog_monitor = {.repeat = &(struct timespec){15, 0}, .name = "tmr_watchdog_monitor", .handler = WatchdogMonitorTimerHandler};
-static DX_TIMER_BINDING tmr_terminal_io_monitor = {.repeat = &(struct timespec){60, 0}, .name = "tmr_terminal_io_monitor", .handler = terminal_io_monitor_handler};
 
+DX_ASYNC_BINDING async_accelerometer_start = {.name = "async_accelerometer_start", .handler = async_accelerometer_start_handler};
+DX_ASYNC_BINDING async_accelerometer_stop = {.name = "async_accelerometer_stop", .handler = async_accelerometer_stop_handler};
 DX_ASYNC_BINDING async_copyx_request = {.name = "async_copyx_request", .handler = async_copyx_request_handler};
 DX_ASYNC_BINDING async_expire_session = { .name = "async_expire_session", .handler = async_expire_session_handler};
+DX_ASYNC_BINDING async_power_management_disable = {.name = "async_power_management_disable", .handler = async_power_management_disable_handler};
+DX_ASYNC_BINDING async_power_management_enable = {.name = "async_power_management_enable", .handler = async_power_management_enable_handler};
 DX_ASYNC_BINDING async_publish_json = {.name = "async_publish_json", .handler = async_publish_json_handler};
 DX_ASYNC_BINDING async_publish_weather = {.name = "async_publish_weather", .handler = async_publish_weather_handler};
 DX_ASYNC_BINDING async_set_millisecond_timer = {.name = "async_set_millisecond_timer", .handler = async_set_timer_millisecond_handler};
 DX_ASYNC_BINDING async_set_seconds_timer = {.name = "async_set_seconds_timer", .handler = async_set_timer_seconds_handler};
-DX_ASYNC_BINDING async_accelerometer_start = {.name = "async_accelerometer_start", .handler = async_accelerometer_start_handler};
-DX_ASYNC_BINDING async_accelerometer_stop = {.name = "async_accelerometer_stop", .handler = async_accelerometer_stop_handler};
-
 
 #if defined(ALTAIR_FRONT_PANEL_RETRO_CLICK) || defined(ALTAIR_FRONT_PANEL_KIT)
 DX_TIMER_BINDING tmr_read_panel = {.delay = &(struct timespec){1, 0}, .name = "tmr_read_panel", .handler = read_panel_handler};
@@ -350,14 +350,16 @@ static DX_I2C_BINDING *i2c_bindings[] = {};
 #endif // ALTAIR_FRONT_PANEL_RETRO_CLICK
 
 static DX_ASYNC_BINDING *async_bindings[] = {
+	&async_accelerometer_start,
+	&async_accelerometer_stop,
 	&async_copyx_request,
 	&async_expire_session,
+	&async_power_management_disable,
+	&async_power_management_enable,
 	&async_publish_json,
 	&async_publish_weather,
 	&async_set_millisecond_timer,
 	&async_set_seconds_timer,
-	&async_accelerometer_start,
-	&async_accelerometer_stop,
 };
 
 static DX_TIMER_BINDING *timerSet[] = {
