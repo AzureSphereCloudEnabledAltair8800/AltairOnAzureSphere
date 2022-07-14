@@ -215,9 +215,10 @@ DX_TIMER_HANDLER(tick_count_handler)
 }
 DX_TIMER_HANDLER_END
 
-/******************************************************************************************************************************************************* 
- * Async handlers. These async handlers marshall calls from threads calling event loop functions of the event loop running on the main thread.
-*******************************************************************************************************************************************************/
+/*******************************************************************************************************************************************************
+ * Async handlers. These async handlers marshall calls from threads calling event loop functions of the event
+ *loop running on the main thread.
+ *******************************************************************************************************************************************************/
 
 DX_ASYNC_HANDLER(async_power_management_enable_handler, handle)
 {
@@ -294,6 +295,10 @@ DX_ASYNC_HANDLER(async_publish_json_handler, handle)
 	publish_json_pending = false;
 }
 DX_ASYNC_HANDLER_END
+
+/*******************************************************************************************************************************************************
+ * i8080 output port implementations
+ *******************************************************************************************************************************************************/
 
 /// <summary>
 /// Intel 8080 OUT Port handler
@@ -484,48 +489,48 @@ void io_port_out(uint8_t port, uint8_t data)
 		case 64:
 			switch (data)
 			{
-				case 0:
+				case 0: // accelerometer X
 					ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%f", x);
 					break;
-				case 1:
+				case 1: // accelerometer Y
 					ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%f", y);
 					break;
-				case 2:
+				case 2: // accelerometer Z
 					ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%f", z);
 					break;
-				case 3:
+				case 3: // accelerometer start feeding TinyML model running on real-time core
 					if (!accelerometer_running)
 					{
 						dx_asyncSend(&async_accelerometer_start, NULL);
 						accelerometer_running = true;
 					}
 					break;
-				case 4:
+				case 4: // accelerometer stop feeding TinyML model running on real-time core
 					if (accelerometer_running)
 					{
 						dx_asyncSend(&async_accelerometer_stop, NULL);
 						accelerometer_running = false;
 					}
 					break;
-				case 5:
+				case 5: // Load accelerometer x,y,z
 					if (!accelerometer_running)
 					{
 						avnet_get_acceleration(&x, &y, &z);
 					}
 					break;
-				case 6:
+				case 6: // Calibrate accelerometer for angular rate
 					if (!accelerometer_running)
 					{
 						avnet_calibrate_angular_rate();
 					}
 					break;
-				case 7:
+				case 7: // Load accelerometer for angular rate
 					if (!accelerometer_running)
 					{
 						avnet_get_angular_rate(&x, &y, &z);
 					}
 					break;
-				case 8:
+				case 8: // Get Tiny ML latest movement inference result
 					ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%s", PREDICTION);
 					break;
 			}
@@ -533,7 +538,7 @@ void io_port_out(uint8_t port, uint8_t data)
 #endif // OEM_AVNET
 
 #ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
-		case 65:
+		case 65: // Enable/Disable 8x8 LED Panel and 4x4 keypad
 			if (data == 0)
 			{
 				dx_timerStop(&tmr_read_panel);
@@ -590,7 +595,7 @@ void io_port_out(uint8_t port, uint8_t data)
 
 #endif // AZURE SPHERE
 
-		case 70:
+		case 70: // Load Altair version number
 			ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%s", ALTAIR_EMULATOR_VERSION);
 			break;
 
@@ -720,6 +725,10 @@ void io_port_out(uint8_t port, uint8_t data)
 			break;
 	}
 }
+
+/*******************************************************************************************************************************************************
+ * i8080 input port implementations
+ *******************************************************************************************************************************************************/
 
 /// <summary>
 /// Intel 8080 IN Port handler
