@@ -41,11 +41,18 @@ DX_TIMER_HANDLER_END
 /// </summary>
 static DX_TIMER_HANDLER(update_environment_handler)
 {
-	update_weather();
+	const char *network_interface = dx_isStringNullOrEmpty(altair_config.network_interface)
+										? DEFAULT_NETWORK_INTERFACE
+										: altair_config.network_interface;
+
+	if (dx_isNetworkConnected(network_interface))
+	{
+		update_weather();
+	}
+
 	dx_timerOneShotSet(&tmr_update_environment, &(struct timespec){30 * 60, 0});
 }
 DX_TIMER_HANDLER_END
-
 
 /// <summary>
 /// Initialise cloud weather and geo cloud services
@@ -59,6 +66,7 @@ DX_TIMER_HANDLER(initialize_environment_handler)
 	if (dx_isNetworkConnected(network_interface))
 	{
 		init_environment(&altair_config);
+		update_geo_location(&environment);
 		dx_timerOneShotSet(&tmr_update_environment, &(struct timespec){1, 0});
 	}
 	else
@@ -106,7 +114,7 @@ static DX_TIMER_HANDLER(read_panel_handler)
 DX_TIMER_HANDLER_END
 
 /// <summary>
-/// Read buttons A Display IP address and B for sleep mode 
+/// Read buttons A Display IP address and B for sleep mode
 /// </summary>
 DX_TIMER_HANDLER(read_buttons_handler)
 {
@@ -176,12 +184,10 @@ DX_TIMER_HANDLER_END
 /// <summary>
 /// Handler called to process inbound message
 /// </summary>
-DX_ASYNC_HANDLER(async_terminal_handler, handle)
+void terminal_handler(WS_INPUT_BLOCK_T *in_block)
 {
 	char command[30];
 	memset(command, 0x00, sizeof(command));
-
-	WS_INPUT_BLOCK_T *in_block = (WS_INPUT_BLOCK_T *)handle->data;
 
 	pthread_mutex_lock(&in_block->block_lock);
 
@@ -295,7 +301,6 @@ cleanup:
 	in_block->length = 0;
 	pthread_mutex_unlock(&in_block->block_lock);
 }
-DX_ASYNC_HANDLER_END
 
 /// <summary>
 /// Network connection status LED blink off oneshot timer callback
@@ -378,7 +383,6 @@ static void altair_wake(void)
 	stop_cpu          = false;
 }
 
-
 /// <summary>
 /// Sleep the Altair, disable WiFi, stop timers and  stop the i8080 cpu emulator
 /// </summary>
@@ -422,7 +426,7 @@ void SetupWatchdog(void)
 }
 
 /// <summary>
-/// Send character by character to Altair terminal input when ready 
+/// Send character by character to Altair terminal input when ready
 /// </summary>
 static void send_terminal_character(char character, bool wait)
 {
@@ -507,7 +511,6 @@ static bool load_application(const char *fileName)
 	return false;
 }
 
-
 /// <summary>
 /// Altair terminal input callback
 /// </summary>
@@ -591,7 +594,6 @@ static inline uint8_t sense(void)
 	return (uint8_t)(bus_switches >> 8);
 }
 
-
 /// <summary>
 /// Print welcome banner
 /// </summary>
@@ -612,7 +614,6 @@ void print_console_banner(void)
 		terminal_write("\r\n"[x]);
 	}
 }
-
 
 /// <summary>
 /// Intialize the Altair disks and i8080 cpu
@@ -671,7 +672,6 @@ static void init_altair(void)
 	i8080_examine(&cpu, 0xff00); // 0xff00 loads from disk, 0x0000 loads basic
 }
 
-
 /// <summary>
 /// Thread to run the i8080 cpu emulator on
 /// </summary>
@@ -713,7 +713,6 @@ static void report_startup_stats(bool connected)
 		dx_azureUnregisterConnectionChangedNotification(report_startup_stats);
 	}
 }
-
 
 /// <summary>
 /// Azure IoT connection state callback

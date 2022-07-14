@@ -137,9 +137,9 @@ void onmessage(ws_cli_conn_t *client, const unsigned char *msg, uint64_t size, i
 
 	ws_input_block.length += len;
 
-	dx_asyncSend(&async_terminal, (void *)&ws_input_block);
-
 	pthread_mutex_unlock(&ws_input_block.block_lock);
+
+	terminal_handler(&ws_input_block);	
 }
 
 void init_web_socket_server(void (*client_connected_cb)(void))
