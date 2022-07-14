@@ -30,7 +30,19 @@ typedef struct
 	int ch;
 } COPY_X_T;
 
+typedef struct
+{
+	int fd;
+	char filename[15];
+	bool file_opened;
+	bool enabled;
+	bool end_of_file;
+	int index;
+	int ch;
+} DEVGET_T;
+
 static COPY_X_T copy_x;
+static DEVGET_T devget;
 
 static JSON_UNIT_T ju;
 static REQUEST_UNIT_T ru;
@@ -511,13 +523,47 @@ void io_port_out(uint8_t port, uint8_t data)
 				dx_timerStop(&tmr_read_panel);
 				dx_timerStop(&tmr_refresh_panel);
 				as1115_clear(&retro_click);
-			} else {
+			}
+			else
+			{
 				dx_timerStart(&tmr_read_panel);
 				dx_timerStart(&tmr_refresh_panel);
 				as1115_set_brightness(&retro_click, (unsigned char)(data - 1));
-			}			
+			}
 			break;
 #endif
+
+#ifdef AZURE_SPHERE
+		case 66: // enable/disable power management
+
+			break;
+
+		case 67: // set devget filename
+			if (devget.index == 0)
+			{
+
+				if (devget.file_opened && devget.fd != -1)
+				{
+					close(devget.fd);
+				}
+				memset(&devget, 0x00, sizeof(DEVGET_T));
+				devget.fd = -1;
+			}
+
+			if (data != 0 && devget.index < sizeof(devget.filename))
+			{
+				devget.filename[devget.index] = data;
+				devget.index++;
+			}
+
+			if (data == 0) // NULL TERMINATION
+			{
+				devget.index = 0;
+			}
+
+			break;
+
+#endif // AZURE SPHERE
 
 		case 70:
 			ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%s", ALTAIR_EMULATOR_VERSION);
@@ -658,6 +704,7 @@ void io_port_out(uint8_t port, uint8_t data)
 uint8_t io_port_in(uint8_t port)
 {
 	uint8_t retVal = 0;
+	char devget_path_and_filename[50];
 
 	switch (port)
 	{
@@ -675,6 +722,9 @@ uint8_t io_port_in(uint8_t port)
 			break;
 		case 33: // has copyx file need copied and loaded
 			retVal = copy_x.end_of_file;
+			break;
+		case 67: // has devget eof
+			retVal = devget.end_of_file;
 			break;
 		case 200: // READ STRING
 			if (ru.count < ru.len && ru.count < sizeof(ru.buffer))
@@ -728,6 +778,51 @@ uint8_t io_port_in(uint8_t port)
 				}
 			}
 			break;
+#ifdef AZURE_SPHERE
+
+		case 202: // READ DEVGET file from immutable storage
+			if (devget.end_of_file)
+			{
+				retVal = 0x00;
+			}
+			else
+			{
+				if (!devget.file_opened)
+				{
+					/* open the file */
+					snprintf(devget_path_and_filename, sizeof(devget_path_and_filename), "%s/%s",
+						BASIC_SAMPLES_DIRECTORY, devget.filename);
+
+					if ((devget.fd = Storage_OpenFileInImagePackage(devget_path_and_filename)) != -1)
+					{
+						devget.file_opened = true;
+					}
+					else
+					{
+						devget.end_of_file = true;
+					}
+				}
+
+				if (devget.file_opened)
+				{
+					if (read(devget.fd, &retVal, 1) == 0)
+					{
+						close(devget.fd);
+
+						devget.file_opened = false;
+						devget.end_of_file = true;
+						devget.fd          = -1;
+						retVal             = 0x00;
+					}
+				}
+				else
+				{
+					retVal = 0x00;
+				}
+			}
+			break;
+
+#endif // AZURE SPHERE
 		default:
 			retVal = 0x00;
 	}
