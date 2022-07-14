@@ -665,7 +665,7 @@ void io_port_out(uint8_t port, uint8_t data)
 				pixel_map.bitmap64                = pixel_map.bitmap64 ^ pixel_mask.mask64;
 			}
 			break;
-		case 101:
+		case 101:  // clear all pixels
 			pixel_map.bitmap64 = 0;
 			break;
 
