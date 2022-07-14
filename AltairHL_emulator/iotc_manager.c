@@ -57,7 +57,7 @@ static void device_twin_update_location(double latitude, double longitude, DX_DE
     dx_deviceTwinReportValue(device_twin, location_buffer);
 }
 
-static void update_geo_location(ENVIRONMENT_TELEMETRY *environment)
+void update_geo_location(ENVIRONMENT_TELEMETRY *environment)
 {
     static bool updated = false;
 
@@ -69,36 +69,36 @@ static void update_geo_location(ENVIRONMENT_TELEMETRY *environment)
     }
 }
 
-void publish_properties(ENVIRONMENT_TELEMETRY *environment)
-{
-#define UPDATE_PROPERTY_FLOAT(name) \
-    (device_twin_update_float(&environment->latest.pollution.name, &environment->previous.pollution.name, &dt_##name))
-#define UPDATE_PROPERTY_INT(name) \
-    (device_twin_update_int(&environment->latest.weather.name, &environment->previous.weather.name, &dt_##name))
+// void publish_properties(ENVIRONMENT_TELEMETRY *environment)
+// {
+// #define UPDATE_PROPERTY_FLOAT(name) \
+//     (device_twin_update_float(&environment->latest.pollution.name, &environment->previous.pollution.name, &dt_##name))
+// #define UPDATE_PROPERTY_INT(name) \
+//     (device_twin_update_int(&environment->latest.weather.name, &environment->previous.weather.name, &dt_##name))
 
-    if (!azure_connected) {
-        return;
-    }
+//     if (!azure_connected) {
+//         return;
+//     }
 
-    UPDATE_PROPERTY_INT(temperature);
-    UPDATE_PROPERTY_INT(pressure);
-    UPDATE_PROPERTY_INT(humidity);
+//     UPDATE_PROPERTY_INT(temperature);
+//     UPDATE_PROPERTY_INT(pressure);
+//     UPDATE_PROPERTY_INT(humidity);
 
-    device_twin_update_float(&environment->latest.weather.wind_speed, &environment->previous.weather.wind_speed, &dt_wind_speed);
-    UPDATE_PROPERTY_INT(wind_direction);
+//     device_twin_update_float(&environment->latest.weather.wind_speed, &environment->previous.weather.wind_speed, &dt_wind_speed);
+//     UPDATE_PROPERTY_INT(wind_direction);
 
-    UPDATE_PROPERTY_FLOAT(air_quality_index);
-    UPDATE_PROPERTY_FLOAT(carbon_monoxide);
-    UPDATE_PROPERTY_FLOAT(nitrogen_monoxide);
-    UPDATE_PROPERTY_FLOAT(nitrogen_dioxide);
-    UPDATE_PROPERTY_FLOAT(ozone);
-    UPDATE_PROPERTY_FLOAT(sulphur_dioxide);
-    UPDATE_PROPERTY_FLOAT(ammonia);
-    UPDATE_PROPERTY_FLOAT(pm2_5);
-    UPDATE_PROPERTY_FLOAT(pm10);
+//     UPDATE_PROPERTY_FLOAT(air_quality_index);
+//     UPDATE_PROPERTY_FLOAT(carbon_monoxide);
+//     UPDATE_PROPERTY_FLOAT(nitrogen_monoxide);
+//     UPDATE_PROPERTY_FLOAT(nitrogen_dioxide);
+//     UPDATE_PROPERTY_FLOAT(ozone);
+//     UPDATE_PROPERTY_FLOAT(sulphur_dioxide);
+//     UPDATE_PROPERTY_FLOAT(ammonia);
+//     UPDATE_PROPERTY_FLOAT(pm2_5);
+//     UPDATE_PROPERTY_FLOAT(pm10);
 
-    update_geo_location(environment);
-}
+//     update_geo_location(environment);
+// }
 
 void publish_telemetry(ENVIRONMENT_TELEMETRY *environment)
 {
@@ -141,5 +141,5 @@ void publish_telemetry(ENVIRONMENT_TELEMETRY *environment)
         Log_Debug("MsgBuffer too small. Msg not sent.\n");
     }
 
-    publish_properties(environment);
+    // publish_properties(environment);
 }
