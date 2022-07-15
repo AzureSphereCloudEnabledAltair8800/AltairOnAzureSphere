@@ -1,14 +1,14 @@
 #include <stdio.h>
-#define PORT_FILENAME 68
-#define PORT_EOF 68
-#define PORT_GET_BYTE 202
+#define PORT_FILENAME 33
+#define PORT_EOF 33
+#define PORT_GET_BYTE 201
 
 FILE *fp_output;
 
 main(argc, argv) char **argv;
 {
     if (argc != 2) {
-        printf("Usage: devget filename\n");
+        printf("Usage: webget filename\n");
         exit();
     }
 
@@ -26,16 +26,16 @@ main(argc, argv) char **argv;
         exit();
     }
 
-    /* Sets the filename to be copied with i8080 port 68 */
+    /* Sets the filename to be copied with i8080 port 33 */
     set_filename(argv[1], filename_len);
 
-    /* copies file byte stream from i8080 port 202 */
+    /* copies file byte stream from i8080 port 33 */
     copy_file();
 
     fclose(fp_output);
 }
 
-/* Sets the filename to be copied with i8080 port 68 */
+/* Sets the filename to be copied with i8080 port 33 */
 int set_filename(filename, len)
 char *filename; int len;
 {
@@ -46,13 +46,15 @@ char *filename; int len;
     outp(PORT_FILENAME, 0);
 }
 
-/* copies file byte stream from i8080 port 202 */
+/* copies file byte stream from i8080 port 33 */
 void copy_file()
 {
-    char ch;
+    /* Wait for the HTTP GET request to complete and file is loaded */
+    /* End of file flag goes low when file is ready to copy */
+    while(inp(PORT_EOF) == 1){}
 
     /* While not end of file read in next byte */
-    while ((ch = inp(PORT_EOF)) == 0) {
+    while (inp(PORT_EOF) == 0) {
        fputc(inp(PORT_GET_BYTE), fp_output);
     }
 }
