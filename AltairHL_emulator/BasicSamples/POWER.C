@@ -1,3 +1,9 @@
+#define PORT_LED 65
+#define PORT_POWER 66
+#define PORT_DISABLE 0
+#define PORT_ENABLE 1
+#define PORT_SLEEP 2
+
 main(argc, argv)
 int argc;
 char **argv;
@@ -19,28 +25,28 @@ char **argv;
 
   if (strlen(argv[1]) == 1 && isdigit(cmd) && level >= 0 && level < 9) 
   {
-     outp(65, level);
+     outp(PORT_LED, level);
      printf("LED Brightness set to %d\n", level);
      exit();
   }
 
   if (cmd == 'E')
   {
-     outp(66, 1);
+     outp(PORT_POWER, PORT_ENABLE);
      printf("Power management enabled.\n");  
      exit();
   }
 
   if (cmd == 'D')
   {
-     outp(66, 0);
+     outp(PORT_POWER, PORT_DISABLE);
      printf("Power management disabled.\n");
      exit();
   }
 
   if (cmd == 'S')
   {
-    outp(66, 2);
+    outp(PORT_POWER, PORT_SLEEP);
     printf("Power management sleep.\n");
     exit();
   }

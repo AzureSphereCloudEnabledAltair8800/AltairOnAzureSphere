@@ -88,21 +88,21 @@ timer_t watchdogTimer;
 ALTAIR_COMMAND cmd_switches;
 WS_INPUT_BLOCK_T ws_input_block;
 
-CPU_OPERATING_MODE cpu_operating_mode     = CPU_STARTING;
-bool azure_connected                      = false;
-bool send_partial_msg                     = false;
-char msgBuffer[MSG_BUFFER_BYTES]          = {0};
-const struct itimerspec watchdogInterval  = {{60, 0}, {60, 0}};
-int altair_spi_fd                         = -1;
-static bool network_connected             = false;
-static bool stop_cpu                      = false;
-static bool terminal_io_activity          = false;
-static char Log_Debug_Time_buffer[64]     = {0};
-static const char *AltairMsg              = "\x1b[2J\r\nAzure Sphere - Altair 8800 Emulator ";
-static int app_fd                         = -1;
-static int inactivity_period              = 0;
-static volatile bool altair_i8080_running = false;
-uint16_t bus_switches                     = 0x00;
+CPU_OPERATING_MODE cpu_operating_mode    = CPU_STARTING;
+bool azure_connected                     = false;
+bool send_partial_msg                    = false;
+char msgBuffer[MSG_BUFFER_BYTES]         = {0};
+const struct itimerspec watchdogInterval = {{60, 0}, {60, 0}};
+int altair_spi_fd                        = -1;
+static bool altair_i8080_running         = false;
+static bool network_connected            = false;
+static bool stop_cpu                     = false;
+static bool terminal_io_activity         = false;
+static char Log_Debug_Time_buffer[64]    = {0};
+static const char *AltairMsg             = "\x1b[2J\r\nAzure Sphere - Altair 8800 Emulator ";
+static int app_fd                        = -1;
+static int inactivity_period             = 0;
+uint16_t bus_switches                    = 0x00;
 
 // basic app load helpers.
 static bool haveAppLoad            = false;

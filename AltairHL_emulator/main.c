@@ -375,6 +375,9 @@ void altair_wake(void)
 		return;
 	}
 
+	inactivity_period = 0;
+	stop_cpu          = false;
+
 	dx_timerStart(&tmr_read_panel);
 	dx_timerStart(&tmr_refresh_panel);
 	dx_timerStart(&tmr_terminal_io_monitor);
@@ -384,9 +387,10 @@ void altair_wake(void)
 	dx_timerStart(&tmr_partial_message);
 
 	dx_startThreadDetached(altair_thread, NULL, "altair_thread");
-
-	inactivity_period = 0;
-	stop_cpu          = false;
+	while (!altair_i8080_running) // spin until i8080 thread starts
+	{
+		nanosleep(&(struct timespec){0, 1 * ONE_MS}, NULL);
+	}
 }
 
 /// <summary>
@@ -695,6 +699,10 @@ static void init_altair(void)
 static void *altair_thread(void *arg)
 {
 	// Log_Debug("Altair Thread starting...\n");
+	if (altair_i8080_running)
+	{
+		return;
+	}
 
 	altair_i8080_running = true;
 
@@ -830,6 +838,10 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
 
 	init_altair();
 	dx_startThreadDetached(altair_thread, NULL, "altair_thread");
+	while (!altair_i8080_running) // spin until i8080 thread starts
+	{
+		nanosleep(&(struct timespec){0, 1 * ONE_MS}, NULL);
+	}
 
 	// SetupWatchdog();
 }
