@@ -368,8 +368,13 @@ DX_TIMER_HANDLER_END
 /// <summary>
 /// Wake the Altair, enable WiFi, start timers and i8080 cpu emulator
 /// </summary>
-static void altair_wake(void)
+void altair_wake(void)
 {
+	if (altair_i8080_running)
+	{
+		return;
+	}
+
 	dx_timerStart(&tmr_read_panel);
 	dx_timerStart(&tmr_refresh_panel);
 	dx_timerStart(&tmr_terminal_io_monitor);
@@ -377,6 +382,7 @@ static void altair_wake(void)
 	PowerManagement_SetSystemPowerProfile(PowerManagement_HighPerformance);
 	start_network_interface();
 	dx_timerStart(&tmr_partial_message);
+
 	dx_startThreadDetached(altair_thread, NULL, "altair_thread");
 
 	inactivity_period = 0;
@@ -386,12 +392,23 @@ static void altair_wake(void)
 /// <summary>
 /// Sleep the Altair, disable WiFi, stop timers and  stop the i8080 cpu emulator
 /// </summary>
-static void altair_sleep(void)
+void altair_sleep(void)
 {
 	const char *network_interface = dx_isStringNullOrEmpty(altair_config.network_interface)
 										? DEFAULT_NETWORK_INTERFACE
 										: altair_config.network_interface;
-	stop_cpu                      = true;
+
+	if (!altair_i8080_running)
+	{
+		return;
+	}
+
+	stop_cpu = true;
+
+	while (altair_i8080_running) // spin until i8080 thread stops
+	{
+		nanosleep(&(struct timespec){0, 1 * ONE_MS}, NULL);
+	}
 
 	dx_timerStop(&tmr_read_panel);
 	dx_timerStop(&tmr_refresh_panel);
@@ -679,6 +696,8 @@ static void *altair_thread(void *arg)
 {
 	// Log_Debug("Altair Thread starting...\n");
 
+	altair_i8080_running = true;
+
 	while (!stop_cpu)
 	{
 		if (cpu_operating_mode == CPU_RUNNING)
@@ -692,6 +711,8 @@ static void *altair_thread(void *arg)
 			send_partial_msg = false;
 		}
 	}
+
+	altair_i8080_running = false;
 
 	return NULL;
 }

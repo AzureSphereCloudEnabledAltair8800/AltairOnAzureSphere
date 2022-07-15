@@ -215,6 +215,12 @@ DX_TIMER_HANDLER(tick_count_handler)
 }
 DX_TIMER_HANDLER_END
 
+DX_TIMER_HANDLER(tmr_i8080_wakeup_handler)
+{
+	altair_wake();
+}
+DX_TIMER_HANDLER_END
+
 /*******************************************************************************************************************************************************
  * Async handlers. These async handlers marshall calls from threads calling event loop functions of the event
  *loop running on the main thread.
@@ -222,13 +228,33 @@ DX_TIMER_HANDLER_END
 
 DX_ASYNC_HANDLER(async_power_management_enable_handler, handle)
 {
+#ifdef OEM_AVNET
 	dx_timerStart(&tmr_terminal_io_monitor);
+#endif // OEM_AVNET
 }
 DX_ASYNC_HANDLER_END
 
 DX_ASYNC_HANDLER(async_power_management_disable_handler, handle)
 {
+#ifdef OEM_AVNET
 	dx_timerStop(&tmr_terminal_io_monitor);
+#endif // OEM_AVNET
+}
+DX_ASYNC_HANDLER_END
+
+DX_ASYNC_HANDLER(async_power_management_sleep_handler, handle)
+{
+#ifdef OEM_AVNET
+	altair_sleep();
+#endif // OEM_AVNET
+}
+DX_ASYNC_HANDLER_END
+
+DX_ASYNC_HANDLER(async_power_management_wake_handler, handle)
+{
+#ifdef OEM_AVNET
+	dx_timerOneShotSet(&tmr_i8080_wakeup, &(struct timespec){*((int *)handle->data), 0});
+#endif // OEM_AVNET
 }
 DX_ASYNC_HANDLER_END
 
@@ -309,6 +335,7 @@ void io_port_out(uint8_t port, uint8_t data)
 {
 	memset(&ru, 0x00, sizeof(REQUEST_UNIT_T));
 	static int timer_delay;
+	static int wake_delay;
 	static int timer_milliseconds_delay;
 
 #if defined(ALTAIR_FRONT_PANEL_RETRO_CLICK) || defined(ALTAIR_FRONT_PANEL_PI_SENSE)
@@ -557,21 +584,34 @@ void io_port_out(uint8_t port, uint8_t data)
 #ifdef AZURE_SPHERE
 		case 66: // enable/disable power management
 
-			if (data)
+			switch (data)
 			{
-				dx_asyncSend(&async_power_management_enable, NULL);
-			}
-			else
-			{
-				dx_asyncSend(&async_power_management_disable, NULL);
+				case 0:
+					dx_asyncSend(&async_power_management_disable, NULL);
+					break;
+				case 1:
+					dx_asyncSend(&async_power_management_enable, NULL);
+					break;
+				case 2:
+					dx_asyncSend(&async_power_management_sleep, NULL);
+					break;
+				default:
+					break;
 			}
 
 			break;
 
-		case 67: // set devget filename
+		case 67: // wake from sleep in seconds
+			if (data > 0)
+			{
+				wake_delay = data;
+				dx_asyncSend(&async_power_management_wake, (void *)&wake_delay);
+			}
+			break;
+
+		case 68: // set devget filename
 			if (devget.index == 0)
 			{
-
 				if (devget.file_opened && devget.fd != -1)
 				{
 					close(devget.fd);
@@ -757,8 +797,11 @@ uint8_t io_port_in(uint8_t port)
 		case 33: // has copyx file need copied and loaded
 			retVal = webget.end_of_file;
 			break;
-		case 67: // has devget eof
+		case 68: // has devget eof
 			retVal = devget.end_of_file;
+			break;
+		case 69: // get network ready state
+			retVal = dx_isNetworkReady();
 			break;
 		case 200: // READ STRING
 			if (ru.count < ru.len && ru.count < sizeof(ru.buffer))

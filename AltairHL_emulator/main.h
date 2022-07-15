@@ -39,7 +39,7 @@
 #include "io_ports.h"
 #include "memory.h"
 
-const char ALTAIR_EMULATOR_VERSION[]   = "4.6.5";
+const char ALTAIR_EMULATOR_VERSION[]   = "4.6.7";
 const char DEFAULT_NETWORK_INTERFACE[] = "wlan0";
 #define Log_Debug(f_, ...)      dx_Log_Debug((f_), ##__VA_ARGS__)
 #define DX_LOGGING_ENABLED      FALSE
@@ -88,20 +88,21 @@ timer_t watchdogTimer;
 ALTAIR_COMMAND cmd_switches;
 WS_INPUT_BLOCK_T ws_input_block;
 
-bool azure_connected                     = false;
-char msgBuffer[MSG_BUFFER_BYTES]         = {0};
-const struct itimerspec watchdogInterval = {{60, 0}, {60, 0}};
-int altair_spi_fd                        = -1;
-static char Log_Debug_Time_buffer[64]    = {0};
-static const char *AltairMsg             = "\x1b[2J\r\nAzure Sphere - Altair 8800 Emulator ";
-static int app_fd                        = -1;
-bool send_partial_msg                    = false;
-CPU_OPERATING_MODE cpu_operating_mode    = CPU_STARTING;
-uint16_t bus_switches                    = 0x00;
-static bool network_connected            = false;
-static bool stop_cpu                     = false;
-static bool terminal_io_activity         = false;
-static int inactivity_period             = 0;
+CPU_OPERATING_MODE cpu_operating_mode     = CPU_STARTING;
+bool azure_connected                      = false;
+bool send_partial_msg                     = false;
+char msgBuffer[MSG_BUFFER_BYTES]          = {0};
+const struct itimerspec watchdogInterval  = {{60, 0}, {60, 0}};
+int altair_spi_fd                         = -1;
+static bool network_connected             = false;
+static bool stop_cpu                      = false;
+static bool terminal_io_activity          = false;
+static char Log_Debug_Time_buffer[64]     = {0};
+static const char *AltairMsg              = "\x1b[2J\r\nAzure Sphere - Altair 8800 Emulator ";
+static int app_fd                         = -1;
+static int inactivity_period              = 0;
+static volatile bool altair_i8080_running = false;
+uint16_t bus_switches                     = 0x00;
 
 // basic app load helpers.
 static bool haveAppLoad            = false;
@@ -118,8 +119,8 @@ static int terminalOutputMessageLen   = 0;
 static char *input_data = NULL;
 
 static bool load_application(const char *fileName);
-static void altair_sleep(void);
-static void altair_wake(void);
+void altair_sleep(void);
+void altair_wake(void);
 static void send_terminal_character(char character, bool wait);
 static void spin_wait(bool *flag);
 static void start_network_interface(void);
@@ -219,6 +220,7 @@ static DX_GPIO_BINDING led_output_enable = {.pin = LED_OUTPUT_ENABLE,
 // Common Timers
 
 DX_TIMER_BINDING tmr_display_ip_address = {.handler = display_ip_address_handler};
+DX_TIMER_BINDING tmr_i8080_wakeup = {.name = "tmr_i8080_wakeup", .handler = tmr_i8080_wakeup_handler};
 DX_TIMER_BINDING tmr_partial_message = {.repeat = &(struct timespec){0, 250 * ONE_MS}, .name = "tmr_partial_message", .handler = partial_message_handler};
 DX_TIMER_BINDING tmr_read_accelerometer = {.name = "tmr_read_accelerometer", .handler = read_accelerometer_handler};
 DX_TIMER_BINDING tmr_terminal_io_monitor = {.repeat = &(struct timespec){60, 0}, .name = "tmr_terminal_io_monitor", .handler = terminal_io_monitor_handler};
@@ -243,6 +245,8 @@ DX_ASYNC_BINDING async_copyx_request = {.name = "async_copyx_request", .handler 
 DX_ASYNC_BINDING async_expire_session = { .name = "async_expire_session", .handler = async_expire_session_handler};
 DX_ASYNC_BINDING async_power_management_disable = {.name = "async_power_management_disable", .handler = async_power_management_disable_handler};
 DX_ASYNC_BINDING async_power_management_enable = {.name = "async_power_management_enable", .handler = async_power_management_enable_handler};
+DX_ASYNC_BINDING async_power_management_sleep = {.name = "async_power_management_sleep", .handler = async_power_management_sleep_handler};
+DX_ASYNC_BINDING async_power_management_wake = {.name = "async_power_management_wake", .handler = async_power_management_wake_handler};
 DX_ASYNC_BINDING async_publish_json = {.name = "async_publish_json", .handler = async_publish_json_handler};
 DX_ASYNC_BINDING async_publish_weather = {.name = "async_publish_weather", .handler = async_publish_weather_handler};
 DX_ASYNC_BINDING async_set_millisecond_timer = {.name = "async_set_millisecond_timer", .handler = async_set_timer_millisecond_handler};
@@ -356,6 +360,8 @@ static DX_ASYNC_BINDING *async_bindings[] = {
 	&async_expire_session,
 	&async_power_management_disable,
 	&async_power_management_enable,
+	&async_power_management_sleep,
+	&async_power_management_wake,
 	&async_publish_json,
 	&async_publish_weather,
 	&async_set_millisecond_timer,
@@ -367,6 +373,7 @@ static DX_TIMER_BINDING *timerSet[] = {
 	&tmr_connection_status_led_on,
 	&tmr_display_ip_address,
 	&tmr_heart_beat,
+	&tmr_i8080_wakeup,
 	&tmr_initialize_environment,
 	&tmr_network_state,
 	&tmr_partial_message,
