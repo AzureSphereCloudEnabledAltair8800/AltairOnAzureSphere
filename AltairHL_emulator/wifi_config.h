@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../IntercoreContract/intercore_contract.h"
+#include "altair_config.h"
 #include "dx_intercore.h"
 #include "dx_utilities.h"
 #include "parson.h"

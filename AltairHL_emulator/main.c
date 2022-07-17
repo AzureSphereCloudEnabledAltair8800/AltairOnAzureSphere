@@ -418,7 +418,9 @@ void altair_sleep(void)
 	dx_timerStop(&tmr_refresh_panel);
 	dx_timerStop(&tmr_terminal_io_monitor);
 
+#ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
 	as1115_clear(&retro_click);
+#endif
 
 	PowerManagement_SetSystemPowerProfile(PowerManagement_PowerSaver);
 	Networking_SetInterfaceState(network_interface, false);
@@ -701,7 +703,7 @@ static void *altair_thread(void *arg)
 	// Log_Debug("Altair Thread starting...\n");
 	if (altair_i8080_running)
 	{
-		return;
+		return NULL;
 	}
 
 	altair_i8080_running = true;
