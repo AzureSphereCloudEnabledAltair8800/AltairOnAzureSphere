@@ -57,6 +57,7 @@ enum PANEL_MODE_T panel_mode = PANEL_BUS_MODE;
 
 #ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
 #include "front_panel_retro_click.h"
+#include "graphics.h"
 #endif
 
 #ifdef ALTAIR_FRONT_PANEL_KIT
@@ -119,12 +120,14 @@ static int terminalOutputMessageLen   = 0;
 static char *input_data = NULL;
 
 static bool load_application(const char *fileName);
-void altair_sleep(void);
-void altair_wake(void);
+static void *altair_thread(void *arg);
 static void send_terminal_character(char character, bool wait);
 static void spin_wait(bool *flag);
 static void start_network_interface(void);
+void altair_sleep(void);
+void altair_wake(void);
 
+static DX_DECLARE_TIMER_HANDLER(WatchdogMonitorTimerHandler);
 static DX_DECLARE_TIMER_HANDLER(connection_status_led_off_handler);
 static DX_DECLARE_TIMER_HANDLER(connection_status_led_on_handler);
 static DX_DECLARE_TIMER_HANDLER(heart_beat_handler);
@@ -134,10 +137,9 @@ static DX_DECLARE_TIMER_HANDLER(panel_refresh_handler);
 static DX_DECLARE_TIMER_HANDLER(read_buttons_handler);
 static DX_DECLARE_TIMER_HANDLER(read_panel_handler);
 static DX_DECLARE_TIMER_HANDLER(report_memory_usage);
+static DX_DECLARE_TIMER_HANDLER(sleep_warning_handler);
 static DX_DECLARE_TIMER_HANDLER(terminal_io_monitor_handler);
 static DX_DECLARE_TIMER_HANDLER(update_environment_handler);
-static DX_DECLARE_TIMER_HANDLER(WatchdogMonitorTimerHandler);
-static void *altair_thread(void *arg);
 
 const uint8_t reverse_lut[16] = {
 	0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe, 0x1, 0x9, 0x5, 0xd, 0x3, 0xb, 0x7, 0xf};
@@ -231,12 +233,13 @@ DX_TIMER_BINDING tmr_ws_ping_pong = {.repeat = &(struct timespec){10, 0}, .name 
 static DX_TIMER_BINDING tmr_connection_status_led_off = {.name = "tmr_connection_status_led_off", .handler = connection_status_led_off_handler};
 static DX_TIMER_BINDING tmr_connection_status_led_on = {.delay = &(struct timespec){1, 0}, .name = "tmr_connection_status_led_on", .handler = connection_status_led_on_handler};
 static DX_TIMER_BINDING tmr_heart_beat = {.repeat = &(struct timespec){60, 0}, .name = "tmr_heart_beat", .handler = heart_beat_handler};
+static DX_TIMER_BINDING tmr_initialize_environment = {.delay = &(struct timespec){8, 0}, .name = "tmr_update_environment", .handler = initialize_environment_handler};
 static DX_TIMER_BINDING tmr_network_state = {.repeat = &(struct timespec){20, 0}, .name = "tmr_network_state", .handler = network_state_handler};
 static DX_TIMER_BINDING tmr_read_buttons = {.delay = &(struct timespec){0, 250 * ONE_MS}, .name = "tmr_read_buttons", .handler = read_buttons_handler};
 static DX_TIMER_BINDING tmr_report_memory_usage = {.repeat = &(struct timespec){45, 0}, .name = "tmr_report_memory_usage", .handler = report_memory_usage};
+static DX_TIMER_BINDING tmr_sleep_warning = {.repeat = &(struct timespec){15, 0}, .name = "tmr_sleep_warning", .handler = sleep_warning_handler};
 static DX_TIMER_BINDING tmr_tick_count = {.repeat = &(struct timespec){1, 0}, .name = "tmr_tick_count", .handler = tick_count_handler};
 static DX_TIMER_BINDING tmr_update_environment = {.name = "tmr_update_environment", .handler = update_environment_handler};
-static DX_TIMER_BINDING tmr_initialize_environment = {.delay = &(struct timespec){8, 0}, .name = "tmr_update_environment", .handler = initialize_environment_handler};
 static DX_TIMER_BINDING tmr_watchdog_monitor = {.repeat = &(struct timespec){15, 0}, .name = "tmr_watchdog_monitor", .handler = WatchdogMonitorTimerHandler};
 
 DX_ASYNC_BINDING async_accelerometer_start = {.name = "async_accelerometer_start", .handler = async_accelerometer_start_handler};

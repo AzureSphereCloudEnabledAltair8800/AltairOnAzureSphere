@@ -366,6 +366,26 @@ DX_TIMER_HANDLER(network_state_handler)
 DX_TIMER_HANDLER_END
 
 /// <summary>
+/// Flash S for Sleep on the panel when the device is asleep
+/// </summary>
+DX_TIMER_HANDLER(sleep_warning_handler){
+#ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
+		gfx_load_character('S', retro_click.bitmap);
+
+		gfx_rotate_counterclockwise(retro_click.bitmap, 1, 1, retro_click.bitmap);
+		gfx_reverse_panel(retro_click.bitmap);
+		gfx_rotate_counterclockwise(retro_click.bitmap, 1, 1, retro_click.bitmap);
+
+		as1115_panel_write(&retro_click);
+
+		// a nanosleep is fine here given the Altair thread is asleep anyways...
+		nanosleep(&(struct timespec){0, 250 * ONE_MS}, NULL);
+		as1115_panel_clear(&retro_click);
+#endif // ALTAIR_FRONT_PANEL_RETRO_CLICK
+}
+DX_TIMER_HANDLER_END
+
+/// <summary>
 /// Wake the Altair, enable WiFi, start timers and i8080 cpu emulator
 /// </summary>
 void altair_wake(void)
@@ -381,6 +401,8 @@ void altair_wake(void)
 	dx_timerStart(&tmr_read_panel);
 	dx_timerStart(&tmr_refresh_panel);
 	dx_timerStart(&tmr_terminal_io_monitor);
+
+	dx_timerStop(&tmr_sleep_warning);
 
 	PowerManagement_SetSystemPowerProfile(PowerManagement_HighPerformance);
 	start_network_interface();
@@ -417,6 +439,8 @@ void altair_sleep(void)
 	dx_timerStop(&tmr_read_panel);
 	dx_timerStop(&tmr_refresh_panel);
 	dx_timerStop(&tmr_terminal_io_monitor);
+
+	dx_timerStart(&tmr_sleep_warning);
 
 #ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
 	as1115_clear(&retro_click);
