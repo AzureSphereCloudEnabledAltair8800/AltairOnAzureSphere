@@ -798,7 +798,6 @@ static void start_network_interface(void)
 /// <summary>
 ///  Initialize PeripheralGpios, device twins, direct methods, timers.
 /// </summary>
-/// <returns>0 on success, or -1 on failure</returns>
 static void InitPeripheralAndHandlers(int argc, char *argv[])
 {
 	dx_Log_Debug_Init(Log_Debug_Time_buffer, sizeof(Log_Debug_Time_buffer));
@@ -852,7 +851,9 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
 	// set intercore read after publish timeout to 10000000 microseconds = 10 seconds
 	dx_intercorePublishThenReadTimeout(&intercore_sd_card_ctx, 10000000);
 
-	wifi_config();
+	// Note, wifi_config needs up to 8KiB for certs and repurposes 64KiB memory allocated for the Altair
+	// There wifi_config must not be called after the Altair in initialized
+	wifi_config(); 
 
 #else
 
