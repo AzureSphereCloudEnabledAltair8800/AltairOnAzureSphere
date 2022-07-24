@@ -1,0 +1,7 @@
+---
+security: "wpa_eap_tls"
+ssid: "NCW"
+op: "add"
+client_identity: "glovebox"
+ca_cert_pem_filename: "./certs/myCA.pem"
+client_cert_pem_filename: "./certs/client-key1.pem"

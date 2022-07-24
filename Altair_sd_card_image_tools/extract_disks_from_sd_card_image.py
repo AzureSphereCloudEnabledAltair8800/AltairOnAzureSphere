@@ -5,7 +5,7 @@
 
 import os
 
-disks = ['azsphere_cpm63k.dsk', 'bdsc-v1.60.dsk']
+disks = ['azsphere_cpm63k.dsk', 'bdsc-v1.60.dsk', 'escape.dsk', 'blank.dsk']
 
 disk_number = 0
 disk_offset = 3000

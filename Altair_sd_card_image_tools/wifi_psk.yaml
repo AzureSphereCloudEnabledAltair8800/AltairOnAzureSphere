@@ -1,0 +1,5 @@
+---
+security: "wpa_psk"
+ssid: "NCW"
+psk: "malolos5459"
+op: "add"
