@@ -130,13 +130,13 @@ void wifi_config(void)
 				intercore_disk_block.sector_number    = (uint16_t)sector;
 				intercore_disk_block.disk_ic_msg_type = DISK_IC_WRITE;
 
-				// dx_intercorePublishThenRead(
-				// 	&intercore_sd_card_ctx, &intercore_disk_block, sizeof(intercore_disk_block));
+				dx_intercorePublishThenRead(
+					&intercore_sd_card_ctx, &intercore_disk_block, sizeof(intercore_disk_block));
 
-				// if (intercore_disk_block.success)
-				// {
-				// 	dx_Log_Debug("WiFi Configuration info removed successfully from sector: %d\n", sector);
-				// }
+				if (intercore_disk_block.success)
+				{
+					dx_Log_Debug("WiFi Configuration info removed successfully from sector: %d\n", sector);
+				}
 			}
 		}
 	}
