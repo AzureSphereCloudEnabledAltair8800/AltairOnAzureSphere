@@ -7,9 +7,9 @@
         "--ScopeID",
         "REMOVE_OR_REPLACE_WITH_YOUR_WITH_YOUR_ID_SCOPE",
         "-o",
-        "EMOVE_OR_REPLACE_WITH_YOUR_OPEN_WEATHER_MAP_API_KEY",
+        "REMOVE_OR_REPLACE_WITH_YOUR_OPEN_WEATHER_MAP_API_KEY",
         "-u",
-        "EMOVE_OR_REPLACE_WITH_YOUR_COPYX_URL"
+        "REMOVE_OR_REPLACE_WITH_YOUR_GETFILE_URL"
     ],
     "Capabilities": {
         "MutableStorage": {
@@ -26,8 +26,10 @@
         "PowerControls": [
             "SetPowerProfile"
         ],
-        "NetworkConfig" : true,
         "WifiConfig": true,
+        "CertStore" : true,
+        "EnterpriseWifiConfig" : true,
+        "NetworkConfig" : true,
         "AllowedTcpServerPorts": [
             8082
         ],

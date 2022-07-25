@@ -7,6 +7,7 @@
 #include "parson.h"
 #include <applibs/log.h>
 #include <applibs/wificonfig.h>
+#include <applibs/certstore.h>
 
 #include <arpa/inet.h>
 #include <ifaddrs.h>
@@ -17,6 +18,7 @@
 #include "front_panel_retro_click.h"
 #endif
 
+extern uint8_t memory[64 * 1024];
 extern ALTAIR_CONFIG_T altair_config;
 extern DX_INTERCORE_BINDING intercore_sd_card_ctx;
 extern DX_TIMER_BINDING tmr_display_ip_address;
