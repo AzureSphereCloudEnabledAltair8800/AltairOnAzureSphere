@@ -73,12 +73,12 @@ enum PANEL_MODE_T panel_mode = PANEL_BUS_MODE;
 #endif // OEM_AVNET
 
 static DX_MESSAGE_PROPERTY *diag_msg_properties[] = {
-	&(DX_MESSAGE_PROPERTY){.key = "appid", .value = "altair"},
-	&(DX_MESSAGE_PROPERTY){.key = "type", .value = "diagnostics"},
-	&(DX_MESSAGE_PROPERTY){.key = "schema", .value = "1"}};
+    &(DX_MESSAGE_PROPERTY){.key = "appid", .value = "altair"},
+    &(DX_MESSAGE_PROPERTY){.key = "type", .value = "diagnostics"},
+    &(DX_MESSAGE_PROPERTY){.key = "schema", .value = "1"}};
 
 static DX_MESSAGE_CONTENT_PROPERTIES diag_content_properties = {
-	.contentEncoding = "utf-8", .contentType = "application/json"};
+    .contentEncoding = "utf-8", .contentType = "application/json"};
 
 intel8080_t cpu;
 uint8_t memory[64 * 1024]; // Altair system memory.
@@ -137,36 +137,37 @@ static DX_DECLARE_TIMER_HANDLER(panel_refresh_handler);
 static DX_DECLARE_TIMER_HANDLER(read_buttons_handler);
 static DX_DECLARE_TIMER_HANDLER(read_panel_handler);
 static DX_DECLARE_TIMER_HANDLER(report_memory_usage);
+static DX_DECLARE_TIMER_HANDLER(sleep_warning_clear_handler);
 static DX_DECLARE_TIMER_HANDLER(sleep_warning_handler);
 static DX_DECLARE_TIMER_HANDLER(terminal_io_monitor_handler);
 static DX_DECLARE_TIMER_HANDLER(update_environment_handler);
 
 const uint8_t reverse_lut[16] = {
-	0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe, 0x1, 0x9, 0x5, 0xd, 0x3, 0xb, 0x7, 0xf};
+    0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe, 0x1, 0x9, 0x5, 0xd, 0x3, 0xb, 0x7, 0xf};
 
 INTERCORE_DISK_DATA_BLOCK_T intercore_disk_block;
 INTERCORE_ML_CLASSIFY_BLOCK_T intercore_ml_classify_block;
 
 DX_INTERCORE_BINDING intercore_filesystem_ctx = {.sockFd = -1,
-	.nonblocking_io                                      = true,
-	.rtAppComponentId                                    = CORE_FILESYSTEM_COMPONENT_ID,
-	.interCoreCallback                                   = NULL,
-	.intercore_recv_block                                = &intercore_disk_block,
-	.intercore_recv_block_length                         = sizeof(intercore_disk_block)};
+    .nonblocking_io                                      = true,
+    .rtAppComponentId                                    = CORE_FILESYSTEM_COMPONENT_ID,
+    .interCoreCallback                                   = NULL,
+    .intercore_recv_block                                = &intercore_disk_block,
+    .intercore_recv_block_length                         = sizeof(intercore_disk_block)};
 
 DX_INTERCORE_BINDING intercore_sd_card_ctx = {.sockFd = -1,
-	.nonblocking_io                                   = false,
-	.rtAppComponentId                                 = CORE_SD_CARD_COMPONENT_ID,
-	.interCoreCallback                                = NULL,
-	.intercore_recv_block                             = &intercore_disk_block,
-	.intercore_recv_block_length                      = sizeof(intercore_disk_block)};
+    .nonblocking_io                                   = false,
+    .rtAppComponentId                                 = CORE_SD_CARD_COMPONENT_ID,
+    .interCoreCallback                                = NULL,
+    .intercore_recv_block                             = &intercore_disk_block,
+    .intercore_recv_block_length                      = sizeof(intercore_disk_block)};
 
 DX_INTERCORE_BINDING intercore_ml_classify_ctx = {.sockFd = -1,
-	.nonblocking_io                                       = true,
-	.rtAppComponentId                                     = CORE_ML_CLASSIFY_COMPONENT_ID,
-	.interCoreCallback                                    = intercore_classify_response_handler,
-	.intercore_recv_block                                 = &intercore_ml_classify_block,
-	.intercore_recv_block_length                          = sizeof(intercore_ml_classify_block)};
+    .nonblocking_io                                       = true,
+    .rtAppComponentId                                     = CORE_ML_CLASSIFY_COMPONENT_ID,
+    .interCoreCallback                                    = intercore_classify_response_handler,
+    .intercore_recv_block                                 = &intercore_ml_classify_block,
+    .intercore_recv_block_length                          = sizeof(intercore_ml_classify_block)};
 
 #ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
 
@@ -187,34 +188,34 @@ DX_INTERCORE_BINDING intercore_ml_classify_ctx = {.sockFd = -1,
 // .direction = DX_OUTPUT, .initialState = GPIO_Value_High, .invertPin = false, .name = "SD_CS" };
 
 DX_GPIO_BINDING switches_chip_select = {.pin = SWITCHES_CHIP_SELECT,
-	.direction                               = DX_OUTPUT,
-	.initialState                            = GPIO_Value_High,
-	.invertPin                               = false,
-	.name                                    = "switches CS"};
+    .direction                               = DX_OUTPUT,
+    .initialState                            = GPIO_Value_High,
+    .invertPin                               = false,
+    .name                                    = "switches CS"};
 
 DX_GPIO_BINDING switches_load = {.pin = SWITCHES_LOAD,
-	.direction                        = DX_OUTPUT,
-	.initialState                     = GPIO_Value_High,
-	.invertPin                        = false,
-	.name                             = "switchs Load"};
+    .direction                        = DX_OUTPUT,
+    .initialState                     = GPIO_Value_High,
+    .invertPin                        = false,
+    .name                             = "switchs Load"};
 
 DX_GPIO_BINDING led_store = {.pin = LED_STORE,
-	.direction                    = DX_OUTPUT,
-	.initialState                 = GPIO_Value_High,
-	.invertPin                    = false,
-	.name                         = "LED store"};
+    .direction                    = DX_OUTPUT,
+    .initialState                 = GPIO_Value_High,
+    .invertPin                    = false,
+    .name                         = "LED store"};
 
 static DX_GPIO_BINDING led_master_reset = {.pin = LED_MASTER_RESET,
-	.direction                                  = DX_OUTPUT,
-	.initialState                               = GPIO_Value_High,
-	.invertPin                                  = false,
-	.name                                       = "LED master reset"};
+    .direction                                  = DX_OUTPUT,
+    .initialState                               = GPIO_Value_High,
+    .invertPin                                  = false,
+    .name                                       = "LED master reset"};
 
 static DX_GPIO_BINDING led_output_enable = {.pin = LED_OUTPUT_ENABLE,
-	.direction                                   = DX_OUTPUT,
-	.initialState                                = GPIO_Value_Low,
-	.invertPin                                   = false,
-	.name                                        = "LED output enable"}; // set OE initial state low
+    .direction                                   = DX_OUTPUT,
+    .initialState                                = GPIO_Value_Low,
+    .invertPin                                   = false,
+    .name                                        = "LED output enable"}; // set OE initial state low
 
 #endif // ALTAIR_FRONT_PANEL_KIT
 
@@ -237,7 +238,8 @@ static DX_TIMER_BINDING tmr_initialize_environment = {.delay = &(struct timespec
 static DX_TIMER_BINDING tmr_network_state = {.repeat = &(struct timespec){20, 0}, .name = "tmr_network_state", .handler = network_state_handler};
 static DX_TIMER_BINDING tmr_read_buttons = {.delay = &(struct timespec){0, 250 * ONE_MS}, .name = "tmr_read_buttons", .handler = read_buttons_handler};
 static DX_TIMER_BINDING tmr_report_memory_usage = {.repeat = &(struct timespec){45, 0}, .name = "tmr_report_memory_usage", .handler = report_memory_usage};
-static DX_TIMER_BINDING tmr_sleep_warning = {.repeat = &(struct timespec){15, 0}, .name = "tmr_sleep_warning", .handler = sleep_warning_handler};
+static DX_TIMER_BINDING tmr_sleep_warning = {.repeat = &(struct timespec){30, 0}, .name = "tmr_sleep_warning", .handler = sleep_warning_handler};
+static DX_TIMER_BINDING tmr_sleep_warning_clear = {.name = "tmr_sleep_warning_clear", .handler = sleep_warning_clear_handler};
 static DX_TIMER_BINDING tmr_tick_count = {.repeat = &(struct timespec){1, 0}, .name = "tmr_tick_count", .handler = tick_count_handler};
 static DX_TIMER_BINDING tmr_update_environment = {.name = "tmr_update_environment", .handler = update_environment_handler};
 static DX_TIMER_BINDING tmr_watchdog_monitor = {.repeat = &(struct timespec){15, 0}, .name = "tmr_watchdog_monitor", .handler = WatchdogMonitorTimerHandler};
@@ -294,8 +296,8 @@ static DX_GPIO_BINDING buttonA = {.direction = DX_INPUT, .detect = DX_GPIO_DETEC
 
 DX_GPIO_BINDING buttonB = {.pin = BUTTON_B, .direction = DX_INPUT, .detect = DX_GPIO_DETECT_LOW, .name = "buttonB"};
 static DX_GPIO_BINDING azure_connected_led = {
-	.pin = AZURE_CONNECTED_LED, .direction = DX_OUTPUT, .initialState = GPIO_Value_Low,
-	.invertPin = true, .name = "azure_connected_led"};
+    .pin = AZURE_CONNECTED_LED, .direction = DX_OUTPUT, .initialState = GPIO_Value_Low,
+    .invertPin = true, .name = "azure_connected_led"};
 
 // clang-format on
 
@@ -308,8 +310,8 @@ static DX_GPIO_BINDING *gpioSet[] = {&buttonA, &buttonB, &azure_connected_led, &
 #endif
 
 #ifdef ALTAIR_FRONT_PANEL_KIT
-	,
-	&switches_load, &switches_chip_select, &led_master_reset, &led_store, &led_output_enable
+    ,
+    &switches_load, &switches_chip_select, &led_master_reset, &led_store, &led_output_enable
 //&memoryCS, &sdCS
 #endif // ALTAIR_FRONT_PANEL_KIT
 };
@@ -318,19 +320,19 @@ static DX_GPIO_BINDING *gpioSet[] = {&buttonA, &buttonB, &azure_connected_led, &
 CLICK_4X4_BUTTON_MODE click_4x4_key_mode = OPERATING_MODE;
 
 as1115_t retro_click = {
-	.interfaceId = ISU2, .handle = -1, .bitmap64 = 0, .keymap = 0, .debouncePeriodMilliseconds = 500};
+    .interfaceId = ISU2, .handle = -1, .bitmap64 = 0, .keymap = 0, .debouncePeriodMilliseconds = 500};
 
 DX_I2C_BINDING i2c_as1115_retro = {
-	.interfaceId = ISU2, .speedInHz = I2C_BUS_SPEED_FAST_PLUS, .name = "i2c_as1115_retro"};
+    .interfaceId = ISU2, .speedInHz = I2C_BUS_SPEED_FAST_PLUS, .name = "i2c_as1115_retro"};
 
 DX_I2C_BINDING i2c_onboard_sensors = {
-	.interfaceId = ISU2, .speedInHz = I2C_BUS_SPEED_FAST_PLUS, .name = "i2c_onboard_sensors"};
+    .interfaceId = ISU2, .speedInHz = I2C_BUS_SPEED_FAST_PLUS, .name = "i2c_onboard_sensors"};
 // Note, retroclick keypad shares i2c_as1115_retro fd
 static DX_I2C_BINDING *i2c_bindings[] = {&i2c_as1115_retro, &i2c_onboard_sensors};
 #else
 #ifdef OEM_AVNET
 DX_I2C_BINDING i2c_onboard_sensors = {
-	.interfaceId = ISU2, .speedInHz = I2C_BUS_SPEED_FAST_PLUS, .name = "i2c_onboard_sensors"};
+    .interfaceId = ISU2, .speedInHz = I2C_BUS_SPEED_FAST_PLUS, .name = "i2c_onboard_sensors"};
 static DX_I2C_BINDING *i2c_bindings[] = {&i2c_onboard_sensors};
 #else
 // just create a placeholder i2c for onboard sensors
@@ -340,52 +342,53 @@ static DX_I2C_BINDING *i2c_bindings[] = {};
 #endif // ALTAIR_FRONT_PANEL_RETRO_CLICK
 
 static DX_ASYNC_BINDING *async_bindings[] = {
-	&async_accelerometer_start,
-	&async_accelerometer_stop,
-	&async_copyx_request,
-	&async_expire_session,
-	&async_power_management_disable,
-	&async_power_management_enable,
-	&async_power_management_sleep,
-	&async_power_management_wake,
-	&async_publish_json,
-	&async_publish_weather,
-	&async_set_millisecond_timer,
-	&async_set_seconds_timer,
+    &async_accelerometer_start,
+    &async_accelerometer_stop,
+    &async_copyx_request,
+    &async_expire_session,
+    &async_power_management_disable,
+    &async_power_management_enable,
+    &async_power_management_sleep,
+    &async_power_management_wake,
+    &async_publish_json,
+    &async_publish_weather,
+    &async_set_millisecond_timer,
+    &async_set_seconds_timer,
 };
 
 static DX_TIMER_BINDING *timerSet[] = {
-	&tmr_connection_status_led_off,
-	&tmr_connection_status_led_on,
-	&tmr_display_ip_address,
-	&tmr_heart_beat,
-	&tmr_i8080_wakeup,
-	&tmr_initialize_environment,
-	&tmr_network_state,
-	&tmr_partial_message,
-	&tmr_read_buttons,
-	&tmr_read_panel,
-	&tmr_refresh_panel,
-	&tmr_report_memory_usage,
-	&tmr_terminal_io_monitor,
-	&tmr_tick_count,
-	&tmr_timer_millisecond_expired,
-	&tmr_timer_seconds_expired,
-	&tmr_update_environment,
-	&tmr_watchdog_monitor,
-	&tmr_ws_ping_pong,
+    &tmr_connection_status_led_off,
+    &tmr_connection_status_led_on,
+    &tmr_display_ip_address,
+    &tmr_heart_beat,
+    &tmr_i8080_wakeup,
+    &tmr_initialize_environment,
+    &tmr_network_state,
+    &tmr_partial_message,
+    &tmr_read_buttons,
+    &tmr_read_panel,
+    &tmr_refresh_panel,
+    &tmr_report_memory_usage,
+    &tmr_sleep_warning_clear,
+    &tmr_terminal_io_monitor,
+    &tmr_tick_count,
+    &tmr_timer_millisecond_expired,
+    &tmr_timer_seconds_expired,
+    &tmr_update_environment,
+    &tmr_watchdog_monitor,
+    &tmr_ws_ping_pong,
 };
 
 static DX_DEVICE_TWIN_BINDING *deviceTwinBindingSet[] = {
-	&dt_deviceStartTimeUtc,
-	&dt_heartbeatUtc,
-	&dt_softwareVersion,
+    &dt_deviceStartTimeUtc,
+    &dt_heartbeatUtc,
+    &dt_softwareVersion,
 
-	&dt_location,
-	&dt_country,
-	&dt_city,
+    &dt_location,
+    &dt_country,
+    &dt_city,
 
-	&dt_new_sessions,
+    &dt_new_sessions,
 };
 
 DX_DIRECT_METHOD_BINDING *directMethodBindingSet[] = {};
