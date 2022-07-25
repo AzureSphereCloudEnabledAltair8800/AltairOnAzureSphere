@@ -33,8 +33,10 @@
         "PowerControls": [
             "SetPowerProfile"
         ],
-        "NetworkConfig" : true,
         "WifiConfig": true,
+        "CertStore" : true,
+        "EnterpriseWifiConfig" : true,
+        "NetworkConfig" : true,
         "AllowedTcpServerPorts": [
             8082
         ],
