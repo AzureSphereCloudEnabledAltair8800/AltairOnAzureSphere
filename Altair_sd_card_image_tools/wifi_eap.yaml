@@ -1,7 +1,9 @@
 ---
 security: "wpa_eap_tls"
-ssid: "NCW"
-op: "add"
-client_identity: "glovebox"
-ca_cert_pem_filename: "./certs/myCA.pem"
-client_cert_pem_filename: "./certs/client-key1.pem"
+ssid: "REPLACE_WITH_YOUR_SSID"
+client_identity: "REPLACE_WITH_YOUR_CLIENT_IDENTITY"
+ca_public_cert_pem_filename: "REPLACE_WITH_YOUR_CA_PUBLIC_CERT_PATH_FILENAME_PEM"
+client_public_cert_pem_filename: "REPLACE_WITH_YOUR_CLIENT_PUBLIC_CERT_PATH_FILENAME_PEM"
+client_private_key_pem_filename: "REPLACE_WITH_YOUR_CLIENT_PRIVATE_KEY_PATH_FILENAME_PEM"
+# Uncomment client_private_key_password for encrypted private key
+# client_private_key_password: "REPLACE_WITH_YOUR_PRIVATE_KEY_PASSWORD"

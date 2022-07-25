@@ -1,5 +1,7 @@
 ---
+
+# WPA2 PSK Profile
+
 security: "wpa_psk"
-ssid: "NCW"
-psk: "malolos5459"
-op: "add"
+ssid: "REPLACE_WITH_YOUR_SSID"
+psk: "REPLACE_WITH_YOUR_PSK"
