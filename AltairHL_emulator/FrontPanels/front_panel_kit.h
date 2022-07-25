@@ -8,7 +8,7 @@
 #include "app_exit_codes.h"
 #include "dx_gpio.h"
 #include "dx_utilities.h"
-#include "hw/azure_sphere_learning_path.h"
+#include "hw/altair.h"
 #include "altair_panel.h"
 #include <applibs/spi.h>
 #include <applibs/uart.h>
