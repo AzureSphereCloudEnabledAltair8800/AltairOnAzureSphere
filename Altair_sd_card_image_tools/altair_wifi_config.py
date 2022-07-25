@@ -52,8 +52,7 @@ def write_altair_image(data, altair_image):
 
 
 def main(argv):
-    config = {}
-    config.update({'op': "add"})
+    wifi_config = {}
 
     try:
         opts, args = getopt.getopt(
@@ -74,12 +73,18 @@ def main(argv):
         wifi_config = yaml.safe_load(file)
 
     if wifi_config.get("security") == "wpa_eap_tls":
-        with open(wifi_config.get('ca_cert_pem_filename'), 'r') as file:
-            wifi_config.update({'ca_cert_pem': file.read()})
-        with open(wifi_config.get('client_cert_pem_filename'), 'r') as file:
-            wifi_config.update({'client_cert_pem': file.read()})
+        with open(wifi_config.get('ca_public_cert_pem_filename'), 'r') as file:
+            wifi_config.update({'ca_public_cert_pem': file.read()})
+        with open(wifi_config.get('client_public_cert_pem_filename'), 'r') as file:
+            wifi_config.update({'client_public_cert_pem': file.read()})
+        with open(wifi_config.get('client_private_key_pem_filename'), 'r') as file:
+            wifi_config.update({'client_private_key_pem': file.read()})
 
-    if wifi_config.get('ssid') is None or wifi_config.get('op') is None or wifi_config.get('security') is None:
+        del wifi_config["ca_public_cert_pem_filename"] 
+        del wifi_config["client_public_cert_pem_filename"] 
+        del wifi_config["client_private_key_pem_filename"] 
+
+    if wifi_config.get('ssid') is None or wifi_config.get('security') is None:
         print("usage -s YOUR_WIFI_SSID -p YOUR_WIFI_PSK -o OPERATION=add or remove --security=open or wpa_psk or wpa_eap_tls")
         return
 
