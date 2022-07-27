@@ -9,7 +9,7 @@
         "-o",
         "REMOVE_OR_REPLACE_WITH_YOUR_OPEN_WEATHER_MAP_API_KEY",
         "-u",
-        "REMOVE_OR_REPLACE_WITH_YOUR_GETFILE_URL"
+        "https://raw.githubusercontent.com/AzureSphereCloudEnabledAltair8800/RetroGames/main"
     ],
     "Capabilities": {
         "MutableStorage": {
@@ -43,10 +43,11 @@
             "global.azure-devices-provisioning.net",
             "api.openweathermap.org",
             "get.geojs.io",
+            "raw.githubusercontent.com",
             "REPLACE_WITH_YOUR_IOT_CENTRAL_URLS",
-            "REPLACE_WITH_YOUR_COPYX_URL"
+            "REPLACE_WITH_YOUR_GETFILE_URL"
         ],
-        "DeviceAuthentication": "EMOVE_OR_REPLACE_WITH_YOUR_AZURE_SPHERE_TENANT_ID",
+        "DeviceAuthentication": "REMOVE_OR_REPLACE_WITH_YOUR_AZURE_SPHERE_TENANT_ID",
         "AllowedApplicationConnections": [
             "2e319eae-7be5-4a0c-ba47-9353aa6ca96a",
             "9b684af8-21b9-42aa-91e4-621d5428e497",
