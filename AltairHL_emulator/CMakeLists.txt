@@ -127,6 +127,7 @@ set(Source
     "Altair8800/intel8080.c"
     "Altair8800/memory.c"
     "cpu_monitor.c"
+    "device_id.c"
     "env_open_weather_map.c"
     "environment.c"
     "io_ports.c"

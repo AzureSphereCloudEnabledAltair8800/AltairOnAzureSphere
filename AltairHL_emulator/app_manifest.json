@@ -5,9 +5,9 @@
     "EntryPoint": "/bin/app",
     "CmdArgs": [
         "--ScopeID",
-        "REMOVE_OR_REPLACE_WITH_YOUR_WITH_YOUR_ID_SCOPE",
+        "",
         "-o",
-        "REMOVE_OR_REPLACE_WITH_YOUR_OPEN_WEATHER_MAP_API_KEY",
+        "",
         "-u",
         "https://raw.githubusercontent.com/AzureSphereCloudEnabledAltair8800/RetroGames/main"
     ],
@@ -27,9 +27,9 @@
             "SetPowerProfile"
         ],
         "WifiConfig": true,
-        "CertStore" : true,
-        "EnterpriseWifiConfig" : true,
-        "NetworkConfig" : true,
+        "CertStore": true,
+        "EnterpriseWifiConfig": true,
+        "NetworkConfig": true,
         "AllowedTcpServerPorts": [
             8082
         ],
@@ -43,11 +43,9 @@
             "global.azure-devices-provisioning.net",
             "api.openweathermap.org",
             "get.geojs.io",
-            "raw.githubusercontent.com",
-            "REPLACE_WITH_YOUR_IOT_CENTRAL_URLS",
-            "REPLACE_WITH_YOUR_GETFILE_URL"
+            "raw.githubusercontent.com"
         ],
-        "DeviceAuthentication": "REMOVE_OR_REPLACE_WITH_YOUR_AZURE_SPHERE_TENANT_ID",
+        "DeviceAuthentication ": null,
         "AllowedApplicationConnections": [
             "2e319eae-7be5-4a0c-ba47-9353aa6ca96a",
             "9b684af8-21b9-42aa-91e4-621d5428e497",

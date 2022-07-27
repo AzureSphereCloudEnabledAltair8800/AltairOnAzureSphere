@@ -31,6 +31,7 @@
 #include "iotc_manager.h"
 #include "utils.h"
 #include "web_socket_server.h"
+#include "device_id.h"
 
 // Intel 8080 emulator
 #include "88dcdd.h"
@@ -100,6 +101,9 @@ static bool network_connected            = false;
 static bool stop_cpu                     = false;
 static bool terminal_io_activity         = false;
 static char Log_Debug_Time_buffer[64]    = {0};
+
+ #define DEVICE_ID_BUFFER_SIZE 130
+ char device_id[DEVICE_ID_BUFFER_SIZE];	// Device ID is 128 bytes
 
 // clang-format off
 static const char *AltairMsg[]           = {
