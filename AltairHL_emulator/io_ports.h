@@ -7,6 +7,7 @@
 #include "dx_utilities.h"
 #include "environment_types.h"
 #include "iotc_manager.h"
+#include <applibs/applications.h>
 #include <applibs/storage.h>
 #include <fcntl.h>
 #include <stdbool.h>

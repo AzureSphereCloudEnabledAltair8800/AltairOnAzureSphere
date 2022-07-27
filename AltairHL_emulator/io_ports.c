@@ -337,6 +337,7 @@ void io_port_out(uint8_t port, uint8_t data)
 	static int timer_delay;
 	static int wake_delay;
 	static int timer_milliseconds_delay;
+	Applications_OsVersion os_version;
 
 #if defined(ALTAIR_FRONT_PANEL_RETRO_CLICK) || defined(ALTAIR_FRONT_PANEL_PI_SENSE)
 	union {
@@ -637,6 +638,10 @@ void io_port_out(uint8_t port, uint8_t data)
 
 		case 70: // Load Altair version number
 			ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%s", ALTAIR_EMULATOR_VERSION);
+			break;
+		case 71: // OS Version
+			Applications_GetOsVersion(&os_version);
+			ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%s", os_version.version);
 			break;
 
 #ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
