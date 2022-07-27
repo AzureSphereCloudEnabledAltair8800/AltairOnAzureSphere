@@ -654,20 +654,42 @@ static inline uint8_t sense(void)
 /// </summary>
 void print_console_banner(void)
 {
-    for (int x = 0; x < strlen(AltairMsg); x++)
+	static bool first = true;
+	//char reset[] = "\x1b[2J\r\n";
+	const char reset[] = "\r\n\r\n";
+	const char altair_version[] = "\r\nAltair version: ";
+
+    for (int x = 0; x < strlen(reset); x++)
+	{
+		terminal_write(reset[x]);
+	}
+
+	for (int x = 0; x < strlen(AltairMsg[AltairBannerCount]); x++)
     {
-        terminal_write(AltairMsg[x]);
+		terminal_write(AltairMsg[AltairBannerCount][x]);
     }
 
-    for (int x = 0; x < strlen(ALTAIR_EMULATOR_VERSION); x++)
-    {
-        terminal_write(ALTAIR_EMULATOR_VERSION[x]);
-    }
+    AltairBannerCount++;
+	AltairBannerCount = AltairBannerCount == sizeof(AltairMsg) / 4 ? 0 : AltairBannerCount;
 
-    for (int x = 0; x < strlen("\r\n"); x++)
-    {
-        terminal_write("\r\n"[x]);
-    }
+	if (first)
+	{
+		first = false;
+
+		for (int x = 0; x < strlen(altair_version); x++)
+		{
+			terminal_write(altair_version[x]);
+		}
+
+		for (int x = 0; x < strlen(ALTAIR_EMULATOR_VERSION); x++)
+		{
+			terminal_write(ALTAIR_EMULATOR_VERSION[x]);
+		}
+	}
+	else
+	{
+		send_terminal_character(0x0d, true);
+	}
 }
 
 /// <summary>
@@ -675,7 +697,7 @@ void print_console_banner(void)
 /// </summary>
 static void init_altair(void)
 {
-    print_console_banner();
+    //print_console_banner();
 
     memset(memory, 0x00, 64 * 1024); // clear memory.
 
