@@ -41,11 +41,7 @@ DX_TIMER_HANDLER_END
 /// </summary>
 static DX_TIMER_HANDLER(update_environment_handler)
 {
-	const char *network_interface = dx_isStringNullOrEmpty(altair_config.network_interface)
-										? DEFAULT_NETWORK_INTERFACE
-										: altair_config.network_interface;
-
-	if (dx_isNetworkConnected(network_interface))
+	if (dx_isNetworkConnected(default_network_interface))
 	{
 		update_weather();
 	}
@@ -59,11 +55,7 @@ DX_TIMER_HANDLER_END
 /// </summary>
 static DX_TIMER_HANDLER(initialize_environment_handler)
 {
-	const char *network_interface = dx_isStringNullOrEmpty(altair_config.network_interface)
-										? DEFAULT_NETWORK_INTERFACE
-										: altair_config.network_interface;
-
-	if (dx_isNetworkConnected(network_interface))
+	if (dx_isNetworkConnected(default_network_interface))
 	{
 		init_environment(&altair_config);
 		update_geo_location(&environment);
@@ -121,7 +113,7 @@ static DX_TIMER_HANDLER(read_buttons_handler)
 	static GPIO_Value_Type buttonAState;
 	static GPIO_Value_Type buttonBState;
 
-	if (dx_gpioStateGet(&buttonA, &buttonAState) && network_connected)
+	if (dx_gpioStateGet(&buttonA, &buttonAState))
 	{
 		getIP();
 	}
@@ -241,6 +233,11 @@ DX_TIMER_HANDLER_END
 static DX_TIMER_HANDLER(network_state_handler)
 {
 	network_connected = dx_isNetworkReady();
+
+	if (network_connected & GetDeviceID((char *)&device_id, DEVICE_ID_BUFFER_SIZE) == 0)
+	{
+		Log_Debug("DeviceID: %s\n", device_id);
+	}
 }
 DX_TIMER_HANDLER_END
 
@@ -428,10 +425,6 @@ void altair_wake(void)
 /// </summary>
 void altair_sleep(void)
 {
-	const char *network_interface = dx_isStringNullOrEmpty(altair_config.network_interface)
-										? DEFAULT_NETWORK_INTERFACE
-										: altair_config.network_interface;
-
 	if (!altair_i8080_running)
 	{
 		return;
@@ -455,7 +448,7 @@ void altair_sleep(void)
 #endif
 
 	PowerManagement_SetSystemPowerProfile(PowerManagement_PowerSaver);
-	Networking_SetInterfaceState(network_interface, false);
+	Networking_SetInterfaceState(default_network_interface, false);
 
 	dx_timerStop(&tmr_partial_message);
 }
@@ -813,15 +806,12 @@ static void azure_connection_state(bool connection_state)
 static void start_network_interface(void)
 {
 	int result, retry = 0;
-	const char *network_interface = dx_isStringNullOrEmpty(altair_config.network_interface)
-										? DEFAULT_NETWORK_INTERFACE
-										: altair_config.network_interface;
 
-	result = Networking_SetInterfaceState(network_interface, true);
+	result = Networking_SetInterfaceState(default_network_interface, true);
 	while (result == -1 && errno == EAGAIN && retry++ < 10)
 	{
 		nanosleep(&(struct timespec){0, 250 * ONE_MS}, NULL);
-		result = Networking_SetInterfaceState(network_interface, true);
+		result = Networking_SetInterfaceState(default_network_interface, true);
 	}
 }
 
@@ -837,9 +827,15 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
 	//	Log_Debug("DeviceID: %s\n", device_id);
 	//}
 
-	start_network_interface();
-
 	parse_altair_cmd_line_arguments(argc, argv, &altair_config);
+
+	if (!dx_isStringNullOrEmpty(altair_config.network_interface))
+	{
+		strncpy(
+			default_network_interface, altair_config.network_interface, sizeof(default_network_interface));
+	}
+
+	start_network_interface();
 
 	curl_global_init(CURL_GLOBAL_ALL);
 
@@ -857,10 +853,7 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
 	// No Azure IoT connection info configured so skip setting up connection
 	if (altair_config.user_config.connectionType != DX_CONNECTION_TYPE_NOT_DEFINED)
 	{
-		dx_azureConnect(&altair_config.user_config,
-			dx_isStringNullOrEmpty(altair_config.network_interface) ? DEFAULT_NETWORK_INTERFACE
-																	: altair_config.network_interface,
-			IOT_PLUG_AND_PLAY_MODEL_ID);
+		dx_azureConnect(&altair_config.user_config, default_network_interface, IOT_PLUG_AND_PLAY_MODEL_ID);
 
 		dx_azureRegisterConnectionChangedNotification(report_startup_stats);
 		dx_azureRegisterConnectionChangedNotification(azure_connection_state);
