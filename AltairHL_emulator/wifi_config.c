@@ -34,7 +34,10 @@ static void add_wifi_psk(WIFI_CONFIG_T *wifi_config);
 static void add_wifi_open(WIFI_CONFIG_T *wifi_config);
 static void add_wifi_eap(WIFI_CONFIG_T *wifi);
 
+#ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
 static enum PANEL_MODE_T previous_panel_mode;
+#endif
+
 static char display_ip_address[20] = {0};
 static char *ip_address_ptr;
 
