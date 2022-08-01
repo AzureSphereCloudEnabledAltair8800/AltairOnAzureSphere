@@ -2,6 +2,10 @@
    Licensed under the MIT License. */
 
 #include "io_ports.h"
+#define GAMES_REPO        "https://raw.githubusercontent.com/AzureSphereCloudEnabledAltair8800/RetroGames/main"
+#define PERSONAL_REPO     "http://192.168.10.136:5555"
+#define ENDPOINT_LEN      128
+#define ENDPOINT_ELEMENTS 2
 
 static int copy_web(char *url);
 
@@ -18,17 +22,29 @@ typedef struct
 	int index;
 } JSON_UNIT_T;
 
+enum WEBGET_STATUS
+{
+	WEBGET_EOF,
+	WEBGET_WAITING,
+	WEBGET_DATA_READY,
+	WEBGET_FAILED
+};
+
+pthread_mutex_t webget_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 typedef struct
 {
-	int fd;
-	char filename[15];
-	char url[128];
-	bool file_opened;
-	bool enabled;
 	bool end_of_file;
+	char *byte_stream;
+	char bytes[1024];
+	char personal_endpoint[ENDPOINT_LEN];
+	uint8_t selected_endpoint;
+	char filename[15];
+	char url[150];
+	enum WEBGET_STATUS status;
 	int index;
-	int ch;
-} webget_T;
+	size_t byte_stream_length;
+} WEBGET_T;
 
 typedef struct
 {
@@ -41,7 +57,7 @@ typedef struct
 	int ch;
 } DEVGET_T;
 
-static webget_T webget;
+static WEBGET_T webget;
 static DEVGET_T devget;
 
 static JSON_UNIT_T ju;
@@ -279,7 +295,6 @@ DX_ASYNC_HANDLER_END
 DX_ASYNC_HANDLER(async_copyx_request_handler, handle)
 {
 	copy_web(webget.url);
-	webget.end_of_file = false;
 }
 DX_ASYNC_HANDLER_END
 
@@ -387,24 +402,10 @@ void io_port_out(uint8_t port, uint8_t data)
 				}
 			}
 			break;
-		case 32:
-			if (!publish_weather_pending)
-			{
-				publish_weather_pending = true;
-				dx_asyncSend(&async_publish_weather, NULL);
-			}
-			break;
 		case 33: // copy file from web server to mutable storage
 			if (webget.index == 0)
 			{
 				memset(webget.filename, 0x00, sizeof(webget.filename));
-				if (webget.file_opened && webget.fd != -1)
-				{
-					close(webget.fd);
-					webget.file_opened = false;
-					webget.end_of_file = true;
-					webget.fd          = -1;
-				}
 			}
 
 			if (data != 0 && webget.index < sizeof(webget.filename))
@@ -415,13 +416,23 @@ void io_port_out(uint8_t port, uint8_t data)
 
 			if (data == 0) // NULL TERMINATION
 			{
-				webget.index       = 0;
-				webget.end_of_file = true;
+				webget.index              = 0;
+				webget.status             = WEBGET_WAITING;
+				webget.byte_stream_length = 0;
+				webget.end_of_file        = false;
+				pthread_mutex_unlock(&webget_mutex);
 
 				memset(webget.url, 0x00, sizeof(webget.url));
-				snprintf(webget.url, sizeof(webget.url), "%s/%s", altair_config.copy_x_url, webget.filename);
+				snprintf(webget.url, sizeof(webget.url), "%s/%s", PERSONAL_REPO, webget.filename);
 
 				dx_asyncSend(&async_copyx_request, NULL);
+			}
+			break;
+		case 32:
+			if (!publish_weather_pending)
+			{
+				publish_weather_pending = true;
+				dx_asyncSend(&async_publish_weather, NULL);
 			}
 			break;
 		case 34: // Weather key
@@ -766,6 +777,77 @@ void io_port_out(uint8_t port, uint8_t data)
 			pi_sense_8x8_panel_update(panel_8x8_buffer, sizeof(panel_8x8_buffer));
 			break;
 #endif // PI SENSE HAT
+		case 110:
+			if (webget.index == 0)
+			{
+				memset(webget.personal_endpoint, 0x00, ENDPOINT_LEN);
+			}
+
+			if (data != 0 && webget.index < ENDPOINT_LEN)
+			{
+				webget.personal_endpoint[webget.index++] = data;
+			}
+
+			if (data == 0) // NULL TERMINATION
+			{
+				webget.personal_endpoint[webget.index] = 0x00;
+				Log_Debug("%s\n", webget.personal_endpoint);
+				webget.index = 0;
+			}
+			break;
+		case 111:
+			ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%s", webget.personal_endpoint);
+			break;
+		case 112:
+			if (data < ENDPOINT_ELEMENTS)
+			{
+				webget.selected_endpoint = data;
+			}
+			break;
+		case 113:
+			ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%d", webget.selected_endpoint);
+			break;
+		case 114: // copy file from web server to mutable storage
+			if (webget.index == 0)
+			{
+				memset(webget.filename, 0x00, sizeof(webget.filename));
+			}
+
+			if (data != 0 && webget.index < sizeof(webget.filename))
+			{
+				webget.filename[webget.index] = data;
+				webget.index++;
+			}
+
+			if (data == 0) // NULL TERMINATION
+			{
+				webget.index              = 0;
+				webget.status             = WEBGET_WAITING;
+				webget.byte_stream_length = 0;
+				webget.end_of_file        = false;
+				pthread_mutex_unlock(&webget_mutex);
+
+				memset(webget.url, 0x00, sizeof(webget.url));
+
+				switch (webget.selected_endpoint)
+				{
+					case 0:
+						snprintf(webget.url, sizeof(webget.url), "%s/%s", GAMES_REPO, webget.filename);
+						break;
+
+					case 1:
+						snprintf(webget.url, sizeof(webget.url), "%s/%s", webget.personal_endpoint,
+							webget.filename);
+						break;
+					default:
+						break;
+				}
+
+				Log_Debug("%s\n", webget.url);
+
+				dx_asyncSend(&async_copyx_request, NULL);
+			}
+			break;
 		default:
 			break;
 	}
@@ -800,7 +882,7 @@ uint8_t io_port_in(uint8_t port)
 			retVal = (uint8_t)publish_weather_pending;
 			break;
 		case 33: // has copyx file need copied and loaded
-			retVal = webget.end_of_file;
+			retVal = webget.status;
 			break;
 		case 68: // has devget eof
 			retVal = devget.end_of_file;
@@ -818,46 +900,22 @@ uint8_t io_port_in(uint8_t port)
 				retVal = 0x00;
 			}
 			break;
-		case 201: // READ COPYX file from mutable storage
-			if (webget.end_of_file)
+		case 201: // Read file from http(s) web server
+			if (webget.byte_stream_length > 0)
 			{
-				retVal = 0x00;
+				retVal = webget.byte_stream[0];
+				webget.byte_stream++;
+				webget.byte_stream_length--;
+
+				if (webget.byte_stream_length == 0)
+				{
+					webget.status = webget.end_of_file ? WEBGET_EOF : WEBGET_WAITING;
+					pthread_mutex_unlock(&webget_mutex);
+				}
 			}
 			else
 			{
-				if (!webget.file_opened)
-				{
-					/* open the file */
-#ifdef AZURE_SPHERE
-					webget.fd = Storage_OpenMutableFile();
-#else
-					webget.fd = open("MutableStorage/copyx", O_RDONLY);
-#endif
-					if (webget.fd != -1)
-					{
-						lseek(webget.fd, 0, SEEK_SET);
-						webget.file_opened = true;
-					}
-				}
-
-				if (webget.file_opened)
-				{
-					if (read(webget.fd, &retVal, 1) == 0)
-					{
-						close(webget.fd);
-#ifdef AZURE_SPHERE
-						Storage_DeleteMutableFile();
-#endif
-						webget.file_opened = false;
-						webget.end_of_file = true;
-						webget.fd          = -1;
-						retVal             = 0x00;
-					}
-				}
-				else
-				{
-					retVal = 0x00;
-				}
+				retVal = 0x00;
 			}
 			break;
 #ifdef AZURE_SPHERE
@@ -912,20 +970,25 @@ uint8_t io_port_in(uint8_t port)
 	return retVal;
 }
 
-static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
+static size_t write_data(void *ptr, size_t size, size_t nmemb, void *webget)
 {
-	ssize_t written = write(*(int *)stream, ptr, nmemb);
-	return (size_t)written;
+	size_t realsize = size * nmemb;
+	WEBGET_T *wg    = (WEBGET_T *)webget;
+
+	pthread_mutex_lock(&webget_mutex);
+
+	memcpy(wg->bytes, ptr, realsize);
+
+	wg->byte_stream        = wg->bytes;
+	wg->byte_stream_length = realsize;
+	wg->status             = WEBGET_DATA_READY;
+
+	return realsize;
 }
 
 static int copy_web(char *url)
 {
 	CURL *curl_handle;
-	int copy_web_fd = -1;
-
-#ifndef AZURE_SPHERE
-	const char *pagefilename = "MutableStorage/copyx";
-#endif
 
 	/* init the curl session */
 	curl_handle = curl_easy_init();
@@ -947,29 +1010,31 @@ static int copy_web(char *url)
 	/* disable progress meter, set to 0L to enable it */
 	curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
 
+	// set returned data chuck to max 128 bytes
+	curl_easy_setopt(curl_handle, CURLOPT_BUFFERSIZE, 1024L);
+
 	/* send all data to this function  */
 	curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_data);
 
-/* open the file */
-#ifdef AZURE_SPHERE
-	Storage_DeleteMutableFile();
-	copy_web_fd = Storage_OpenMutableFile();
-#else
-	copy_web_fd = open(pagefilename, O_RDWR | O_TRUNC);
-#endif
+	// A long parameter set to 1 tells the library to fail the request if the HTTP code returned is equal to
+	// or larger than 400
+	curl_easy_setopt(curl_handle, CURLOPT_FAILONERROR, true);
 
-	if (copy_web_fd != -1)
+	webget.status      = WEBGET_WAITING;
+	webget.end_of_file = false;
+
+	/* write the page body to this file handle */
+	curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &webget);
+
+	/* get it! */
+	CURLcode res = curl_easy_perform(curl_handle);
+
+	if (res != CURLE_OK)
 	{
-
-		/* write the page body to this file handle */
-		curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &copy_web_fd);
-
-		/* get it! */
-		curl_easy_perform(curl_handle);
-
-		/* close the header file */
-		close(copy_web_fd);
+		webget.status = WEBGET_FAILED;
 	}
+
+	webget.end_of_file = true;
 
 	/* cleanup curl stuff */
 	curl_easy_cleanup(curl_handle);

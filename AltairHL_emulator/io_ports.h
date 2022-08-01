@@ -10,6 +10,7 @@
 #include <applibs/applications.h>
 #include <applibs/storage.h>
 #include <fcntl.h>
+#include <pthread.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
