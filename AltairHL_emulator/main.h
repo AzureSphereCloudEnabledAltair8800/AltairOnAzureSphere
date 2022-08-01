@@ -31,7 +31,6 @@
 #include "iotc_manager.h"
 #include "utils.h"
 #include "web_socket_server.h"
-#include "device_id.h"
 
 // Intel 8080 emulator
 #include "88dcdd.h"
@@ -41,7 +40,7 @@
 #include "memory.h"
 
 const char ALTAIR_EMULATOR_VERSION[]   = "4.6.9";
-char default_network_interface[10] = "wlan0";
+const char DEFAULT_NETWORK_INTERFACE[] = "wlan0";
 #define Log_Debug(f_, ...)      dx_Log_Debug((f_), ##__VA_ARGS__)
 #define DX_LOGGING_ENABLED      FALSE
 #define BASIC_SAMPLES_DIRECTORY "BasicSamples"
@@ -101,9 +100,6 @@ static bool network_connected            = false;
 static bool stop_cpu                     = false;
 static bool terminal_io_activity         = false;
 static char Log_Debug_Time_buffer[64]    = {0};
-
- #define DEVICE_ID_BUFFER_SIZE 130
- char device_id[DEVICE_ID_BUFFER_SIZE];	// Device ID is 128 bytes
 
 // clang-format off
 static const char *AltairMsg[]           = {
@@ -261,7 +257,7 @@ static DX_TIMER_BINDING tmr_connection_status_led_on = {.delay = &(struct timesp
 static DX_TIMER_BINDING tmr_heart_beat = {.repeat = &(struct timespec){60, 0}, .name = "tmr_heart_beat", .handler = heart_beat_handler};
 static DX_TIMER_BINDING tmr_initialize_environment = {.delay = &(struct timespec){8, 0}, .name = "tmr_update_environment", .handler = initialize_environment_handler};
 static DX_TIMER_BINDING tmr_network_state = {.repeat = &(struct timespec){20, 0}, .name = "tmr_network_state", .handler = network_state_handler};
-static DX_TIMER_BINDING tmr_read_buttons = {.delay = &(struct timespec){0, 150 * ONE_MS}, .name = "tmr_read_buttons", .handler = read_buttons_handler};
+static DX_TIMER_BINDING tmr_read_buttons = {.delay = &(struct timespec){0, 250 * ONE_MS}, .name = "tmr_read_buttons", .handler = read_buttons_handler};
 static DX_TIMER_BINDING tmr_report_memory_usage = {.repeat = &(struct timespec){45, 0}, .name = "tmr_report_memory_usage", .handler = report_memory_usage};
 static DX_TIMER_BINDING tmr_sleep_warning = {.repeat = &(struct timespec){30, 0}, .name = "tmr_sleep_warning", .handler = sleep_warning_handler};
 static DX_TIMER_BINDING tmr_sleep_warning_clear = {.name = "tmr_sleep_warning_clear", .handler = sleep_warning_clear_handler};

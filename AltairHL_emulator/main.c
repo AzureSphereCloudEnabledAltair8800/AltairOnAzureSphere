@@ -41,7 +41,11 @@ DX_TIMER_HANDLER_END
 /// </summary>
 static DX_TIMER_HANDLER(update_environment_handler)
 {
-    if (dx_isNetworkConnected(default_network_interface))
+    const char *network_interface = dx_isStringNullOrEmpty(altair_config.network_interface)
+                                        ? DEFAULT_NETWORK_INTERFACE
+                                        : altair_config.network_interface;
+
+    if (dx_isNetworkConnected(network_interface))
     {
         update_weather();
     }
@@ -55,7 +59,11 @@ DX_TIMER_HANDLER_END
 /// </summary>
 static DX_TIMER_HANDLER(initialize_environment_handler)
 {
-    if (dx_isNetworkConnected(default_network_interface))
+    const char *network_interface = dx_isStringNullOrEmpty(altair_config.network_interface)
+                                        ? DEFAULT_NETWORK_INTERFACE
+                                        : altair_config.network_interface;
+
+    if (dx_isNetworkConnected(network_interface))
     {
         init_environment(&altair_config);
         update_geo_location(&environment);
@@ -113,7 +121,7 @@ static DX_TIMER_HANDLER(read_buttons_handler)
     static GPIO_Value_Type buttonAState;
     static GPIO_Value_Type buttonBState;
 
-    if (dx_gpioStateGet(&buttonA, &buttonAState))
+    if (dx_gpioStateGet(&buttonA, &buttonAState) && network_connected)
     {
         getIP();
     }
@@ -420,6 +428,10 @@ void altair_wake(void)
 /// </summary>
 void altair_sleep(void)
 {
+    const char *network_interface = dx_isStringNullOrEmpty(altair_config.network_interface)
+                                        ? DEFAULT_NETWORK_INTERFACE
+                                        : altair_config.network_interface;
+
     if (!altair_i8080_running)
     {
         return;
@@ -443,7 +455,7 @@ void altair_sleep(void)
 #endif
 
     PowerManagement_SetSystemPowerProfile(PowerManagement_PowerSaver);
-    Networking_SetInterfaceState(default_network_interface, false);
+    Networking_SetInterfaceState(network_interface, false);
 
     dx_timerStop(&tmr_partial_message);
 }
@@ -642,42 +654,42 @@ static inline uint8_t sense(void)
 /// </summary>
 void print_console_banner(void)
 {
-    static bool first = true;
-    // char reset[] = "\x1b[2J\r\n";
-    const char reset[]          = "\r\n\r\n";
-    const char altair_version[] = "\r\nAltair version: ";
+	static bool first = true;
+	//char reset[] = "\x1b[2J\r\n";
+	const char reset[] = "\r\n\r\n";
+	const char altair_version[] = "\r\nAltair version: ";
 
     for (int x = 0; x < strlen(reset); x++)
-    {
-        terminal_write(reset[x]);
-    }
+	{
+		terminal_write(reset[x]);
+	}
 
-    for (int x = 0; x < strlen(AltairMsg[AltairBannerCount]); x++)
+	for (int x = 0; x < strlen(AltairMsg[AltairBannerCount]); x++)
     {
-        terminal_write(AltairMsg[AltairBannerCount][x]);
+		terminal_write(AltairMsg[AltairBannerCount][x]);
     }
 
     AltairBannerCount++;
-    AltairBannerCount = AltairBannerCount == sizeof(AltairMsg) / 4 ? 0 : AltairBannerCount;
+	AltairBannerCount = AltairBannerCount == sizeof(AltairMsg) / 4 ? 0 : AltairBannerCount;
 
-    if (first)
-    {
-        first = false;
+	if (first)
+	{
+		first = false;
 
-        for (int x = 0; x < strlen(altair_version); x++)
-        {
-            terminal_write(altair_version[x]);
-        }
+		for (int x = 0; x < strlen(altair_version); x++)
+		{
+			terminal_write(altair_version[x]);
+		}
 
-        for (int x = 0; x < strlen(ALTAIR_EMULATOR_VERSION); x++)
-        {
-            terminal_write(ALTAIR_EMULATOR_VERSION[x]);
-        }
-    }
-    else
-    {
-        send_terminal_character(0x0d, true);
-    }
+		for (int x = 0; x < strlen(ALTAIR_EMULATOR_VERSION); x++)
+		{
+			terminal_write(ALTAIR_EMULATOR_VERSION[x]);
+		}
+	}
+	else
+	{
+		send_terminal_character(0x0d, true);
+	}
 }
 
 /// <summary>
@@ -685,7 +697,7 @@ void print_console_banner(void)
 /// </summary>
 static void init_altair(void)
 {
-    // print_console_banner();
+    //print_console_banner();
 
     memset(memory, 0x00, 64 * 1024); // clear memory.
 
@@ -801,12 +813,15 @@ static void azure_connection_state(bool connection_state)
 static void start_network_interface(void)
 {
     int result, retry = 0;
+    const char *network_interface = dx_isStringNullOrEmpty(altair_config.network_interface)
+                                        ? DEFAULT_NETWORK_INTERFACE
+                                        : altair_config.network_interface;
 
-    result = Networking_SetInterfaceState(default_network_interface, true);
+    result = Networking_SetInterfaceState(network_interface, true);
     while (result == -1 && errno == EAGAIN && retry++ < 10)
     {
         nanosleep(&(struct timespec){0, 250 * ONE_MS}, NULL);
-        result = Networking_SetInterfaceState(default_network_interface, true);
+        result = Networking_SetInterfaceState(network_interface, true);
     }
 }
 
@@ -817,20 +832,9 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
 {
     dx_Log_Debug_Init(Log_Debug_Time_buffer, sizeof(Log_Debug_Time_buffer));
 
-    if (GetDeviceID((char *)&device_id, DEVICE_ID_BUFFER_SIZE) == 0)
-    {
-        Log_Debug("DeviceID: %s\n", device_id);
-    }
+    start_network_interface();
 
     parse_altair_cmd_line_arguments(argc, argv, &altair_config);
-
-    if (!dx_isStringNullOrEmpty(altair_config.network_interface))
-    {
-        strncpy(
-            default_network_interface, altair_config.network_interface, sizeof(default_network_interface));
-    }
-
-    start_network_interface();
 
     curl_global_init(CURL_GLOBAL_ALL);
 
@@ -848,7 +852,10 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
     // No Azure IoT connection info configured so skip setting up connection
     if (altair_config.user_config.connectionType != DX_CONNECTION_TYPE_NOT_DEFINED)
     {
-        dx_azureConnect(&altair_config.user_config, default_network_interface, IOT_PLUG_AND_PLAY_MODEL_ID);
+        dx_azureConnect(&altair_config.user_config,
+            dx_isStringNullOrEmpty(altair_config.network_interface) ? DEFAULT_NETWORK_INTERFACE
+                                                                    : altair_config.network_interface,
+            IOT_PLUG_AND_PLAY_MODEL_ID);
 
         dx_azureRegisterConnectionChangedNotification(report_startup_stats);
         dx_azureRegisterConnectionChangedNotification(azure_connection_state);
