@@ -2,7 +2,8 @@
 
 #ifdef OEM_AVNET
 
-bool onboard_sensors_init(int i2c_fd) {
+bool onboard_sensors_init(int i2c_fd)
+{
     srand((unsigned int)time(NULL)); // seed the random number generator for fake telemetry
     avnet_imu_initialize(i2c_fd);
 
@@ -14,12 +15,12 @@ bool onboard_sensors_init(int i2c_fd) {
 
 int onboard_get_temperature(void)
 {
-	return (int)avnet_get_temperature_lps22h();
+    return (int)avnet_get_temperature_lps22h();
 }
 
 int onboard_get_pressure(void)
 {
-	return (int)avnet_get_pressure();
+    return (int)avnet_get_pressure();
 }
 
 /// <summary>
@@ -32,20 +33,20 @@ bool onboard_sensors_read(ONBOARD_TELEMETRY *telemetry)
     // AngularRateDegreesPerSecond ardps = lp_get_angular_rate();
     // AccelerationMilligForce amf = lp_get_acceleration();
 
-    // Log_Debug("\nLSM6DSO: Angular rate [degrees per second] : %4.2f, %4.2f, %4.2f\n", ardps.x, ardps.y, ardps.z);
-    // Log_Debug("\nLSM6DSO: Acceleration [millig force]  : %.4lf, %.4lf, %.4lf\n", amgf.x, amgf.y, amgf.z);
-    // telemetry->light = lp_GetLightLevel();
+    // Log_Debug("\nLSM6DSO: Angular rate [degrees per second] : %4.2f, %4.2f, %4.2f\n", ardps.x, ardps.y,
+    // ardps.z); Log_Debug("\nLSM6DSO: Acceleration [millig force]  : %.4lf, %.4lf, %.4lf\n", amgf.x, amgf.y,
+    // amgf.z); telemetry->light = lp_GetLightLevel();
 
     telemetry->temperature = (int)onboard_get_temperature();
-    telemetry->pressure = (int)onboard_get_pressure();
+    telemetry->pressure    = (int)onboard_get_pressure();
 
     return true;
 }
 
-bool onboard_sensors_close(void) {
+bool onboard_sensors_close(void)
+{
     return true;
 }
-
 
 #else
 
@@ -57,14 +58,14 @@ bool onboard_sensors_init(int i2c_fd)
 
 int onboard_get_temperature(void)
 {
-	int rnd                = (rand() % 10) - 5;
-	return 25 + rnd;
+    int rnd = (rand() % 10) - 5;
+    return 25 + rnd;
 }
 
 int onboard_get_pressure(void)
 {
-	int rnd = (rand() % 50) - 25;
-	return 1000 + rnd;
+    int rnd = (rand() % 50) - 25;
+    return 1000 + rnd;
 }
 
 /// <summary>
@@ -72,8 +73,8 @@ int onboard_get_pressure(void)
 /// </summary>
 bool onboard_sensors_read(ONBOARD_TELEMETRY *telemetry)
 {
-	telemetry->temperature = onboard_get_temperature();
-	telemetry->pressure    = onboard_get_pressure();
+    telemetry->temperature = onboard_get_temperature();
+    telemetry->pressure    = onboard_get_pressure();
 
     return true;
 }

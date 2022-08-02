@@ -5,9 +5,9 @@
 #include "dx_intercore.h"
 #include "dx_utilities.h"
 #include "parson.h"
+#include <applibs/certstore.h>
 #include <applibs/log.h>
 #include <applibs/wificonfig.h>
-#include <applibs/certstore.h>
 
 #include <arpa/inet.h>
 #include <ifaddrs.h>

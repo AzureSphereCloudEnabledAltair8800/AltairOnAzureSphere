@@ -21,32 +21,32 @@
 
 typedef enum
 {
-	CPU_STARTING = 0,
-	CPU_RUNNING = 1,
-	CPU_STOPPED = 2
+    CPU_STARTING = 0,
+    CPU_RUNNING  = 1,
+    CPU_STOPPED  = 2
 } CPU_OPERATING_MODE;
 
 typedef enum
 {
-	OPERATING_MODE,
-	CONTROL_MODE,
-	INPUT_MODE
+    OPERATING_MODE,
+    CONTROL_MODE,
+    INPUT_MODE
 } CLICK_4X4_BUTTON_MODE;
 
 typedef enum
 {
-	NOP               = 0x00,
-	RUN_CMD           = 0x01,
-	STOP_CMD          = 0x02,
-	SINGLE_STEP       = 0x08,
-	EXAMINE           = 0x20,
-	EXAMINE_NEXT      = 0x10,
-	DEPOSIT           = 0x80,
-	DEPOSIT_NEXT      = 0x40,
-	DISASSEMBLE       = 0x100,
-	TRACE             = 0x101,
-	RESET             = 0x102,
-	LOAD_ALTAIR_BASIC = 0x103
+    NOP               = 0x00,
+    RUN_CMD           = 0x01,
+    STOP_CMD          = 0x02,
+    SINGLE_STEP       = 0x08,
+    EXAMINE           = 0x20,
+    EXAMINE_NEXT      = 0x10,
+    DEPOSIT           = 0x80,
+    DEPOSIT_NEXT      = 0x40,
+    DISASSEMBLE       = 0x100,
+    TRACE             = 0x101,
+    RESET             = 0x102,
+    LOAD_ALTAIR_BASIC = 0x103
 } ALTAIR_COMMAND;
 
 #endif

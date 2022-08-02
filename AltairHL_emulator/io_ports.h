@@ -89,9 +89,9 @@ extern DX_ASYNC_BINDING async_power_management_wake;
 
 enum PANEL_MODE_T
 {
-	PANEL_BUS_MODE,
-	PANEL_FONT_MODE,
-	PANEL_BITMAP_MODE
+    PANEL_BUS_MODE,
+    PANEL_FONT_MODE,
+    PANEL_BITMAP_MODE
 };
 
 extern enum PANEL_MODE_T panel_mode;

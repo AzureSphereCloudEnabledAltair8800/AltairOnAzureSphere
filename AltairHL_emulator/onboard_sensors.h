@@ -10,10 +10,11 @@
 #include "Drivers/AVNET/HL/imu_temp_pressure.h"
 #endif
 
-typedef struct {
+typedef struct
+{
     int temperature;
     int pressure;
-	bool updated;
+    bool updated;
 } ONBOARD_TELEMETRY;
 
 bool onboard_sensors_read(ONBOARD_TELEMETRY *telemetry);
