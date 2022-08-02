@@ -17,7 +17,7 @@ char **argv;
 		exit();
 	}
 
-	printf("\nRead those \"like a polaroid\" lyrics just a little bit closer and enter the key:)\n");
+	printf("\nRead those \"like a polaroid\" lyrics just a little bit closer :)\n");
 	while(get_key() == -1){
 
 	}
@@ -40,9 +40,17 @@ char **argv;
 			printf("The Azure Sphere device is running a TinyML (Tensorflow Lite) Movement Classification ");
 			printf("model on one of the secure real-time cores.\nThe TinyML model was created with Edge ");
 			printf("Impulse (www.edgeimpulse.com).\n");
-			printf("\nNext steps:\n1. Change to the drive B:\n2. Copy riddle.c from Azure Sphere immutable ");
-			printf("storage to the Altair filesystem: devget riddle.c\n3. Compile riddle.c: cc riddle\n4. ");
-			printf("Link riddle: clink riddle\n5. Run riddle from the command line\n6. Good luck :)");
+			printf("\nNext steps:\n");
+			printf("1. Change to the drive B:\n");
+			printf("2. Copy riddle.c from Azure Sphere immutable storage to the Altair filesystem. Follow these steps:\n\n");
+			printf("\tRun 'gf' (short for getfile)\n");
+			printf("\tSelect option 0\n");
+			printf("\tNext, type the filename 'riddle.c'\n");
+			printf("\tPress enter to start the transfer\n\n");
+			printf("3. Compile riddle.c: cc riddle\n");
+			printf("4. Link riddle: clink riddle\n");
+			printf("5. Run riddle from the command line\n");
+			printf("6. Good luck :)");
 			break;
 		}
 
@@ -63,7 +71,7 @@ int get_key()
 	int c;
 	int len;
 
-	printf("Enter key: ");
+	printf("Enter the key: ");
 
 	key = fgets(buf, 128, fp_input);
 
