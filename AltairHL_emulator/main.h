@@ -39,16 +39,15 @@
 #include "io_ports.h"
 #include "memory.h"
 
-const char ALTAIR_EMULATOR_VERSION[]   = "4.7.0";
-const char DEFAULT_NETWORK_INTERFACE[] = "wlan0";
-#define Log_Debug(f_, ...)      dx_Log_Debug((f_), ##__VA_ARGS__)
-#define DX_LOGGING_ENABLED      FALSE
-#define BASIC_SAMPLES_DIRECTORY "BasicSamples"
+const char ALTAIR_EMULATOR_VERSION[] = "4.7.0";
+
+#define DEFAULT_NETWORK_INTERFACE "wlan0"
+#define Log_Debug(f_, ...)        dx_Log_Debug((f_), ##__VA_ARGS__)
+#define DX_LOGGING_ENABLED        FALSE
+#define BASIC_SAMPLES_DIRECTORY   "BasicSamples"
 
 // https://docs.microsoft.com/en-us/azure/iot-pnp/overview-iot-plug-and-play
 #define IOT_PLUG_AND_PLAY_MODEL_ID "dtmi:com:example:climatemonitor;1"
-
-enum PANEL_MODE_T panel_mode = PANEL_BUS_MODE;
 
 #define CORE_ENVIRONMENT_COMPONENT_ID "2e319eae-7be5-4a0c-ba47-9353aa6ca96a"
 #define CORE_FILESYSTEM_COMPONENT_ID  "9b684af8-21b9-42aa-91e4-621d5428e497"
@@ -93,7 +92,9 @@ CPU_OPERATING_MODE cpu_operating_mode    = CPU_STARTING;
 bool azure_connected                     = false;
 bool send_partial_msg                    = false;
 char msgBuffer[MSG_BUFFER_BYTES]         = {0};
+const char *network_interface            = NULL;
 const struct itimerspec watchdogInterval = {{60, 0}, {60, 0}};
+enum PANEL_MODE_T panel_mode             = PANEL_BUS_MODE;
 int altair_spi_fd                        = -1;
 static bool altair_i8080_running         = false;
 static bool network_connected            = false;
@@ -121,10 +122,10 @@ static const char *AltairMsg[]           = {
 };
 // clang-format on
 
-static int AltairBannerCount             = 0;
-static int app_fd                        = -1;
-static int inactivity_period             = 0;
-uint16_t bus_switches                    = 0x00;
+static int AltairBannerCount = 0;
+static int app_fd            = -1;
+static int inactivity_period = 0;
+uint16_t bus_switches        = 0x00;
 
 // basic app load helpers.
 static bool haveAppLoad            = false;
@@ -191,23 +192,7 @@ DX_INTERCORE_BINDING intercore_ml_classify_ctx = {.sockFd = -1,
     .intercore_recv_block                                 = &intercore_ml_classify_block,
     .intercore_recv_block_length                          = sizeof(intercore_ml_classify_block)};
 
-#ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
-
-// CLICK_4X4_BUTTON_MODE click_4x4_key_mode = CONTROL_MODE;
-//
-// as1115_t retro_click = {.interfaceId = ISU2,
-//	.handle                          = -1,
-//	.bitmap64                        = 0,
-//	.keymap                          = 0,
-//	.debouncePeriodMilliseconds      = 500};
-
-#endif //  ALTAIR_FRONT_PANEL_RETRO_CLICK
-
 #ifdef ALTAIR_FRONT_PANEL_KIT
-
-// static DX_GPIO memoryCS = { .pin = MEMORY_CS, .direction = DX_OUTPUT, .initialState =
-// GPIO_Value_High, .invertPin = false, .name = "memory CS" }; static DX_GPIO sdCS = { .pin = SD_CS,
-// .direction = DX_OUTPUT, .initialState = GPIO_Value_High, .invertPin = false, .name = "SD_CS" };
 
 DX_GPIO_BINDING switches_chip_select = {.pin = SWITCHES_CHIP_SELECT,
     .direction                               = DX_OUTPUT,

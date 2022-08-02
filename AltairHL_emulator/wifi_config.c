@@ -394,10 +394,6 @@ void getIP(void)
 	strncpy(display_ip_address, "NOT CONNECTED", sizeof(display_ip_address));
 	ip_address_ptr = display_ip_address;
 
-	const char *network_interface = dx_isStringNullOrEmpty(altair_config.network_interface)
-										? DEFAULT_NETWORK_INTERFACE
-										: altair_config.network_interface;
-
 	if (getifaddrs(&addr_list) < 0)
 	{
 		Log_Debug("***** GETIFADDRS failed! ***\n");

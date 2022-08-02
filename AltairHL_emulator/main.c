@@ -41,10 +41,6 @@ DX_TIMER_HANDLER_END
 /// </summary>
 static DX_TIMER_HANDLER(update_environment_handler)
 {
-    const char *network_interface = dx_isStringNullOrEmpty(altair_config.network_interface)
-                                        ? DEFAULT_NETWORK_INTERFACE
-                                        : altair_config.network_interface;
-
     if (dx_isNetworkConnected(network_interface))
     {
         update_weather();
@@ -59,10 +55,6 @@ DX_TIMER_HANDLER_END
 /// </summary>
 static DX_TIMER_HANDLER(initialize_environment_handler)
 {
-    const char *network_interface = dx_isStringNullOrEmpty(altair_config.network_interface)
-                                        ? DEFAULT_NETWORK_INTERFACE
-                                        : altair_config.network_interface;
-
     if (dx_isNetworkConnected(network_interface))
     {
         init_environment(&altair_config);
@@ -441,10 +433,6 @@ void altair_wake(void)
 /// </summary>
 void altair_sleep(void)
 {
-    const char *network_interface = dx_isStringNullOrEmpty(altair_config.network_interface)
-                                        ? DEFAULT_NETWORK_INTERFACE
-                                        : altair_config.network_interface;
-
     if (!altair_i8080_running)
     {
         return;
@@ -828,9 +816,6 @@ static void azure_connection_state(bool connection_state)
 static void start_network_interface(void)
 {
     int result, retry = 0;
-    const char *network_interface = dx_isStringNullOrEmpty(altair_config.network_interface)
-                                        ? DEFAULT_NETWORK_INTERFACE
-                                        : altair_config.network_interface;
 
     result = Networking_SetInterfaceState(network_interface, true);
     while (result == -1 && errno == EAGAIN && retry++ < 10)
@@ -847,9 +832,13 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
 {
     dx_Log_Debug_Init(Log_Debug_Time_buffer, sizeof(Log_Debug_Time_buffer));
 
-    start_network_interface();
-
     parse_altair_cmd_line_arguments(argc, argv, &altair_config);
+
+    network_interface = dx_isStringNullOrEmpty(altair_config.network_interface)
+                            ? DEFAULT_NETWORK_INTERFACE
+                            : altair_config.network_interface;
+
+    start_network_interface();
 
     curl_global_init(CURL_GLOBAL_ALL);
 
@@ -867,10 +856,7 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
     // No Azure IoT connection info configured so skip setting up connection
     if (altair_config.user_config.connectionType != DX_CONNECTION_TYPE_NOT_DEFINED)
     {
-        dx_azureConnect(&altair_config.user_config,
-            dx_isStringNullOrEmpty(altair_config.network_interface) ? DEFAULT_NETWORK_INTERFACE
-                                                                    : altair_config.network_interface,
-            IOT_PLUG_AND_PLAY_MODEL_ID);
+        dx_azureConnect(&altair_config.user_config, network_interface, IOT_PLUG_AND_PLAY_MODEL_ID);
 
         dx_azureRegisterConnectionChangedNotification(report_startup_stats);
         dx_azureRegisterConnectionChangedNotification(azure_connection_state);
