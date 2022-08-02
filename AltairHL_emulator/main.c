@@ -118,31 +118,31 @@ DX_TIMER_HANDLER_END
 /// </summary>
 static DX_TIMER_HANDLER(read_buttons_handler)
 {
-    static GPIO_Value_Type buttonAState;
-    static GPIO_Value_Type buttonBState;
+	static GPIO_Value_Type buttonAState;
+	static GPIO_Value_Type buttonBState;
 
-    if (dx_gpioStateGet(&buttonA, &buttonAState) && network_connected)
-    {
-        getIP();
-    }
+	if (dx_gpioStateGet(&buttonA, &buttonAState))
+	{
+		getIP();
+	}
 
-    if (cpu_operating_mode != CPU_STOPPED)
-    {
-        if (dx_gpioStateGet(&buttonB, &buttonBState))
-        {
-            if (stop_cpu)
-            {
-                altair_wake();
-            }
-            else
-            {
-                altair_sleep();
-                dx_timerOneShotSet(&tmr_read_buttons, &(struct timespec){2, 0});
-                return;
-            }
-        }
-    }
-    dx_timerOneShotSet(&tmr_read_buttons, &(struct timespec){0, 250 * ONE_MS});
+	if (cpu_operating_mode != CPU_STOPPED)
+	{
+		if (dx_gpioStateGet(&buttonB, &buttonBState))
+		{
+			if (stop_cpu)
+			{
+				altair_wake();
+			}
+			else
+			{
+				altair_sleep();
+				dx_timerOneShotSet(&tmr_read_buttons, &(struct timespec){2, 0});
+				return;
+			}
+		}
+	}
+	dx_timerOneShotSet(&tmr_read_buttons, &(struct timespec){0, 250 * ONE_MS});
 }
 DX_TIMER_HANDLER_END
 

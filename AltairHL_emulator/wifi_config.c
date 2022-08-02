@@ -34,11 +34,9 @@ static void add_wifi_psk(WIFI_CONFIG_T *wifi_config);
 static void add_wifi_open(WIFI_CONFIG_T *wifi_config);
 static void add_wifi_eap(WIFI_CONFIG_T *wifi);
 
-#ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
 static enum PANEL_MODE_T previous_panel_mode;
 static char display_ip_address[20] = {0};
 static char *ip_address_ptr;
-#endif
 
 DX_TIMER_HANDLER(display_ip_address_handler)
 {
@@ -393,13 +391,16 @@ void getIP(void)
 	struct ifaddrs *it;
 	int n;
 
+	strncpy(display_ip_address, "NOT CONNECTED", sizeof(display_ip_address));
+	ip_address_ptr = display_ip_address;
+
 	const char *network_interface = dx_isStringNullOrEmpty(altair_config.network_interface)
 										? DEFAULT_NETWORK_INTERFACE
 										: altair_config.network_interface;
 
 	if (getifaddrs(&addr_list) < 0)
 	{
-		Log_Debug("***** GETIFADDRs failed! ***\n");
+		Log_Debug("***** GETIFADDRS failed! ***\n");
 	}
 	else
 	{
@@ -415,21 +416,19 @@ void getIP(void)
 				{
 					struct sockaddr_in *addr = (struct sockaddr_in *)it->ifa_addr;
 					char *ip_address         = inet_ntoa(addr->sin_addr);
-
-#ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
 					strncpy(display_ip_address, ip_address, sizeof(display_ip_address));
-
-					previous_panel_mode = panel_mode;
-					panel_mode          = PANEL_FONT_MODE;
-					ip_address_ptr      = ip_address;
-
-					dx_timerOneShotSet(&tmr_display_ip_address, &(struct timespec){1, 0});
-#else
-					Log_Debug("**** wlan0 IP found: %s ***\n", ip_address);
-#endif
 				}
 			}
 		}
 	}
+
+#ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
+	previous_panel_mode = panel_mode;
+	panel_mode          = PANEL_FONT_MODE;
+	dx_timerOneShotSet(&tmr_display_ip_address, &(struct timespec){1, 0});
+#else
+	Log_Debug("**** wlan0 IP: %s ***\n", display_ip_address);
+#endif
+
 	freeifaddrs(addr_list);
 }

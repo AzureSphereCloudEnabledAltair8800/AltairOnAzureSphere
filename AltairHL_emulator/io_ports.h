@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "device_id.h"
 #include "dx_timer.h"
 #include "dx_utilities.h"
 #include "environment_types.h"

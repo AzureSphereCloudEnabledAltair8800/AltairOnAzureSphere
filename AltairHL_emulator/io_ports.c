@@ -9,6 +9,10 @@
 
 static int copy_web(char *url);
 
+// Device ID is 128 bytes. But we are only taking the first 8 bytes and allowing a terminating NULL;
+#define DEVICE_ID_BUFFER_SIZE 9
+static char azsphere_device_id[DEVICE_ID_BUFFER_SIZE];
+
 typedef struct
 {
 	size_t len;
@@ -650,10 +654,27 @@ void io_port_out(uint8_t port, uint8_t data)
 		case 70: // Load Altair version number
 			ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%s", ALTAIR_EMULATOR_VERSION);
 			break;
+
+#ifdef AZURE_SPHERE
+
 		case 71: // OS Version
 			Applications_GetOsVersion(&os_version);
 			ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%s", os_version.version);
 			break;
+
+		case 72: // Get Azure Sphere Device ID - note for security reasons only getting the first 8 chars on the 128 string
+			memset(azsphere_device_id, 0x00, sizeof(azsphere_device_id));
+			if (GetDeviceID((char *)&azsphere_device_id, sizeof(azsphere_device_id)) == 0)
+			{
+				ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%s", azsphere_device_id);
+			}
+			else 
+			{
+				ru.len = (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%s", "A7B43940");
+			}			
+			break;
+
+#endif // AZURE_SPHERE
 
 #ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
 
@@ -791,7 +812,6 @@ void io_port_out(uint8_t port, uint8_t data)
 			if (data == 0) // NULL TERMINATION
 			{
 				webget.personal_endpoint[webget.index] = 0x00;
-				Log_Debug("%s\n", webget.personal_endpoint);
 				webget.index = 0;
 			}
 			break;
@@ -842,9 +862,6 @@ void io_port_out(uint8_t port, uint8_t data)
 					default:
 						break;
 				}
-
-				Log_Debug("%s\n", webget.url);
-
 				dx_asyncSend(&async_copyx_request, NULL);
 			}
 			break;
