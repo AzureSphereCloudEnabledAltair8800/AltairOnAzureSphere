@@ -33,7 +33,7 @@ extern DX_TIMER_BINDING tmr_read_panel;
 extern DX_TIMER_BINDING tmr_refresh_panel;
 #endif
 
-#define BASIC_SAMPLES_DIRECTORY "BasicSamples"
+#define BASIC_SAMPLES_DIRECTORY "AppSamples"
 
 DX_DECLARE_ASYNC_HANDLER(async_accelerometer_start_handler);
 DX_DECLARE_ASYNC_HANDLER(async_accelerometer_stop_handler);

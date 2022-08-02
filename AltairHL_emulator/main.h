@@ -44,7 +44,7 @@ const char ALTAIR_EMULATOR_VERSION[] = "4.7.0";
 #define DEFAULT_NETWORK_INTERFACE "wlan0"
 #define Log_Debug(f_, ...)        dx_Log_Debug((f_), ##__VA_ARGS__)
 #define DX_LOGGING_ENABLED        FALSE
-#define BASIC_SAMPLES_DIRECTORY   "BasicSamples"
+#define BASIC_SAMPLES_DIRECTORY   "AppSamples"
 
 // https://docs.microsoft.com/en-us/azure/iot-pnp/overview-iot-plug-and-play
 #define IOT_PLUG_AND_PLAY_MODEL_ID "dtmi:com:example:climatemonitor;1"

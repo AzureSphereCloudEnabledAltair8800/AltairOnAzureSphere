@@ -257,12 +257,12 @@ static DX_TIMER_HANDLER(sleep_warning_clear_handler)
 DX_TIMER_HANDLER_END
 
 /// <summary>
-/// Flash S for Sleep on the panel when the device is asleep
+/// Flash B for Button B wake from Sleep on the panel when the device is asleep
 /// </summary>
 static DX_TIMER_HANDLER(sleep_warning_handler)
 {
 #ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
-    gfx_load_character('S', retro_click.bitmap);
+    gfx_load_character('B', retro_click.bitmap);
 
     gfx_rotate_counterclockwise(retro_click.bitmap, 1, 1, retro_click.bitmap);
     gfx_reverse_panel(retro_click.bitmap);
