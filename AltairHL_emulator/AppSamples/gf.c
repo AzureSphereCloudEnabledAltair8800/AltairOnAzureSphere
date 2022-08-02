@@ -67,7 +67,7 @@ int argc;
     switch (selected_ep)
     {
         case 0:
-            set_stg_fname(filename, strlen(filename), STG_FILENAME);
+            set_stg_fname(filename);
             immutable_copy();
             break;
         case 1:
@@ -130,17 +130,19 @@ void get_selected_ep()
 }
 
 /* Sets the filename to be copied with i8080 port 68 */
-int set_stg_fname(filename, len, port)
+int set_stg_fname(filename)
 char *filename;
-int len;
-int port;
 {
     int c;
+    int len;
+
+    len = strlen(filename);
+
     for (c = 0; c < len; c++)
     {
-        outp(port, filename[c]);
+        outp(STG_FILENAME, filename[c]);
     }
-    outp(port, 0);
+    outp(STG_FILENAME, 0);
     printf("filename set\n");
 }
 
