@@ -158,6 +158,7 @@ static DX_DECLARE_TIMER_HANDLER(panel_refresh_handler);
 static DX_DECLARE_TIMER_HANDLER(read_buttons_handler);
 static DX_DECLARE_TIMER_HANDLER(read_panel_handler);
 static DX_DECLARE_TIMER_HANDLER(report_memory_usage);
+static DX_DECLARE_TIMER_HANDLER(show_ip_address_handler);
 static DX_DECLARE_TIMER_HANDLER(sleep_warning_clear_handler);
 static DX_DECLARE_TIMER_HANDLER(sleep_warning_handler);
 static DX_DECLARE_TIMER_HANDLER(terminal_io_monitor_handler);
@@ -247,6 +248,7 @@ DX_TIMER_BINDING tmr_display_ip_address = {.handler = display_ip_address_handler
 DX_TIMER_BINDING tmr_i8080_wakeup = {.name = "tmr_i8080_wakeup", .handler = tmr_i8080_wakeup_handler};
 DX_TIMER_BINDING tmr_partial_message = {.repeat = &(struct timespec){0, 250 * ONE_MS}, .name = "tmr_partial_message", .handler = partial_message_handler};
 DX_TIMER_BINDING tmr_read_accelerometer = {.name = "tmr_read_accelerometer", .handler = read_accelerometer_handler};
+DX_TIMER_BINDING tmr_show_ip_address = {.repeat = &(struct timespec){30, 0}, .name="tmr_show_ip_address", .handler=show_ip_address_handler};
 DX_TIMER_BINDING tmr_terminal_io_monitor = {.repeat = &(struct timespec){60, 0}, .name = "tmr_terminal_io_monitor", .handler = terminal_io_monitor_handler};
 DX_TIMER_BINDING tmr_timer_millisecond_expired = {.name = "tmr_timer_millisecond_expired", .handler = timer_millisecond_expired_handler};
 DX_TIMER_BINDING tmr_timer_seconds_expired = {.name = "tmr_timer_seconds_expired", .handler = timer_seconds_expired_handler};
@@ -390,6 +392,7 @@ static DX_TIMER_BINDING *timerSet[] = {
     &tmr_read_panel,
     &tmr_refresh_panel,
     &tmr_report_memory_usage,
+    &tmr_show_ip_address,
     &tmr_sleep_warning_clear,
     &tmr_terminal_io_monitor,
     &tmr_tick_count,
