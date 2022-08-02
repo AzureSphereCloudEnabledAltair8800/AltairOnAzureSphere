@@ -4,7 +4,7 @@ int value;
 
 main()
 {
-	if (peek(0xFEFE) != 0x44)
+	if (peek(0xFFFE) != 0x44)
 	{
 		printf("Oh no, the escape room sequence key is incorrect. Did you miss a step?");
 		exit();
@@ -34,6 +34,7 @@ main()
 		{
 		}
 	}
-	printf("\n\nNow for one last challenge. Run the supercomputer from the 1968 science fiction film.\n\n");
-	poke(0xFEFE, 0x67);
+	printf("\n\nNow for one last challenge. Run the supercomputer from the 1968 science fiction film.\n");
+	printf("You'll need to switch back to the drive C:\n\n")
+	poke(0xFFFE, 0x67);
 }

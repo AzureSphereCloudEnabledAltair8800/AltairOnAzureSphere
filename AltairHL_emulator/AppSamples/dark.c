@@ -20,7 +20,7 @@ main()
 		{
 			printf("\n\nWoohoo, great start Captain!\n");
 			printf("The next challenge is made up of two parts. Good luck :)\n");
-			printf("Poke memory location hFEFF with h30 and then ");
+			printf("Poke memory location 0xFFFF with h30 and then ");
 			printf("run backwards -- --- .-. ... .\n");
 			printf("Hint, see the top right for the link to the manuals\n");
 			break;
@@ -34,5 +34,5 @@ main()
 		{
 		}
 	}
-	poke(0xFEFE, 0xA6);
+	poke(0xFFFE, 0xA6);
 }

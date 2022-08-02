@@ -19,13 +19,13 @@ char **argv;
 	int level;
 	char cmd;
 
-	if (peek(0xFEFE) != 0xA6)
+	if (peek(0xFFFE) != 0xA6)
 	{
 		printf("Oh no, the escape room sequence key is incorrect. Did you miss a step?");
 		exit();
 	}
 
-	if (peek(0xFEFF) != 0x30)
+	if (peek(0xFFFF) != 0x30)
 	{
 		printf("Key at 0xFEFF is incorrect. try again");
 		exit();
@@ -74,5 +74,5 @@ char **argv;
 		}
 	}
 	outp(PANEL_MODE, BUS);
-	poke(0xFEFE, 0x39);
+	poke(0xFFFE, 0x39);
 }

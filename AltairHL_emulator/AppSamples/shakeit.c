@@ -11,7 +11,7 @@ main(argc, argv) int argc;
 char **argv;
 {
 
-	if (peek(0xFEFE) != 0x39)
+	if (peek(0xFFFE) != 0x39)
 	{
 		printf("Oh no, the escape room sequence key is incorrect. Did you miss a step?");
 		exit();
@@ -62,7 +62,7 @@ char **argv;
 	}
 	/* turn off the accelerometer */
 	outp(64, 4);
-	poke(0xFEFE, 0x44);
+	poke(0xFFFE, 0x44);
 }
 
 int get_key()

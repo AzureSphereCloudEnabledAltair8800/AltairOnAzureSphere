@@ -9,7 +9,7 @@ char **argv;
 {
     char c;
 
-	if (peek(0xFEFE) != 0x67)
+	if (peek(0xFFFE) != 0x67)
 	{
 		printf("Oh no, the escape room sequence key is incorrect. Did you miss a step?");
 		exit();
