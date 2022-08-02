@@ -19,26 +19,26 @@ char **argv;
 	int level;
 	char cmd;
 
-	/*printf("\n\nLike a polaroid picture!\n");
-	  if (argc != 2){
-		printf("\nExpected key;)\n");
-		exit();
-	  }
-	*/
-	if (peek(0xFEFF) != 0x30)
+	if (peek(0xFEFE) != 0xA6)
 	{
-		printf("Code at 0xFEFF is incorrect. try again");
+		printf("Oh no, the escape room sequence key is incorrect. Did you miss a step?");
 		exit();
 	}
 
-	/*  if (strcmp(argv[1], CODE) != 0)
-	  {
-		printf("Well that's awkward, badong, try again :)\n");
+	if (peek(0xFEFF) != 0x30)
+	{
+		printf("Key at 0xFEFF is incorrect. try again");
 		exit();
-	  }
-	*/
+	}
+	else 
+	{
+		printf("\nGreat working on poking that address\n");
+		printf("Oh for the days of one address space OSs :)\n\n");
+	}
+	printf("------------------------------------\n");
 	printf("See 8x8 LED panel for the next clue.\n");
-	printf("Make it dark to quit esrom.\n");
+	printf("------------------------------------\n\n");
+	printf("Make it dark to quit ESROM.COM.\n");
 	outp(PANEL_MODE, BITMAP);
 	outp(CLEAR, 0);
 
@@ -74,4 +74,5 @@ char **argv;
 		}
 	}
 	outp(PANEL_MODE, BUS);
+	poke(0xFEFE, 0x39);
 }
