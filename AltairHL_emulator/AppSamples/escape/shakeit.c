@@ -36,7 +36,7 @@ char **argv;
         printf(".");
         if (strcmp(prediction, "normal"))
         {
-            printf("\n\nCongratulations, you did it, you've almost escaped :)\n");
+            printf("\n\nCongratulations, you did it :)\n\n");
             printf("The Azure Sphere device is running a TinyML (Tensorflow Lite) Movement Classification ");
             printf("model on one of the secure real-time cores.\nThe TinyML model was created with Edge ");
             printf("Impulse (www.edgeimpulse.com).\n");
@@ -93,8 +93,8 @@ int get_key()
     }
     else
     {
-        printf("\nEureka, great work on the key! But you are not quite there yet. A hint is in those lyrics "
-               ";)\n\n");
+        printf("\nEureka, great work on the key! But you are not quite there yet. A hint is in those lyrics ");
+        printf(";)\n\n");
     }
 
     return 0;

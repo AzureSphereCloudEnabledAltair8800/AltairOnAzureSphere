@@ -23,7 +23,7 @@ char **argv;
     {
     }
 
-    printf("Congratulations, you have completed the Altair Escape Room Challenge!\n\n");
+    printf("Congratulations, you've completed the Altair Escape Room Challenge!\n\n");
     printf("Take a screenshot of this code: ");
     /* get the first 8 chars of the Azure Sphere Device ID */
     outp(72, 0);
@@ -56,12 +56,12 @@ int get_key()
 
     if (strcmp(key_validate, "IBM"))
     {
-        printf("\nNice try, but '%s' did not come after HAL\n", key);
+        printf("\nNice try, but '%s' didn't come after HAL\n", key);
         return -1;
     }
     else
     {
-        printf("\nWoohoo, congratulations, you did it, you escaped!\n\n");
+        printf("\nWoohoo, congratulations, you did it, you've escaped!\n\n");
     }
 
     return 0;

@@ -10,7 +10,7 @@ main()
         exit()
     }
 
-    printf("\n\nThis clue SWIMS at NOON. Solve me and ");
+    printf("\n\nSIS SWIMS at NOON. Solve me and ");
     printf("you're one step closer to escaping the challenge :)\n\n");
 
     outp(64, 4);

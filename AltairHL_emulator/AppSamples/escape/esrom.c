@@ -12,12 +12,23 @@
 #define PANEL_MODE 80
 #define BITMAP     2
 #define BUS        0
+#define SENSORS    63
+#define LIGHT      2
+
+char light_level[20];
+int level;
+int index;
+int dark;
+int light;
+char cmd;
 
 main(argc, argv) int argc;
 char **argv;
 {
-    int level;
-    char cmd;
+
+    dark  = 1;
+    light = 1;
+    light = -1;
 
     if (peek(0xFFFE) != 0xA6)
     {
@@ -27,7 +38,7 @@ char **argv;
 
     if (peek(0xFFFF) != 0x30)
     {
-        printf("Key at 0xFEFF is incorrect. try again");
+        printf("Key at 0xFEFF is incorrect, you need to poke around some more. try again");
         exit();
     }
     else
@@ -38,7 +49,7 @@ char **argv;
     printf("------------------------------------\n");
     printf("See 8x8 LED panel for the next clue.\n");
     printf("------------------------------------\n\n");
-    printf("Make it dark to quit ESROM.COM.\n");
+    printf("Make it dark then bright to quit.\n");
     outp(PANEL_MODE, BITMAP);
     outp(CLEAR, 0);
 
@@ -51,28 +62,50 @@ char **argv;
     outp(ROW1, 192);
     outp(DRAW, 0);
 
-    char light_level[20];
-    int index;
-    int i;
-
-    while (1)
+    while (light || dark)
     {
+        outp(SENSORS, LIGHT);
+
         index = 0;
-        outp(63, 2);
-        while ((light_level[index++] = inp(200)))
+        while ((light_level[index++] = inp(200)) != 0)
         {
         }
-        if (atoi(light_level) == 0)
+
+        level = atoi(light_level);
+
+        if (level == 0 && dark)
         {
-            break;
+            if (light)
+            {
+                printf("\nNearly there!\n");
+            }
+            dark = 0;
+            continue;
+        }
+
+        if (level >= 100 && light)
+        {
+            if (dark)
+            {
+                printf("\nNearly there!\n");
+            }
+            light = 0;
+            continue;
         }
 
         printf(".");
-        outp(30, 1);
-        while (inp(30) == 1)
+
+        /* sleep for 500 milliseconds */
+        outp(29, 250);
+        while (inp(29) == 1)
+        {
+        }
+        outp(29, 250);
+        while (inp(29) == 1)
         {
         }
     }
+
     outp(PANEL_MODE, BUS);
     poke(0xFFFE, 0x39);
 }
