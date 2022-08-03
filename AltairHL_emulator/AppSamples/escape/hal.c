@@ -32,6 +32,7 @@ char **argv;
         printf("%c", c);
     }
     printf("\n\nAnd locate one of Altair Escape Room Challenge organizers for information on prizes.");
+    poke(0xFFFE, 0x00);
 }
 
 int get_key()
