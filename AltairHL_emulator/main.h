@@ -233,7 +233,6 @@ DX_TIMER_BINDING tmr_display_ip_address = {.handler = display_ip_address_handler
 DX_TIMER_BINDING tmr_i8080_wakeup = {.name = "tmr_i8080_wakeup", .handler = tmr_i8080_wakeup_handler};
 DX_TIMER_BINDING tmr_partial_message = {.repeat = &(struct timespec){0, 250 * ONE_MS}, .name = "tmr_partial_message", .handler = partial_message_handler};
 DX_TIMER_BINDING tmr_read_accelerometer = {.name = "tmr_read_accelerometer", .handler = read_accelerometer_handler};
-DX_TIMER_BINDING tmr_show_ip_address = {.repeat = &(struct timespec){30, 0}, .name="tmr_show_ip_address", .handler=show_ip_address_handler};
 DX_TIMER_BINDING tmr_terminal_io_monitor = {.repeat = &(struct timespec){60, 0}, .name = "tmr_terminal_io_monitor", .handler = terminal_io_monitor_handler};
 DX_TIMER_BINDING tmr_timer_millisecond_expired = {.name = "tmr_timer_millisecond_expired", .handler = timer_millisecond_expired_handler};
 DX_TIMER_BINDING tmr_timer_seconds_expired = {.name = "tmr_timer_seconds_expired", .handler = timer_seconds_expired_handler};
@@ -246,6 +245,7 @@ static DX_TIMER_BINDING tmr_initialize_environment = {.delay = &(struct timespec
 static DX_TIMER_BINDING tmr_network_state = {.repeat = &(struct timespec){20, 0}, .name = "tmr_network_state", .handler = network_state_handler};
 static DX_TIMER_BINDING tmr_read_buttons = {.delay = &(struct timespec){0, 250 * ONE_MS}, .name = "tmr_read_buttons", .handler = read_buttons_handler};
 static DX_TIMER_BINDING tmr_report_memory_usage = {.repeat = &(struct timespec){45, 0}, .name = "tmr_report_memory_usage", .handler = report_memory_usage};
+static DX_TIMER_BINDING tmr_show_ip_address = {.repeat = &(struct timespec){20, 0}, .name="tmr_show_ip_address", .handler=show_ip_address_handler};
 static DX_TIMER_BINDING tmr_sleep_warning = {.repeat = &(struct timespec){30, 0}, .name = "tmr_sleep_warning", .handler = sleep_warning_handler};
 static DX_TIMER_BINDING tmr_sleep_warning_clear = {.name = "tmr_sleep_warning_clear", .handler = sleep_warning_clear_handler};
 static DX_TIMER_BINDING tmr_tick_count = {.repeat = &(struct timespec){1, 0}, .name = "tmr_tick_count", .handler = tick_count_handler};

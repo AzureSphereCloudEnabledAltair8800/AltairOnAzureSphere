@@ -115,6 +115,7 @@ static DX_TIMER_HANDLER(read_buttons_handler)
 
     if (dx_gpioStateGet(&buttonA, &buttonAState))
     {
+        dx_timerStop(&tmr_show_ip_address);
         getIP();
     }
 
@@ -270,7 +271,7 @@ static DX_TIMER_HANDLER(sleep_warning_handler)
 
     as1115_panel_write(&retro_click);
 
-    dx_timerOneShotSet(&tmr_sleep_warning_clear, &(struct timespec){0, 250 * ONE_MS});
+    dx_timerOneShotSet(&tmr_sleep_warning_clear, &(struct timespec){0, 750 * ONE_MS});
 
 #endif // ALTAIR_FRONT_PANEL_RETRO_CLICK
 }
