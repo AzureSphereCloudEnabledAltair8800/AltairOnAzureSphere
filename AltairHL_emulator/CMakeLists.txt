@@ -241,7 +241,7 @@ endif()
 
 # If MICRO_SD_CLICK enabled then don't deploy the "Disks/cpm63k.dsk" disk image as CP/M will be booted from microSD Card. Reduces deploymemt time.
 if (MICRO_SD_CLICK)
-    azsphere_target_add_image_package(${PROJECT_NAME} RESOURCE_FILES "AppSamples/riddle.c" "AppSamples/loopy.bas" "Disks/88dskrom.bin" "Disks/altair_basic.bin")
+    azsphere_target_add_image_package(${PROJECT_NAME} RESOURCE_FILES "AppSamples/escape/riddle.c" "AppSamples/loopy.bas" "Disks/88dskrom.bin" "Disks/altair_basic.bin")
 else (MICRO_SD_CLICK)
-    azsphere_target_add_image_package(${PROJECT_NAME} RESOURCE_FILES "AppSamples/riddle.c" "AppSamples/avnet.bas" "AppSamples/tictactoe.bas" "AppSamples/loopy.bas" "AppSamples/weather.bas" "AppSamples/iot.bas" "Disks/88dskrom.bin" "Disks/azsphere_cpm63k.dsk"  "Disks/altair_basic.bin")
+    azsphere_target_add_image_package(${PROJECT_NAME} RESOURCE_FILES "AppSamples/escape/riddle.c" "AppSamples/avnet.bas" "AppSamples/tictactoe.bas" "AppSamples/loopy.bas" "AppSamples/weather.bas" "AppSamples/iot.bas" "Disks/88dskrom.bin" "Disks/azsphere_cpm63k.dsk"  "Disks/altair_basic.bin")
 endif (MICRO_SD_CLICK)
