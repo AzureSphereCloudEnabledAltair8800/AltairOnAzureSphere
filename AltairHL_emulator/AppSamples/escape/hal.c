@@ -17,7 +17,7 @@ char **argv;
 
     printf("\n2001: Space Odyssey is a 1968 epic science fiction film produced and directed by Stanley ");
     printf("Kubrick.\n");
-    printf("The movie featured HAL, a supercomputer gone rouge.\n\n");
+    printf("The movie featured HAL, a supercomputer gone rogue.\n\n");
 
     while (get_key() == -1)
     {
