@@ -31,3 +31,6 @@
 [submodule "AltairRT_sd_card_service_cache/uthash"]
 	path = AltairRT_sd_card_service_cache/uthash
 	url = https://github.com/troydhanson/uthash.git
+[submodule "AltairRT_sd_card_service_cache/lib"]
+	path = AltairRT_sd_card_service_cache/lib
+	url = https://github.com/CodethinkLabs/mt3620-m4-drivers

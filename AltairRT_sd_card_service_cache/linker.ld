@@ -14,7 +14,7 @@ MEMORY
    about which types of memory which are available to real-time capable applications on the
    MT3620, and when they should be used. */
 REGION_ALIAS("CODE_REGION", TCM);
-REGION_ALIAS("RODATA_REGION", TCM);
+REGION_ALIAS("RODATA_REGION", FLASH);
 REGION_ALIAS("DATA_REGION", TCM);
 REGION_ALIAS("BSS_REGION", TCM);
 
@@ -42,8 +42,13 @@ SECTIONS
     } >DATA_REGION
 
     .bss : {
+        __bss_start__ = .;
         *(.bss)
+        __bss_end__ = .;
     } >BSS_REGION
+
+    . = ALIGN(4);
+    end = .;
 
     StackTop = ORIGIN(TCM) + LENGTH(TCM);
 }
