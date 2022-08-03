@@ -6,8 +6,8 @@ project (AltairHL_emulator C)
 
 # SELECT DEVELOPER BOARD ##########################################################################################
 #
-set(AVNET TRUE "AVNET Azure Sphere Starter Kit Revision 1 ")   
-# set(AVNET_REV_2 TRUE "AVNET Azure Sphere Starter Kit Revision 2 ")  
+# set(AVNET TRUE "AVNET Azure Sphere Starter Kit Revision 1 ")   
+set(AVNET_REV_2 TRUE "AVNET Azure Sphere Starter Kit Revision 2 ")  
 # set(SEEED_STUDIO_RDB TRUE "Seeed Studio Azure Sphere MT3620 Development Kit (aka Reference Design Board or rdb)")
 # set(SEEED_STUDIO_RDB_ETHERNET TRUE "Seeed Studio Azure Sphere MT3620 Development Kit with ethernet shield")
 # set(SEEED_STUDIO_MDB TRUE "Seeed Studio Azure Sphere Mini Developer Board")
@@ -16,8 +16,8 @@ set(AVNET TRUE "AVNET Azure Sphere Starter Kit Revision 1 ")
 
 # SELECT FRONT PANEL CONFIG #######################################################################################
 #
-set(ALTAIR_FRONT_PANEL_NONE TRUE "Altair on Azure Sphere with no panel.")
-# set(ALTAIR_FRONT_PANEL_RETRO_CLICK TRUE "Avnet with the MikroE 8800 Retro Click")
+# set(ALTAIR_FRONT_PANEL_NONE TRUE "Altair on Azure Sphere with no panel.")
+set(ALTAIR_FRONT_PANEL_RETRO_CLICK TRUE "Avnet with the MikroE 8800 Retro Click")
 # set(ALTAIR_FRONT_PANEL_KIT TRUE "Altair front panel board")
 #
 ###################################################################################################################
@@ -28,7 +28,7 @@ set(ALTAIR_FRONT_PANEL_NONE TRUE "Altair on Azure Sphere with no panel.")
 # The MikroE microSD Click works with the Mikroe 8800 Retro Click in Socket 2
 # Uncomment the "set(MICRO_SD_CLICK" line below to enable the MikroE microSD Click
 #
-# set(MICRO_SD_CLICK TRUE "MikroE microSD Click for CP/M read/write to SD Card")
+set(MICRO_SD_CLICK TRUE "MikroE microSD Click for CP/M read/write to SD Card")
 #
 ###################################################################################################################
 
@@ -241,7 +241,7 @@ endif()
 
 # If MICRO_SD_CLICK enabled then don't deploy the "Disks/cpm63k.dsk" disk image as CP/M will be booted from microSD Card. Reduces deploymemt time.
 if (MICRO_SD_CLICK)
-    azsphere_target_add_image_package(${PROJECT_NAME} RESOURCE_FILES "AppSamples/escape/riddle.c" "AppSamples/loopy.bas" "Disks/88dskrom.bin" "Disks/altair_basic.bin")
+    azsphere_target_add_image_package(${PROJECT_NAME} RESOURCE_FILES "AppSamples/riddle.c" "AppSamples/loopy.bas" "Disks/88dskrom.bin" "Disks/altair_basic.bin")
 else (MICRO_SD_CLICK)
-    azsphere_target_add_image_package(${PROJECT_NAME} RESOURCE_FILES "AppSamples/escape/riddle.c" "AppSamples/avnet.bas" "AppSamples/tictactoe.bas" "AppSamples/loopy.bas" "AppSamples/weather.bas" "AppSamples/iot.bas" "Disks/88dskrom.bin" "Disks/azsphere_cpm63k.dsk"  "Disks/altair_basic.bin")
+    azsphere_target_add_image_package(${PROJECT_NAME} RESOURCE_FILES "AppSamples/riddle.c" "AppSamples/avnet.bas" "AppSamples/tictactoe.bas" "AppSamples/loopy.bas" "AppSamples/weather.bas" "AppSamples/iot.bas" "Disks/88dskrom.bin" "Disks/azsphere_cpm63k.dsk"  "Disks/altair_basic.bin")
 endif (MICRO_SD_CLICK)
