@@ -28,3 +28,6 @@
 [submodule "AltairRT_movement_classify/mt3620_m4_software"]
 	path = AltairRT_movement_classify/mt3620_m4_software
 	url = https://github.com/MediaTek-Labs/mt3620_m4_software.git
+[submodule "AltairRT_sd_card_service_cache/uthash"]
+	path = AltairRT_sd_card_service_cache/uthash
+	url = https://github.com/troydhanson/uthash.git
