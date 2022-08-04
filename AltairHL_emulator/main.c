@@ -113,7 +113,7 @@ static DX_TIMER_HANDLER(read_buttons_handler)
     static GPIO_Value_Type buttonAState;
     static GPIO_Value_Type buttonBState;
 
-    if (dx_gpioStateGet(&buttonA, &buttonAState))
+    if (dx_gpioStateGet(&buttonA, &buttonAState) && !stop_cpu)
     {
         dx_timerStop(&tmr_show_ip_address);
         getIP();
@@ -415,11 +415,14 @@ void altair_wake(void)
     dx_timerStart(&tmr_read_panel);
     dx_timerStart(&tmr_refresh_panel);
     dx_timerStart(&tmr_terminal_io_monitor);
+    dx_timerStart(&tmr_display_ip_address);
 
     dx_timerStop(&tmr_sleep_warning);
 
     PowerManagement_SetSystemPowerProfile(PowerManagement_HighPerformance);
     start_network_interface();
+
+    panel_mode = PANEL_BUS_MODE;
     dx_timerStart(&tmr_partial_message);
 
     dx_startThreadDetached(altair_thread, NULL, "altair_thread");
@@ -449,6 +452,8 @@ void altair_sleep(void)
     dx_timerStop(&tmr_read_panel);
     dx_timerStop(&tmr_refresh_panel);
     dx_timerStop(&tmr_terminal_io_monitor);
+
+    dx_timerStop(&tmr_display_ip_address);
     dx_timerStop(&tmr_show_ip_address);
 
     dx_timerStart(&tmr_sleep_warning);
