@@ -12,7 +12,7 @@ Optionally, the project integrates free weather and pollution cloud services fro
 
 ## Documentation
 
-The project documentation is maintained on the repo [Wiki](https://github.com/AzureSphereCloudEnabledAltair8800/AzureSphereAltair8800_V2/wiki).
+The project documentation is available [here](https://nice-bay-0f7498d0f.1.azurestaticapps.net/).
 
 ## Supported devices
 
