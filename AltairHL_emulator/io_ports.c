@@ -237,7 +237,9 @@ DX_TIMER_HANDLER_END
 
 DX_TIMER_HANDLER(tmr_i8080_wakeup_handler)
 {
+#ifdef AZURE_SPHERE
     altair_wake();
+#endif
 }
 DX_TIMER_HANDLER_END
 
@@ -356,7 +358,10 @@ void io_port_out(uint8_t port, uint8_t data)
     static int timer_delay;
     static int wake_delay;
     static int timer_milliseconds_delay;
+
+#ifdef AZURE_SPHERE
     Applications_OsVersion os_version;
+#endif
 
 #if defined(ALTAIR_FRONT_PANEL_RETRO_CLICK) || defined(ALTAIR_FRONT_PANEL_PI_SENSE)
     union {
@@ -949,7 +954,7 @@ uint8_t io_port_in(uint8_t port)
                 {
                     /* open the file */
                     snprintf(devget_path_and_filename, sizeof(devget_path_and_filename), "%s/%s",
-                        BASIC_SAMPLES_DIRECTORY, devget.filename);
+                        APP_SAMPLES_DIRECTORY, devget.filename);
 
                     if ((devget.fd = Storage_OpenFileInImagePackage(devget_path_and_filename)) != -1)
                     {

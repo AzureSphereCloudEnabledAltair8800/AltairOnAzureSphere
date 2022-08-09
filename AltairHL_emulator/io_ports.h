@@ -3,13 +3,10 @@
 
 #pragma once
 
-#include "device_id.h"
 #include "dx_timer.h"
 #include "dx_utilities.h"
 #include "environment_types.h"
 #include "iotc_manager.h"
-#include <applibs/applications.h>
-#include <applibs/storage.h>
 #include <fcntl.h>
 #include <pthread.h>
 #include <stdbool.h>
@@ -18,7 +15,10 @@
 #include <unistd.h>
 
 #ifdef AZURE_SPHERE
+#include "device_id.h"
 #include "onboard_sensors.h"
+#include <applibs/applications.h>
+#include <applibs/storage.h>
 #else
 #include "graphics.h"
 #endif
@@ -33,7 +33,7 @@ extern DX_TIMER_BINDING tmr_read_panel;
 extern DX_TIMER_BINDING tmr_refresh_panel;
 #endif
 
-#define BASIC_SAMPLES_DIRECTORY "AppSamples"
+#define APP_SAMPLES_DIRECTORY "AppSamples"
 
 DX_DECLARE_ASYNC_HANDLER(async_accelerometer_start_handler);
 DX_DECLARE_ASYNC_HANDLER(async_accelerometer_stop_handler);
@@ -58,7 +58,6 @@ extern DX_GPIO_BINDING gpioRed;
 extern DX_GPIO_BINDING gpioGreen;
 extern DX_GPIO_BINDING gpioBlue;
 
-extern const char ALTAIR_EMULATOR_VERSION[];
 extern INTERCORE_ML_CLASSIFY_BLOCK_T intercore_ml_classify_block;
 extern DX_INTERCORE_BINDING intercore_ml_classify_ctx;
 
@@ -67,6 +66,8 @@ void intercore_classify_response_handler(void *data_block, ssize_t message_lengt
 void altair_sleep(void);
 void altair_wake(void);
 #endif
+
+extern const char ALTAIR_EMULATOR_VERSION[];
 
 extern ALTAIR_CONFIG_T altair_config;
 extern DX_TIMER_BINDING tmr_i8080_wakeup;

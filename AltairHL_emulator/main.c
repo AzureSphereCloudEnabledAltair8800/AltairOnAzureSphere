@@ -543,7 +543,7 @@ static bool load_application(const char *fileName)
 {
     int retry = 0;
     char filePathAndName[50];
-    snprintf(filePathAndName, sizeof(filePathAndName), "%s/%s", BASIC_SAMPLES_DIRECTORY, fileName);
+    snprintf(filePathAndName, sizeof(filePathAndName), "%s/%s", APP_SAMPLES_DIRECTORY, fileName);
 
     // precaution
     if (app_fd != -1)
