@@ -7,9 +7,7 @@
         "--ScopeID",
         "",
         "-o",
-        "",
-        "-u",
-        "https://raw.githubusercontent.com/AzureSphereCloudEnabledAltair8800/RetroGames/main"
+        ""
     ],
     "Capabilities": {
         "MutableStorage": {

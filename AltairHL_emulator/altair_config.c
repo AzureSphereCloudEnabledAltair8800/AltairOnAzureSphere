@@ -33,9 +33,6 @@ void parse_altair_cmd_line_arguments(int argc, char *argv[], ALTAIR_CONFIG_T *al
             case 'o':
                 altair_config->open_weather_map_api_key = optarg;
                 break;
-            case 'u':
-                altair_config->copy_x_url = optarg;
-                break;
             case 'n':
                 altair_config->network_interface = optarg;
                 break;
