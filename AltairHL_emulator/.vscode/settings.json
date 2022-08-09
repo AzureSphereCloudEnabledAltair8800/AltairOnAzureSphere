@@ -15,5 +15,9 @@
         "005180bc-402f-4cb3-a662-72937dbcde47": "",
         "6583cf17-d321-4d72-8283-0b7c5b56442b": "",
         "AF8B26DB-355E-405C-BBDE-3B851668EE23": ""
+    },
+    "files.associations": {
+        "unistd.h": "c",
+        "dx_timer.h": "c"
     }
 }
