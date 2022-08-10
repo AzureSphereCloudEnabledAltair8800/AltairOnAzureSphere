@@ -262,10 +262,11 @@ static void add_wifi_psk(WIFI_CONFIG_T *wifi)
     {
         if (WifiConfig_SetSecurityType(wifi->network_id, WifiConfig_Security_Wpa2_Psk) == -1)
         {
-            Log_Debug("Set security type %s: errno=%d (%s)\n", "EAP", errno, strerror(errno));
+            Log_Debug("Set security type %s: errno=%d (%s)\n", "PSK", errno, strerror(errno));
         }
-        else if (WifiConfig_SetPSK(wifi->network_id, wifi->psk, 11) == -1)
+        else if (WifiConfig_SetPSK(wifi->network_id, wifi->psk, strlen(wifi->psk)) == -1)
         {
+            Log_Debug("Set PSK %s: errno=%d (%s)\n", wifi->psk, errno, strerror(errno));
         }
         else if (WifiConfig_SetSSID(wifi->network_id, wifi->ssid, strlen(wifi->ssid)) == -1)
         {
@@ -297,7 +298,7 @@ static void add_wifi_open(WIFI_CONFIG_T *wifi)
     {
         if (WifiConfig_SetSecurityType(wifi->network_id, WifiConfig_Security_Open) == -1)
         {
-            Log_Debug("Set security type %s: errno=%d (%s)\n", "EAP", errno, strerror(errno));
+            Log_Debug("Set security type %s: errno=%d (%s)\n", "OPEN", errno, strerror(errno));
         }
         else if (WifiConfig_SetSSID(wifi->network_id, wifi->ssid, strlen(wifi->ssid)) == -1)
         {
