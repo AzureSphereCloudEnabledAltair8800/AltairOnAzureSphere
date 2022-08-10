@@ -694,6 +694,21 @@ void print_console_banner(void)
         {
             terminal_write(ALTAIR_EMULATOR_VERSION[x]);
         }
+
+        for (int x = 0; x < strlen(DEVICE_NAME); x++)
+        {
+            terminal_write(DEVICE_NAME[x]);
+        }
+
+        for (int x = 0; x < strlen(DEVICE_STORAGE); x++)
+        {
+            terminal_write(DEVICE_STORAGE[x]);
+        }
+
+        for (int x = 0; x < strlen(DEVICE_PANEL); x++)
+        {
+            terminal_write(DEVICE_PANEL[x]);
+        }
     }
     else
     {

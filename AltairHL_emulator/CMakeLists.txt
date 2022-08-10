@@ -6,8 +6,8 @@ project (AltairHL_emulator C)
 
 # SELECT DEVELOPER BOARD ##########################################################################################
 #
-# set(AVNET TRUE "AVNET Azure Sphere Starter Kit Revision 1 ")   
-set(AVNET_REV_2 TRUE "AVNET Azure Sphere Starter Kit Revision 2 ")  
+set(AVNET TRUE "AVNET_Rev_1")   
+# set(AVNET_REV_2 TRUE "AVNET_Rev_2")  
 # set(SEEED_STUDIO_RDB TRUE "Seeed Studio Azure Sphere MT3620 Development Kit (aka Reference Design Board or rdb)")
 # set(SEEED_STUDIO_RDB_ETHERNET TRUE "Seeed Studio Azure Sphere MT3620 Development Kit with ethernet shield")
 # set(SEEED_STUDIO_MDB TRUE "Seeed Studio Azure Sphere Mini Developer Board")
@@ -16,9 +16,9 @@ set(AVNET_REV_2 TRUE "AVNET Azure Sphere Starter Kit Revision 2 ")
 
 # SELECT FRONT PANEL CONFIG #######################################################################################
 #
-# set(ALTAIR_FRONT_PANEL_NONE TRUE "Altair on Azure Sphere with no panel.")
-set(ALTAIR_FRONT_PANEL_RETRO_CLICK TRUE "Avnet with the MikroE 8800 Retro Click")
-# set(ALTAIR_FRONT_PANEL_KIT TRUE "Altair front panel board")
+set(ALTAIR_FRONT_PANEL_NONE TRUE "No_Panel")
+#  set(ALTAIR_FRONT_PANEL_RETRO_CLICK TRUE "MikroE_8800_Retro_Click")
+# set(ALTAIR_FRONT_PANEL_KIT TRUE "Front_Panel_Kit")
 #
 ###################################################################################################################
 
@@ -28,7 +28,7 @@ set(ALTAIR_FRONT_PANEL_RETRO_CLICK TRUE "Avnet with the MikroE 8800 Retro Click"
 # The MikroE microSD Click works with the Mikroe 8800 Retro Click in Socket 2
 # Uncomment the "set(MICRO_SD_CLICK" line below to enable the MikroE microSD Click
 #
-set(MICRO_SD_CLICK TRUE "MikroE microSD Click for CP/M read/write to SD Card")
+# set(MICRO_SD_CLICK TRUE "MikroE_microSD_Click")
 #
 ###################################################################################################################
 
@@ -83,6 +83,7 @@ endif (MICRO_SD_CLICK)
 if (ALTAIR_FRONT_PANEL_KIT)
 
     add_compile_definitions(ALTAIR_FRONT_PANEL_KIT)
+    add_compile_definitions(DEVICE_PANEL=" Front Panel Kit")
 
     set(Oem
         "FrontPanels/front_panel_kit.c"
@@ -93,6 +94,7 @@ endif(ALTAIR_FRONT_PANEL_KIT)
 if (ALTAIR_FRONT_PANEL_CLICK)
 
     add_compile_definitions(ALTAIR_FRONT_PANEL_CLICK)
+    add_compile_definitions(DEVICE_PANEL=" Mikroe 8x8 LED Click")
 
     set(Oem
         "FrontPanels/front_panel_click.c"
@@ -103,6 +105,7 @@ endif(ALTAIR_FRONT_PANEL_CLICK)
 if (ALTAIR_FRONT_PANEL_RETRO_CLICK)
 
     add_compile_definitions(ALTAIR_FRONT_PANEL_RETRO_CLICK)
+    add_compile_definitions(DEVICE_PANEL=" Mikroe 8800 Retro Click")
 
     set(Oem
         "FrontPanels/front_panel_retro_click.c"
@@ -113,6 +116,7 @@ endif(ALTAIR_FRONT_PANEL_RETRO_CLICK)
 if (ALTAIR_FRONT_PANEL_NONE)
 
     add_compile_definitions(ALTAIR_FRONT_PANEL_NONE)
+    add_compile_definitions(DEVICE_PANEL=" No Panel")
 
     set(Oem
         "FrontPanels/front_panel_none.c"
@@ -213,26 +217,31 @@ target_include_directories(${PROJECT_NAME} PUBLIC Drivers/CLICK_8800_RETRO_AS111
 endif(ALTAIR_FRONT_PANEL_RETRO_CLICK)
 
 if(AVNET)    
+add_compile_definitions(DEVICE_NAME=" Avnet Rev 1 ")
     add_compile_definitions(OEM_AVNET)
     azsphere_target_hardware_definition(${PROJECT_NAME} TARGET_DIRECTORY "../HardwareDefinitions/avnet_mt3620_sk" TARGET_DEFINITION "altair.json")
 endif(AVNET)
 
 if(AVNET_REV_2)
+    add_compile_definitions(DEVICE_NAME=" Avnet Rev 2 ")
     add_compile_definitions(OEM_AVNET)
     azsphere_target_hardware_definition(${PROJECT_NAME} TARGET_DIRECTORY "../HardwareDefinitions/avnet_mt3620_sk_rev2" TARGET_DEFINITION "altair.json")
 endif(AVNET_REV_2)
 
-if (SEEED_STUDIO_RDB)   
+if (SEEED_STUDIO_RDB)  
+    add_compile_definitions(DEVICE_NAME=" Seeed Studio RBD ")
     add_compile_definitions(OEM_SEEED_STUDIO)
     azsphere_target_hardware_definition(${PROJECT_NAME} TARGET_DIRECTORY "../HardwareDefinitions/mt3620_rdb" TARGET_DEFINITION "altair.json")
 endif()
 
 if (SEEED_STUDIO_RDB_ETHERNET)   
+    add_compile_definitions(DEVICE_NAME=" Seeed Studio RBD Ethernet ")
     add_compile_definitions(OEM_SEEED_STUDIO)
     azsphere_target_hardware_definition(${PROJECT_NAME} TARGET_DIRECTORY "../HardwareDefinitions/mt3620_rdb_ethernet" TARGET_DEFINITION "altair.json")
 endif()
 
 if (SEEED_STUDIO_MDB)   
+    add_compile_definitions(DEVICE_NAME=" Seeed Studio MDB ")
     add_compile_definitions(OEM_SEEED_STUDIO)    
     add_compile_definitions(SEEED_STUDIO_MDB)
     azsphere_target_hardware_definition(${PROJECT_NAME} TARGET_DIRECTORY "../HardwareDefinitions/seeed_mt3620_mdb" TARGET_DEFINITION "altair.json")
@@ -241,7 +250,9 @@ endif()
 
 # If MICRO_SD_CLICK enabled then don't deploy the "Disks/cpm63k.dsk" disk image as CP/M will be booted from microSD Card. Reduces deploymemt time.
 if (MICRO_SD_CLICK)
+    add_compile_definitions(DEVICE_STORAGE="Mikroe microSD Click")
     azsphere_target_add_image_package(${PROJECT_NAME} RESOURCE_FILES "AppSamples/riddle.c" "AppSamples/loopy.bas" "Disks/88dskrom.bin" "Disks/altair_basic.bin")
 else (MICRO_SD_CLICK)
+    add_compile_definitions(DEVICE_STORAGE="Differencing Disk")
     azsphere_target_add_image_package(${PROJECT_NAME} RESOURCE_FILES "AppSamples/riddle.c" "AppSamples/avnet.bas" "AppSamples/tictactoe.bas" "AppSamples/loopy.bas" "AppSamples/weather.bas" "AppSamples/iot.bas" "Disks/88dskrom.bin" "Disks/azsphere_cpm63k.dsk"  "Disks/altair_basic.bin")
 endif (MICRO_SD_CLICK)
