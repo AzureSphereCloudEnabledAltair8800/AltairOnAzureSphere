@@ -41,6 +41,14 @@ static enum PANEL_MODE_T previous_panel_mode;
 static char display_ip_address[20] = {0};
 static char *ip_address_ptr;
 
+DX_TIMER_HANDLER(clear_ip_address_handler)
+{
+#ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
+    as1115_clear(&retro_click);
+#endif
+}
+DX_TIMER_HANDLER_END
+
 DX_TIMER_HANDLER(display_ip_address_handler)
 {
 #ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
@@ -54,7 +62,8 @@ DX_TIMER_HANDLER(display_ip_address_handler)
         as1115_panel_write(&retro_click);
 
         ip_address_ptr++;
-        dx_timerOneShotSet(&tmr_display_ip_address, &(struct timespec){1, 0});
+        dx_timerOneShotSet(&tmr_clear_ip_address, &(struct timespec){1, 0});
+        dx_timerOneShotSet(&tmr_display_ip_address, &(struct timespec){1, 500 * ONE_MS});
     }
     else
     {

@@ -39,7 +39,7 @@
 #include "io_ports.h"
 #include "memory.h"
 
-const char ALTAIR_EMULATOR_VERSION[] = "4.7.1";
+const char ALTAIR_EMULATOR_VERSION[] = "4.7.2";
 
 #define DEFAULT_NETWORK_INTERFACE "wlan0"
 #define Log_Debug(f_, ...)        dx_Log_Debug((f_), ##__VA_ARGS__)
@@ -229,6 +229,7 @@ static DX_GPIO_BINDING led_output_enable = {.pin = LED_OUTPUT_ENABLE,
 // clang-format off
 // Common Timers
 
+DX_TIMER_BINDING tmr_clear_ip_address = {.handler = clear_ip_address_handler};
 DX_TIMER_BINDING tmr_display_ip_address = {.handler = display_ip_address_handler};
 DX_TIMER_BINDING tmr_i8080_wakeup = {.name = "tmr_i8080_wakeup", .handler = tmr_i8080_wakeup_handler};
 DX_TIMER_BINDING tmr_partial_message = {.repeat = &(struct timespec){0, 250 * ONE_MS}, .name = "tmr_partial_message", .handler = partial_message_handler};
@@ -245,7 +246,7 @@ static DX_TIMER_BINDING tmr_initialize_environment = {.delay = &(struct timespec
 static DX_TIMER_BINDING tmr_network_state = {.repeat = &(struct timespec){20, 0}, .name = "tmr_network_state", .handler = network_state_handler};
 static DX_TIMER_BINDING tmr_read_buttons = {.delay = &(struct timespec){0, 250 * ONE_MS}, .name = "tmr_read_buttons", .handler = read_buttons_handler};
 static DX_TIMER_BINDING tmr_report_memory_usage = {.repeat = &(struct timespec){45, 0}, .name = "tmr_report_memory_usage", .handler = report_memory_usage};
-static DX_TIMER_BINDING tmr_show_ip_address = {.repeat = &(struct timespec){20, 0}, .name="tmr_show_ip_address", .handler=show_ip_address_handler};
+static DX_TIMER_BINDING tmr_show_ip_address = {.repeat = &(struct timespec){30, 0}, .name="tmr_show_ip_address", .handler=show_ip_address_handler};
 static DX_TIMER_BINDING tmr_sleep_warning = {.repeat = &(struct timespec){30, 0}, .name = "tmr_sleep_warning", .handler = sleep_warning_handler};
 static DX_TIMER_BINDING tmr_sleep_warning_clear = {.name = "tmr_sleep_warning_clear", .handler = sleep_warning_clear_handler};
 static DX_TIMER_BINDING tmr_tick_count = {.repeat = &(struct timespec){1, 0}, .name = "tmr_tick_count", .handler = tick_count_handler};
@@ -365,6 +366,7 @@ static DX_ASYNC_BINDING *async_bindings[] = {
 };
 
 static DX_TIMER_BINDING *timerSet[] = {
+    &tmr_clear_ip_address,
     &tmr_connection_status_led_off,
     &tmr_connection_status_led_on,
     &tmr_display_ip_address,
