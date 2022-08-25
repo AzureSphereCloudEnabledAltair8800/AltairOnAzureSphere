@@ -1,3 +1,7 @@
+## Documentation
+
+The project documentation is available [here](https://gloveboxes.github.io/altair_8800_docs/).
+
 Welcome to the _AI and Cloud powered Altair 8800_ emulator repo. If you're interested in [retrocomputing](https://en.wikipedia.org/wiki/Retrocomputing), software development, AI, cloud services, and climate monitoring you've arrived at the right repo.
 
 The [Altair 8800](https://en.wikipedia.org/wiki/Altair_8800?azure-portal=true) kick-started the personal computer revolution. Microsoft's first product was [Altair BASIC](https://en.wikipedia.org/wiki/Altair_BASIC?azure-portal=true) written for the Altair 8800 by Bill Gates and Paul Allen. At the time, Altair BASIC was a huge step forward as it allowed people to write programs using a high-level programming language.
@@ -9,10 +13,6 @@ Optionally, the project integrates free weather and pollution cloud services fro
 | IoT Central Sydney pollution report | Azure Anomaly Detection report|
 |------|-----|
 | ![The images shows pollution report for Sydney](https://github.com/AzureSphereCloudEnabledAltair8800/AzureSphereAltair8800_V2/wiki/media/iot_central_pollution_report.png) | ![The following images shows temperature based anomalies](https://github.com/AzureSphereCloudEnabledAltair8800/AzureSphereAltair8800_V2/wiki/media/univariate-anomalies.png) |
-
-## Documentation
-
-The project documentation is available [here](https://nice-bay-0f7498d0f.1.azurestaticapps.net/).
 
 ## Supported devices
 
