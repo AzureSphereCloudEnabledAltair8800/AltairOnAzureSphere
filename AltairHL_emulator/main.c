@@ -110,14 +110,17 @@ DX_TIMER_HANDLER_END
 /// </summary>
 static DX_TIMER_HANDLER(read_buttons_handler)
 {
-    static GPIO_Value_Type buttonAState;
     static GPIO_Value_Type buttonBState;
+
+#ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
+    static GPIO_Value_Type buttonAState;
 
     if (dx_gpioStateGet(&buttonA, &buttonAState) && !stop_cpu)
     {
         dx_timerStop(&tmr_show_ip_address);
         getIP();
     }
+#endif
 
     if (cpu_operating_mode != CPU_STOPPED)
     {
@@ -233,7 +236,9 @@ DX_TIMER_HANDLER_END
 /// </summary>
 static DX_TIMER_HANDLER(show_ip_address_handler)
 {
+#ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
     getIP();
+#endif
 }
 DX_TIMER_HANDLER_END
 
@@ -886,7 +891,7 @@ static void InitPeripheralAndHandlers(int argc, char *argv[])
     dx_deviceTwinSubscribe(deviceTwinBindingSet, NELEMS(deviceTwinBindingSet));
     dx_directMethodSubscribe(directMethodBindingSet, NELEMS(directMethodBindingSet));
 
-#ifdef OEM_AVNET
+#if defined(OEM_AVNET) && defined(SD_CARD_ENABLED) 
     avnet_open_adc(0);
     dx_intercoreConnect(&intercore_ml_classify_ctx);
 #endif // OEM_AVNET

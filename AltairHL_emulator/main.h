@@ -39,7 +39,7 @@
 #include "io_ports.h"
 #include "memory.h"
 
-const char ALTAIR_EMULATOR_VERSION[] = "4.7.2";
+const char ALTAIR_EMULATOR_VERSION[] = "4.7.4";
 
 #define DEFAULT_NETWORK_INTERFACE "wlan0"
 #define Log_Debug(f_, ...)        dx_Log_Debug((f_), ##__VA_ARGS__)
@@ -234,7 +234,7 @@ DX_TIMER_BINDING tmr_display_ip_address = {.handler = display_ip_address_handler
 DX_TIMER_BINDING tmr_i8080_wakeup = {.name = "tmr_i8080_wakeup", .handler = tmr_i8080_wakeup_handler};
 DX_TIMER_BINDING tmr_partial_message = {.repeat = &(struct timespec){0, 250 * ONE_MS}, .name = "tmr_partial_message", .handler = partial_message_handler};
 DX_TIMER_BINDING tmr_read_accelerometer = {.name = "tmr_read_accelerometer", .handler = read_accelerometer_handler};
-DX_TIMER_BINDING tmr_terminal_io_monitor = {.repeat = &(struct timespec){60, 0}, .name = "tmr_terminal_io_monitor", .handler = terminal_io_monitor_handler};
+DX_TIMER_BINDING tmr_terminal_io_monitor = {.name = "tmr_terminal_io_monitor", .handler = terminal_io_monitor_handler};
 DX_TIMER_BINDING tmr_timer_millisecond_expired = {.name = "tmr_timer_millisecond_expired", .handler = timer_millisecond_expired_handler};
 DX_TIMER_BINDING tmr_timer_seconds_expired = {.name = "tmr_timer_seconds_expired", .handler = timer_seconds_expired_handler};
 DX_TIMER_BINDING tmr_ws_ping_pong = {.repeat = &(struct timespec){10, 0}, .name = "tmr_partial_message", .handler = ws_ping_pong_handler};
@@ -315,13 +315,16 @@ static DX_GPIO_BINDING azure_connected_led = {
 #ifdef SEEED_STUDIO_MDB
 static DX_GPIO_BINDING *gpioSet[] = {&azure_connected_led, &gpioRed, &gpioGreen, &gpioBlue
 #else
-static DX_GPIO_BINDING *gpioSet[] = {&buttonA, &buttonB, &azure_connected_led, &gpioRed, &gpioGreen, &gpioBlue
+static DX_GPIO_BINDING *gpioSet[] = {&buttonB, &azure_connected_led, &gpioRed, &gpioGreen, &gpioBlue
 #endif
 
 #ifdef ALTAIR_FRONT_PANEL_KIT
     ,
     &switches_load, &switches_chip_select, &led_master_reset, &led_store, &led_output_enable
 //&memoryCS, &sdCS
+#else 
+    ,
+    &buttonA
 #endif // ALTAIR_FRONT_PANEL_KIT
 };
 
