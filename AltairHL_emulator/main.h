@@ -322,10 +322,12 @@ static DX_GPIO_BINDING *gpioSet[] = {&buttonB, &azure_connected_led, &gpioRed, &
     ,
     &switches_load, &switches_chip_select, &led_master_reset, &led_store, &led_output_enable
 //&memoryCS, &sdCS
-#else 
+#endif // ALTAIR_FRONT_PANEL_KIT
+
+#ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
     ,
     &buttonA
-#endif // ALTAIR_FRONT_PANEL_KIT
+#endif // ALTAIR_FRONT_PANEL_RETRO_CLICK
 };
 
 #ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
