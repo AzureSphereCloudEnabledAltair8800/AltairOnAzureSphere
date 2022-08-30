@@ -5,15 +5,16 @@
     "EntryPoint": "/bin/app",
     "CmdArgs": [
         "--ScopeID",
-        "REPLACE_WITH_YOUR_WITH_YOUR_ID_SCOPE",
+        "",
         "-o",
-        "REPLACE_WITH_YOUR_OPEN_WEATHER_MAP_API_KEY",
+        "",
         "-u",
         "https://raw.githubusercontent.com/AzureSphereCloudEnabledAltair8800/RetroGames/main"
     ],
     "Capabilities": {
-        //  Uncomment the following line to enable SPI on ISU1 for the Altair Front Panel
-        "SpiMaster": [ "$MT3620_ISU1_SPI" ],
+        "SpiMaster": [
+            "$MT3620_ISU1_SPI"
+        ],
         "MutableStorage": {
             "SizeKB": 64
         },
@@ -34,9 +35,9 @@
             "SetPowerProfile"
         ],
         "WifiConfig": true,
-        "CertStore" : true,
-        "EnterpriseWifiConfig" : true,
-        "NetworkConfig" : true,
+        "CertStore": true,
+        "EnterpriseWifiConfig": true,
+        "NetworkConfig": true,
         "AllowedTcpServerPorts": [
             8082
         ],
@@ -49,9 +50,9 @@
             "get.geojs.io",
             "raw.githubusercontent.com",
             "REPLACE_WITH_YOUR_IOT_CENTRAL_URLS",
-            "REPLACE_WITH_YOUR_COPYX_URL"
+            "REPLACE_WITH_YOUR_GET_FILE_URL"
         ],
-        "DeviceAuthentication": "REPLACE_WITH_YOUR_AZURE_SPHERE_TENANT_ID",
+        "DeviceAuthentication": null,
         "AllowedApplicationConnections": [
             "2e319eae-7be5-4a0c-ba47-9353aa6ca96a",
             "9b684af8-21b9-42aa-91e4-621d5428e497",
