@@ -6,8 +6,8 @@ project (AltairHL_emulator C)
 
 # SELECT DEVELOPER BOARD ##########################################################################################
 #
-# set(AVNET TRUE "AVNET_Rev_1")   
-set(AVNET_REV_2 TRUE "AVNET_Rev_2")  
+set(AVNET TRUE "AVNET_Rev_1")   
+# set(AVNET_REV_2 TRUE "AVNET_Rev_2")  
 # set(SEEED_STUDIO_RDB TRUE "Seeed Studio Azure Sphere MT3620 Development Kit (aka Reference Design Board or rdb)")
 # set(SEEED_STUDIO_RDB_ETHERNET TRUE "Seeed Studio Azure Sphere MT3620 Development Kit with ethernet shield")
 # set(SEEED_STUDIO_MDB TRUE "Seeed Studio Azure Sphere Mini Developer Board")
@@ -16,8 +16,8 @@ set(AVNET_REV_2 TRUE "AVNET_Rev_2")
 
 # SELECT FRONT PANEL CONFIG #######################################################################################
 #
-# set(ALTAIR_FRONT_PANEL_NONE TRUE "No_Panel")
-set(ALTAIR_FRONT_PANEL_RETRO_CLICK TRUE "MikroE_8800_Retro_Click")
+set(ALTAIR_FRONT_PANEL_NONE TRUE "No_Panel")
+# set(ALTAIR_FRONT_PANEL_RETRO_CLICK TRUE "MikroE_8800_Retro_Click")
 # set(ALTAIR_FRONT_PANEL_KIT TRUE "Front_Panel_Kit")
 #
 ###################################################################################################################
@@ -28,7 +28,7 @@ set(ALTAIR_FRONT_PANEL_RETRO_CLICK TRUE "MikroE_8800_Retro_Click")
 # The MikroE microSD Click works with the Mikroe 8800 Retro Click in Socket 2
 # Uncomment the "set(MICRO_SD_CLICK" line below to enable the MikroE microSD Click
 #
-set(MICRO_SD_CLICK TRUE "MikroE_microSD_Click")
+# set(MICRO_SD_CLICK TRUE "MikroE_microSD_Click")
 #
 ###################################################################################################################
 
