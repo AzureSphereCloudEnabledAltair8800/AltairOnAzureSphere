@@ -521,7 +521,7 @@ void io_port_out(uint8_t port, uint8_t data)
                         (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%d", (int)onboard_get_pressure());
                     break;
                 case 2:
-#ifdef OEM_AVNET
+#if defined(OEM_AVNET) && !defined(ALTAIR_FRONT_PANEL_KIT)
                     ru.len =
                         (size_t)snprintf(ru.buffer, sizeof(ru.buffer), "%d", avnet_get_light_level() * 2);
 #else
