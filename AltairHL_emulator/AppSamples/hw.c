@@ -26,17 +26,19 @@ main()
         printf("Azure Sphere OS: \t%s\n\n", get_port_data(71, 0, buffer, 50));
 
         printf("Onboard temperature: \t%s\n", get_port_data(63, 0, buffer, 50));
-        printf("Onboard pressure: \t%s\n\n", get_port_data(63, 1, buffer, 50));
-
+        printf("Onboard pressure: \t%s\n", get_port_data(63, 1, buffer, 50));
+        printf("Onboard light sensor: \t%s\n\n", get_port_data(63, 2, buffer, 50));
 
         outp(64, 5); /* read the accelerometer */
         printf("Accelerometer X: \t%s\n", get_port_data(64, 0, buffer, 50));
         printf("Accelerometer Y: \t%s\n", get_port_data(64, 1, buffer, 50));
         printf("Accelerometer Z: \t%s\n\n", get_port_data(64, 2, buffer, 50));
 
+/*      printf("Prediction: \t%s\n\n", get_port_data(64, 8, buffer, 50));
+*/
         outp(60, 0); /* turn off the red LED */
 
-        sleep(4); /* Sleep for 4 second */
+        sleep(4); /* Sleep for 1 second */
     }
 }
 
