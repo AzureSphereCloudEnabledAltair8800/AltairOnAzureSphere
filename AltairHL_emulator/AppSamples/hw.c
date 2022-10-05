@@ -18,7 +18,7 @@ main()
         outp(60, 1);  /* Turn on the red LED */
 
         printf("%c[91;22;24mReading: %u\n", 27, c);
-        printf("----------------------------------------------%c[0m\n", 27);
+        printf("--------------------------------------------%c[0m\n", 27);
         printf("System tick count: \t%s\n", get_port_data(41, 0,  buffer, 50));
         printf("UTC date and time: \t%s\n", get_port_data(42, 0,  buffer, 50));
         printf("Local date and time: \t%s\n", get_port_data(43, 0, buffer, 50));
