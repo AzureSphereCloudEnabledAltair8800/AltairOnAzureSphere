@@ -39,7 +39,7 @@
 #include "io_ports.h"
 #include "memory.h"
 
-const char ALTAIR_EMULATOR_VERSION[] = "4.7.4";
+const char ALTAIR_EMULATOR_VERSION[] = "4.7.5";
 
 #define DEFAULT_NETWORK_INTERFACE "wlan0"
 #define Log_Debug(f_, ...)        dx_Log_Debug((f_), ##__VA_ARGS__)
