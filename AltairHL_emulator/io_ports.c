@@ -559,6 +559,7 @@ void io_port_out(uint8_t port, uint8_t data)
                     {
                         dx_asyncSend(&async_accelerometer_stop, NULL);
                         accelerometer_running = false;
+                        nanosleep(&(struct timespec){1, 0}, NULL); // sleep for 1 second to allow accelerometer to stop
                     }
                     break;
                 case 5: // Load accelerometer x,y,z
