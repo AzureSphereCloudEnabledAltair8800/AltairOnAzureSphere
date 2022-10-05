@@ -1,7 +1,7 @@
 /* Copyright (c) Microsoft Corporation. All rights reserved.
    Licensed under the MIT License. */
 
-/* C application to demonstarte use of Intel 8080 IO Ports */
+/* C application to demonstrate use of Intel 8080 IO Ports */
 
 main()
 {
@@ -10,12 +10,12 @@ main()
 
     outp(64, 4); /* stop accelerometer if it's running */
     outp(60, 0); /* Turn of red LED if it's on */
-   
+
     printf("\nHello from the Altair 8800 emulator\n\n");
 
-    for (c = 0; c < 65535; c++) 
+    for (c = 0; c < 65535; c++)
     {
-        outp(60, 1);  /* Turn on the red LED */ 
+        outp(60, 1);  /* Turn on the red LED */
 
         printf("Reading: %u\n", c);
         printf("-----------------------------------------\n");
@@ -24,7 +24,7 @@ main()
         printf("Local date and time: \t%s\n", get_port_data(43, 0, buffer, 50));
         printf("Altair version: \t%s\n", get_port_data(70, 0, buffer, 50));
         printf("Azure Sphere OS: \t%s\n\n", get_port_data(71, 0, buffer, 50));
-  
+
         printf("Onboard temperature: \t%s\n", get_port_data(63, 0, buffer, 50));
         printf("Onboard pressure: \t%s\n\n", get_port_data(63, 1, buffer, 50));
 
