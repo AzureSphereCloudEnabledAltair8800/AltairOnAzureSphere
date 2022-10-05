@@ -551,6 +551,7 @@ void io_port_out(uint8_t port, uint8_t data)
                     {
                         dx_asyncSend(&async_accelerometer_start, NULL);
                         accelerometer_running = true;
+                        nanosleep(&(struct timespec){1, 0}, NULL); // sleep for 1 second to allow accelerometer to start
                     }
                     break;
                 case 4: // accelerometer stop feeding TinyML model running on real-time core
