@@ -5,16 +5,9 @@
 
 #ifdef ALTAIR_FRONT_PANEL_KIT
 
-#include "app_exit_codes.h"
-#include "dx_gpio.h"
-#include "dx_utilities.h"
-#include "hw/altair.h"
 #include "altair_panel.h"
-#include <applibs/spi.h>
-#include <applibs/uart.h>
-#include <applibs/uart.h>
-#include <errno.h>
-#include <soc/mt3620_uarts.h>
+#include "dx_gpio.h"
+#include "stdbool.h"
 
 extern ALTAIR_COMMAND cmd_switches;
 extern int altair_spi_fd;
@@ -30,7 +23,7 @@ DX_DECLARE_TIMER_HANDLER(turn_off_notifications_handler);
 bool init_altair_hardware(void);
 int init_console(void);
 void read_altair_panel_switches(void (*process_control_panel_commands)(void));
-void read_switches(uint16_t* address, uint8_t* cmd);
+void read_switches(uint16_t *address, uint8_t *cmd);
 void update_panel_status_leds(uint8_t status, uint8_t data, uint16_t bus);
 
 #endif // ALTAIR_FRONT_PANEL_KIT
