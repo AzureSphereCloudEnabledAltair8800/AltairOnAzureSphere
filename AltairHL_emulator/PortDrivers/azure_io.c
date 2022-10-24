@@ -2,9 +2,6 @@
 
 #include "iotc_manager.h"
 
-DX_DECLARE_ASYNC_HANDLER(async_publish_json_handler);
-DX_DECLARE_ASYNC_HANDLER(async_publish_weather_handler);
-
 typedef struct
 {
     char buffer[256];
