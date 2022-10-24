@@ -360,7 +360,7 @@ void altair_panel_command_handler(void)
 
 void process_control_panel_commands(void)
 {
-    if (cpu_operating_mode == CPU_STOPPED || cmd_switches == STOP_CMD)
+    if (cpu_operating_mode == CPU_STOPPED || cpu_operating_mode == CPU_STARTING || cmd_switches == STOP_CMD)
     {
         switch (cmd_switches)
         {

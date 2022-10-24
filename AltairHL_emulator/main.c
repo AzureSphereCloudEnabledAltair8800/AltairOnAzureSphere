@@ -173,7 +173,7 @@ static DX_TIMER_HANDLER(panel_refresh_handler)
         }
     }
 
-    dx_timerOneShotSet(&tmr_refresh_panel, &(struct timespec){0, 50 * ONE_MS});
+    dx_timerOneShotSet(&tmr_refresh_panel, &(struct timespec){0, 20 * ONE_MS});
 }
 DX_TIMER_HANDLER_END
 

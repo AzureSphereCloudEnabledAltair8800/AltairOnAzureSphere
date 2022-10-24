@@ -91,12 +91,13 @@ void read_altair_panel_switches(void (*process_control_panel_commands)(void))
 
     bus_switches = address;
 
-    if (cmd != last_command)
+    if (cmd && cmd != last_command)
     {
-        last_command = cmd;
         cmd_switches = cmd;
         process_control_panel_commands();
     }
+
+    last_command = cmd;
 }
 
 void update_panel_status_leds(uint8_t status, uint8_t data, uint16_t bus)

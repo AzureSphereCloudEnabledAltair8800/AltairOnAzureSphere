@@ -39,7 +39,7 @@
 #include "io_ports.h"
 #include "memory.h"
 
-const char ALTAIR_EMULATOR_VERSION[] = "4.7.5";
+const char ALTAIR_EMULATOR_VERSION[] = "4.7.7";
 
 #define DEFAULT_NETWORK_INTERFACE "wlan0"
 #define Log_Debug(f_, ...)        dx_Log_Debug((f_), ##__VA_ARGS__)
@@ -265,6 +265,8 @@ DX_ASYNC_BINDING async_publish_json = {.name = "async_publish_json", .handler = 
 DX_ASYNC_BINDING async_publish_weather = {.name = "async_publish_weather", .handler = async_publish_weather_handler};
 DX_ASYNC_BINDING async_set_millisecond_timer = {.name = "async_set_millisecond_timer", .handler = async_set_timer_millisecond_handler};
 DX_ASYNC_BINDING async_set_seconds_timer = {.name = "async_set_seconds_timer", .handler = async_set_timer_seconds_handler};
+DX_ASYNC_BINDING async_stop_panel_io = {.name = "async_stop_panel_io", .handler = async_stop_panel_io_handler};
+DX_ASYNC_BINDING async_start_panel_io = {.name = "async_start_panel_io", .handler = async_start_panel_io_handler};
 
 #if defined(ALTAIR_FRONT_PANEL_RETRO_CLICK) || defined(ALTAIR_FRONT_PANEL_KIT)
 DX_TIMER_BINDING tmr_read_panel = {.delay = &(struct timespec){1, 0}, .name = "tmr_read_panel", .handler = read_panel_handler};
@@ -368,6 +370,8 @@ static DX_ASYNC_BINDING *async_bindings[] = {
     &async_publish_weather,
     &async_set_millisecond_timer,
     &async_set_seconds_timer,
+    &async_start_panel_io,
+    &async_stop_panel_io,
 };
 
 static DX_TIMER_BINDING *timerSet[] = {
