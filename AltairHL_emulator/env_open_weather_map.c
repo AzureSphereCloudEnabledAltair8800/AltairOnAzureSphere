@@ -3,23 +3,36 @@
 
 #include "env_open_weather_map.h"
 
+#include "dx_timer.h"
+#include "dx_utilities.h"
+#include "location_from_ip.h"
+#include "parson.h"
+#include "stdbool.h"
+#include "utils.h"
+#include <applibs/log.h>
+#include <ctype.h>
+#include <curl/curl.h>
+#include <curl/easy.h>
+#include <float.h>
+#include <getopt.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+
 static DX_DECLARE_TIMER_HANDLER(weather_cache_expired);
 
-static const char *weatherURLTemplate =
-    "http://api.openweathermap.org/data/2.5/weather?lat=%.6f&lon=%.6f&appid=%s&units=metric";
+static const char *weatherURLTemplate = "http://api.openweathermap.org/data/2.5/weather?lat=%.6f&lon=%.6f&appid=%s&units=metric";
 static char weatherUrl[200];
 
-static const char *pollutionURLTemplate =
-    "http://api.openweathermap.org/data/2.5/air_pollution?lat=%.6f&lon=%.6f&appid=%s";
+static const char *pollutionURLTemplate = "http://api.openweathermap.org/data/2.5/air_pollution?lat=%.6f&lon=%.6f&appid=%s";
 static char pollutionUrl[200];
 
 static bool owm_initialized = false;
 
-static DX_TIMER_BINDING tmr_weather_cache_expired = {
-    .name = "tmr_weather_cache_expired", .handler = weather_cache_expired};
-static const int weather_cache_minutes =
-    15 * 60; // 1 * 60 seconds = 15 minutes. OWM updates data every 10 minutes
-static bool owm_cached = false;
+static DX_TIMER_BINDING tmr_weather_cache_expired = {.name = "tmr_weather_cache_expired", .handler = weather_cache_expired};
+static const int weather_cache_minutes            = 15 * 60; // 1 * 60 seconds = 15 minutes. OWM updates data every 10 minutes
+static bool owm_cached                            = false;
 
 static void generate_fake_telemetry(ENVIRONMENT_TELEMETRY *telemetry)
 {
@@ -141,20 +154,17 @@ static void update_owm_weather(ENVIRONMENT_TELEMETRY *telemetry)
         {
             if (json_object_has_value_of_type(mainProperties, "temp", JSONNumber))
             {
-                telemetry->latest.weather.temperature =
-                    FLOAT_TO_INT(json_object_get_number(mainProperties, "temp"));
+                telemetry->latest.weather.temperature = FLOAT_TO_INT(json_object_get_number(mainProperties, "temp"));
             }
 
             if (json_object_has_value_of_type(mainProperties, "pressure", JSONNumber))
             {
-                telemetry->latest.weather.pressure =
-                    FLOAT_TO_INT(json_object_get_number(mainProperties, "pressure"));
+                telemetry->latest.weather.pressure = FLOAT_TO_INT(json_object_get_number(mainProperties, "pressure"));
             }
 
             if (json_object_has_value_of_type(mainProperties, "humidity", JSONNumber))
             {
-                telemetry->latest.weather.humidity =
-                    FLOAT_TO_INT(json_object_get_number(mainProperties, "humidity"));
+                telemetry->latest.weather.humidity = FLOAT_TO_INT(json_object_get_number(mainProperties, "humidity"));
             }
         }
 
@@ -188,8 +198,7 @@ static void update_owm_weather(ENVIRONMENT_TELEMETRY *telemetry)
                 if (weather != NULL && json_object_has_value_of_type(weather, "description", JSONString))
                 {
                     const char *description = json_object_get_string(weather, "description");
-                    snprintf(telemetry->latest.weather.description, 80, "%s %d%c", description,
-                        telemetry->latest.weather.temperature, 'C');
+                    snprintf(telemetry->latest.weather.description, 80, "%s %d%c", description, telemetry->latest.weather.temperature, 'C');
                 }
             }
         }
@@ -349,13 +358,12 @@ void update_owm(ENVIRONMENT_TELEMETRY *environment)
 
 void init_open_weather_map_api_key(ALTAIR_CONFIG_T *altair_config, ENVIRONMENT_TELEMETRY *environment)
 {
-    if (!dx_isStringNullOrEmpty(altair_config->open_weather_map_api_key) && !owm_initialized &&
-        environment->locationInfo.updated)
+    if (!dx_isStringNullOrEmpty(altair_config->open_weather_map_api_key) && !owm_initialized && environment->locationInfo.updated)
     {
-        snprintf(weatherUrl, sizeof(weatherUrl), weatherURLTemplate, environment->locationInfo.lat,
-            environment->locationInfo.lng, altair_config->open_weather_map_api_key);
-        snprintf(pollutionUrl, sizeof(pollutionUrl), pollutionURLTemplate, environment->locationInfo.lat,
-            environment->locationInfo.lng, altair_config->open_weather_map_api_key);
+        snprintf(weatherUrl, sizeof(weatherUrl), weatherURLTemplate, environment->locationInfo.lat, environment->locationInfo.lng,
+            altair_config->open_weather_map_api_key);
+        snprintf(pollutionUrl, sizeof(pollutionUrl), pollutionURLTemplate, environment->locationInfo.lat, environment->locationInfo.lng,
+            altair_config->open_weather_map_api_key);
 
         owm_initialized = true;
         dx_timerStart(&tmr_weather_cache_expired);

@@ -1,5 +1,8 @@
 #include "onboard_sensors.h"
 
+#include <stdlib.h>
+#include <time.h>
+
 #ifdef OEM_AVNET
 
 bool onboard_sensors_init(int i2c_fd)

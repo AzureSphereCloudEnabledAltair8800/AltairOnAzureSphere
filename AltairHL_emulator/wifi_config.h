@@ -1,18 +1,8 @@
 #pragma once
 
-#include "../IntercoreContract/intercore_contract.h"
 #include "altair_config.h"
 #include "dx_intercore.h"
-#include "dx_utilities.h"
-#include "parson.h"
-#include <applibs/certstore.h>
-#include <applibs/log.h>
-#include <applibs/wificonfig.h>
-
-#include <arpa/inet.h>
-#include <ifaddrs.h>
-#include <netpacket/packet.h>
-#include <sys/socket.h>
+#include "intercore_contract.h"
 
 #ifdef ALTAIR_FRONT_PANEL_RETRO_CLICK
 #include "front_panel_retro_click.h"

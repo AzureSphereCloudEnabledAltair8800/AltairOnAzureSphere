@@ -10,6 +10,7 @@
 #include "dx_gpio.h"
 #include "dx_i2c.h"
 #include "dx_intercore.h"
+#include "dx_json_serializer.h"
 #include "dx_terminate.h"
 #include "dx_timer.h"
 #include "dx_version.h"

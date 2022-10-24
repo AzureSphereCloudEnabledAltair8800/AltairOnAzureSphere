@@ -2,6 +2,11 @@
    Licensed under the MIT License. */
 
 #include "environment.h"
+#include "altair_config.h"
+#include "env_open_weather_map.h"
+#include "environment_types.h"
+#include "location_from_ip.h"
+#include <stdbool.h>
 
 static bool initialized = false;
 
@@ -24,6 +29,5 @@ void update_weather()
     // update_air_visual(&environment);
     update_owm(&environment);
 
-    environment.valid = environment.locationInfo.updated && environment.latest.weather.updated &&
-                        environment.latest.pollution.updated;
+    environment.valid = environment.locationInfo.updated && environment.latest.weather.updated && environment.latest.pollution.updated;
 }

@@ -1,5 +1,14 @@
 #include "wifi_config.h"
 
+#include "dx_json_serializer.h"
+#include <applibs/certstore.h>
+#include <applibs/log.h>
+#include <applibs/wificonfig.h>
+#include <arpa/inet.h>
+#include <ifaddrs.h>
+#include <netpacket/packet.h>
+#include <sys/socket.h>
+
 // https://docs.microsoft.com/en-us/azure-sphere/reference/applibs-reference/applibs-wificonfig/function-wificonfig-forgetallnetworks
 // https://docs.microsoft.com/en-us/azure-sphere/network/eap-tls-overview
 
@@ -109,8 +118,7 @@ void wifi_config(void)
 
             memset(intercore_disk_block.sector, 0x00, sizeof(intercore_disk_block.sector));
 
-            dx_intercorePublishThenRead(
-                &intercore_sd_card_ctx, &intercore_disk_block, sizeof(intercore_disk_block));
+            dx_intercorePublishThenRead(&intercore_sd_card_ctx, &intercore_disk_block, sizeof(intercore_disk_block));
             if (!intercore_disk_block.success)
             {
                 break;
@@ -140,8 +148,7 @@ void wifi_config(void)
                 intercore_disk_block.sector_number    = (uint16_t)sector;
                 intercore_disk_block.disk_ic_msg_type = DISK_IC_WRITE;
 
-                dx_intercorePublishThenRead(
-                    &intercore_sd_card_ctx, &intercore_disk_block, sizeof(intercore_disk_block));
+                dx_intercorePublishThenRead(&intercore_sd_card_ctx, &intercore_disk_block, sizeof(intercore_disk_block));
 
                 if (intercore_disk_block.success)
                 {
@@ -330,14 +337,12 @@ static void add_wifi_open(WIFI_CONFIG_T *wifi)
 
 static bool install_certs(WIFI_CONFIG_T *wifi)
 {
-    if (CertStore_InstallRootCACertificate(
-            wifi_ca_cert_name, wifi->ca_public_cert_pem, strlen(wifi->ca_public_cert_pem)) == -1)
+    if (CertStore_InstallRootCACertificate(wifi_ca_cert_name, wifi->ca_public_cert_pem, strlen(wifi->ca_public_cert_pem)) == -1)
     {
         Log_Debug("CA cert install failed. Errno: %d\n", errno);
     }
-    else if (CertStore_InstallClientCertificate(wifi_client_cert_name, wifi->client_public_cert_pem,
-                 strlen(wifi->client_public_cert_pem), wifi->client_private_key_pem,
-                 strlen(wifi->client_private_key_pem), wifi->client_private_key_password) == -1)
+    else if (CertStore_InstallClientCertificate(wifi_client_cert_name, wifi->client_public_cert_pem, strlen(wifi->client_public_cert_pem),
+                 wifi->client_private_key_pem, strlen(wifi->client_private_key_pem), wifi->client_private_key_password) == -1)
     {
         Log_Debug("Client cert install failed. Errno: %d %s\n", errno, strerror(errno));
     }

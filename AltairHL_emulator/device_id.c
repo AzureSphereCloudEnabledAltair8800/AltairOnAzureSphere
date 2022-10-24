@@ -3,6 +3,14 @@
 
 #include "device_id.h"
 
+#include <applibs/application.h>
+#include <applibs/log.h>
+#include <errno.h>
+#include <stdio.h>
+#include <string.h>
+#include <tlsutils/deviceauth.h>
+#include <wolfssl/ssl.h>
+
 // Calling the GetDeviceID function
 // #define DEVICE_ID_BUFFER_SIZE 130
 // char device_id[DEVICE_ID_BUFFER_SIZE];	// Device ID is 128 bytes

@@ -4,23 +4,7 @@
 #pragma once
 
 #include "altair_config.h"
-#include "dx_timer.h"
-#include "dx_utilities.h"
 #include "environment_types.h"
-#include "location_from_ip.h"
-#include "parson.h"
-#include "stdbool.h"
-#include "utils.h"
-#include <applibs/log.h>
-#include <ctype.h>
-#include <curl/curl.h>
-#include <curl/easy.h>
-#include <float.h>
-#include <getopt.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
 
 // /*************************************************************
 // * Description

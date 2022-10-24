@@ -1,10 +1,7 @@
 #pragma once
 
-#include <stdbool.h>
-#include <stdlib.h>
-#include <time.h>
-
 #include "hw/altair.h"
+#include <stdbool.h>
 
 #ifdef OEM_AVNET
 #include "Drivers/AVNET/HL/imu_temp_pressure.h"

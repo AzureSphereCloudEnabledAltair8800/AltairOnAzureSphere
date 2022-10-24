@@ -21,7 +21,10 @@
         "dx_timer.h": "c",
         "storage.h": "c",
         "iotc_manager.h": "c",
-        "environment.h": "c"
+        "environment.h": "c",
+        "altair.h": "c",
+        "intercore_contract.h": "c",
+        "front_panel_retro_click.h": "c"
     },
     "cSpell.words": [
         "gpio",

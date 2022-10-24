@@ -6,13 +6,6 @@
 #include "altair_panel.h"
 #include "dx_timer.h"
 #include "intel8080.h"
-#include "utils.h"
-#include "web_socket_server.h"
-#include <applibs/log.h>
-#include <applibs/storage.h>
-#include <stdbool.h>
-#include <string.h>
-#include <unistd.h>
 
 #define DISK_A_RO        "Disks/azsphere_cpm63k.dsk"
 #define DISK_A           "Disks/cpm63k.dsk"
