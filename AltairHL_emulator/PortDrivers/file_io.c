@@ -3,17 +3,19 @@
 
 #include "file_io.h"
 #include "dx_utilities.h"
-#include <applibs/storage.h>
 #include <curl/curl.h>
 #include <pthread.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 
+#ifdef AZURE_SPHERE
+#include <applibs/storage.h>
+#endif // AZURE_SPHERE
+
 #define APP_SAMPLES_DIRECTORY "AppSamples"
 
 #define GAMES_REPO              "https://raw.githubusercontent.com/AzureSphereCloudEnabledAltair8800/RetroGames/main"
-#define DEFAULT_CUSTOM_ENDPOINT "http://192.168.10.136:5555"
 #define ENDPOINT_LEN            128
 #define ENDPOINT_ELEMENTS       2
 
