@@ -69,8 +69,8 @@ void read_switches(uint16_t *address, uint8_t *cmd)
         *cmd = (out >> 16) & 0xff;
 
         *address = out & 0xffff;
-        *address = reverse_lut[(*address & 0xf000) >> 12] << 8 | reverse_lut[(*address & 0x0f00) >> 8] << 12 |
-                   reverse_lut[(*address & 0xf0) >> 4] | reverse_lut[*address & 0xf] << 4;
+        *address = (uint16_t)(reverse_lut[(*address & 0xf000) >> 12] << 8 | reverse_lut[(*address & 0x0f00) >> 8] << 12 |
+                   reverse_lut[(*address & 0xf0) >> 4] | reverse_lut[*address & 0xf] << 4);
         *address = (uint16_t) ~*address;
     }
     else
@@ -107,7 +107,7 @@ void update_panel_status_leds(uint8_t status, uint8_t data, uint16_t bus)
         return;
     }
 
-    uint32_t out = status << 24 | data << 16 | bus;
+    uint32_t out = ((uint32_t)status << 24) | ((uint32_t)data << 16) | (uint32_t)bus;
 
     // store LED bits.
     dx_gpioStateSet(&led_store, LOW);
