@@ -196,12 +196,12 @@ set_source_files_properties(Altair8800/intel8080.h PROPERTIES COMPILE_FLAGS -Wno
 set_source_files_properties(Altair8800/memory.c PROPERTIES COMPILE_FLAGS -Wno-conversion)
 set_source_files_properties(comms_manager.c PROPERTIES COMPILE_FLAGS -Wno-conversion)
 set_source_files_properties(FrontPanels/front_panel_virtual.c PROPERTIES COMPILE_FLAGS -Wno-conversion)
-set_source_files_properties(wsServer/src/ws.c PROPERTIES COMPILE_FLAGS -Wno-conversion)
-set_source_files_properties(wsServer/src/web_socket_server.c PROPERTIES COMPILE_FLAGS -Wno-conversion)
-set_source_files_properties(wsServer/src/base64.c PROPERTIES COMPILE_FLAGS -Wno-conversion)
-set_source_files_properties(wsServer/src/handshake.c PROPERTIES COMPILE_FLAGS -Wno-conversion)
-set_source_files_properties(wsServer/src/sha1.c PROPERTIES COMPILE_FLAGS -Wno-conversion)
-set_source_files_properties(wsServer/src/utf8.c PROPERTIES COMPILE_FLAGS -Wno-sign-conversion)
+set_source_files_properties(wsServer/src/ws.c PROPERTIES COMPILE_FLAGS -w)
+set_source_files_properties(wsServer/src/web_socket_server.c PROPERTIES COMPILE_FLAGS -w)
+set_source_files_properties(wsServer/src/base64.c PROPERTIES COMPILE_FLAGS -w)
+set_source_files_properties(wsServer/src/handshake.c PROPERTIES COMPILE_FLAGS -w)
+set_source_files_properties(wsServer/src/sha1.c PROPERTIES COMPILE_FLAGS -w)
+set_source_files_properties(wsServer/src/utf8.c PROPERTIES COMPILE_FLAGS -w)
 
 
 if(ALTAIR_FRONT_PANEL_CLICK)
