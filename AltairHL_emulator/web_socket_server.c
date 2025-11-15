@@ -26,7 +26,7 @@ static bool cleanup_required                  = false;
 static const int session_minutes              = 1 * 60 * 30; // 30 minutes
 static int session_count                      = 0;
 static volatile uint32_t output_buffer_length = 0;
-ws_cli_conn_t *current_client                 = NULL;
+ws_cli_conn_t current_client                  = 0;
 
 #ifdef ALTAIR_CLOUD
 static struct timeval ws_timeout = {0, 250 * 1000};
@@ -44,9 +44,9 @@ DX_TIMER_HANDLER_END
 
 DX_TIMER_HANDLER(ws_ping_pong_handler)
 {
-    if (session_count > 0)
+    if (session_count > 0 && current_client != 0)
     {
-        ws_ping(NULL, 2);
+        ws_ping(current_client, 2);
     }
 }
 DX_TIMER_HANDLER_END
@@ -73,9 +73,9 @@ static void cleanup_session(void)
 
 void publish_message(const void *message, size_t message_length)
 {
-    if (session_count > 0)
+    if (session_count > 0 && current_client != 0)
     {
-        if (ws_sendframe(NULL, message, message_length, WS_FR_OP_TXT) == -1)
+        if (ws_sendframe(current_client, message, message_length, WS_FR_OP_TXT) == -1)
         {
             dx_Log_Debug("ws_sendframe failed\n");
         }
@@ -101,7 +101,7 @@ inline void publish_character(char character)
     output_buffer_length = 0;
 }
 
-void onopen(ws_cli_conn_t *client)
+void onopen(ws_cli_conn_t client)
 {
     printf("New session\n");
     session_count++;
@@ -121,11 +121,11 @@ void onopen(ws_cli_conn_t *client)
     _client_connected_cb();
 }
 
-void onclose(ws_cli_conn_t *client)
+void onclose(ws_cli_conn_t client)
 {
     printf("Session closed\n");
     session_count--;
-    current_client = NULL;
+    current_client = 0;
 
     if (cleanup_required)
     {
@@ -133,7 +133,7 @@ void onclose(ws_cli_conn_t *client)
     }
 }
 
-void onmessage(ws_cli_conn_t *client, const unsigned char *msg, uint64_t size, int type)
+void onmessage(ws_cli_conn_t client, const unsigned char *msg, uint64_t size, int type)
 {
     size_t len = 0;
 
@@ -165,11 +165,19 @@ void init_web_socket_server(void (*client_connected_cb)(void))
 
     ws_input_block.length = 0;
 
-    struct ws_events evs;
-    evs.onopen    = &onopen;
-    evs.onclose   = &onclose;
-    evs.onmessage = &onmessage;
-    ws_socket(&evs, 8082, 1, 250);
+    struct ws_server server = {
+        .host = NULL,
+        .port = 8082,
+        .thread_loop = 1,
+        .timeout_ms = 250,
+        .evs = {
+            .onopen = &onopen,
+            .onclose = &onclose,
+            .onmessage = &onmessage
+        },
+        .context = NULL
+    };
+    ws_socket(&server);
 }
 
 /// <summary>

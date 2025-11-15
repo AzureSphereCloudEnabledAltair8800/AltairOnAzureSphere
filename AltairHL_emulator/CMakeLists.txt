@@ -4,6 +4,9 @@
 cmake_minimum_required (VERSION 3.10)
 project (AltairHL_emulator C)
 
+# Reduce build verbosity
+set(CMAKE_VERBOSE_MAKEFILE OFF CACHE BOOL "Verbose build output" FORCE)
+
 # SELECT DEVELOPER BOARD ##########################################################################################
 #
 set(AVNET TRUE "AVNET_Rev_1")   
@@ -51,18 +54,18 @@ endif(ALTAIR_CLOUD AND MICRO_SD_CLICK)
 
 get_filename_component(PARENT_DIR ${PROJECT_SOURCE_DIR} DIRECTORY)
 
-if (EXISTS "${PARENT_DIR}/Tools/cmake/azsphere_config.cmake")
-    include(../Tools/cmake/azsphere_config.cmake)
-    auto_generate_azsphere_config()
-else()
+# if (EXISTS "${PARENT_DIR}/Tools/cmake/azsphere_config.cmake")
+#     include(../Tools/cmake/azsphere_config.cmake)
+#     auto_generate_azsphere_config()
+# else()
 
-    # For information on setting tools revision and target api set see 
-    # https://docs.microsoft.com/en-us/azure-sphere/app-development/using-cmake-functions
+#     # For information on setting tools revision and target api set see 
+#     # https://docs.microsoft.com/en-us/azure-sphere/app-development/using-cmake-functions
 
-    azsphere_configure_tools(TOOLS_REVISION "21.07")
-    azsphere_configure_api(TARGET_API_SET "10")
+#     azsphere_configure_tools(TOOLS_REVISION "21.07")
+#     azsphere_configure_api(TARGET_API_SET "10")
 
-endif()
+# endif()
 
 add_subdirectory("AzureSphereDevX" out)
 
